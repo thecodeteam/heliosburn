@@ -48,4 +48,20 @@ config.vm.provider "virtualbox" do |vb|
 
 ## Tools and applications installed:
 
-...
+| Name | Version |
+|------|---------|
+| python | 2.7.3 |
+|Git |1.7.9.5 |
+|PostgreSQL server | 9.3 |
+|Pycharm Professional | 4.0.2 |
+|pip | 1.0 |
+|pgAdmin3 | 1.18.1 |
+|Firefox | 34.0 |
+|JDK | 1.7 |
+|DbSchema | |
+| Django | 1.7.1 |
+| twisted | 14.0.2 |
+| SQLAlchemy | 0.9.8 |
+| django-bootstrap3 | 5.0.3 |
+| djangorestframework | 3.0.1 |
+| CherryPy | 3.6.0 |
