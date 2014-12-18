@@ -7,15 +7,15 @@ The development environment is provided as a Vagrant box, which will be updated 
 
 ## Characteristics
 
-- Download Size: 1.7GB
-- Storage: 80GB
-- CPU: 2 x vCPU
-- Base memory: 1024 MB
-- OS: Ubuntu Precise (64 bits)
-- Username: vagrant
-- Password: vagrant
-- Box URL: https://atlas.hashicorp.com/emccode/boxes/heliosburn-dev
-- Latest box version: 0.1
+- **Download Size**: 1.7GB
+- **Storage**: 80GB
+- **CPU**: 2 x vCPU
+- **Base memory**: 1024 MB
+- **OS**: Ubuntu Precise (64 bits)
+- **Username**: vagrant
+- **Password**: vagrant
+- **Box URL**: https://atlas.hashicorp.com/emccode/boxes/heliosburn-dev
+- **Latest box version**: 0.1
 
 ## Requirements:
 
@@ -43,8 +43,8 @@ config.vm.provider "virtualbox" do |vb|
 
 ## PostgreSQL credentials
 
-- User: postgres
-- Password: postgres
+- **User**: postgres
+- **Password**: postgres
 
 ## Tools and applications installed:
 
