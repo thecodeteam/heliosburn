@@ -65,3 +65,4 @@ config.vm.provider "virtualbox" do |vb|
 | django-bootstrap3 | 5.0.3 |
 | djangorestframework | 3.0.1 |
 | CherryPy | 3.6.0 |
+| psycopg2 | 2.5.4 |
