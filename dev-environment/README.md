@@ -15,7 +15,7 @@ The development environment is provided as a Vagrant box, which will be updated 
 - **Username**: vagrant
 - **Password**: vagrant
 - **Box URL**: https://atlas.hashicorp.com/emccode/boxes/heliosburn-dev
-- **Latest box version**: 0.1
+- **Latest box version**: 0.4
 
 ## Requirements:
 
