@@ -7,6 +7,17 @@ from sqlalchemy.ext.declarative import declarative_base
 Base = declarative_base()
 
 
+class User(Base):
+    __tablename__ = "user"
+
+    id = Column(Integer, primary_key=True)
+    username = Column(String, nullable=False)
+    email = Column(String, nullable=False)
+    password = Column(String, nullable=False)
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+    update_at = Column(DateTime, default=datetime.datetime.utcnow)
+
+
 class HttpRequest(Base):
     __tablename__ = "http_request"
 
@@ -59,6 +70,7 @@ class Session(Base):
     name = Column(String, nullable=False)
     description = Column(String, default='')
     test_plan = Column(Integer, ForeignKey('test_plan.id'))
+    user = Column(Integer, ForeignKey('user.id'), nullable=False)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.datetime.utcnow)
     started_at = Column(DateTime)
