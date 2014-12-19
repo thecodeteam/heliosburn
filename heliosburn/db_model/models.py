@@ -174,3 +174,21 @@ class Match(Base):
     session = Column(Integer, ForeignKey('session.id'), nullable=False)
     rule = Column(Integer, ForeignKey('rule.id'), nullable=False)
     http_request = Column(Integer, ForeignKey('http_request.id'), nullable=False)
+
+
+class Recording(Base):
+    __tablename__ = "recording"
+
+    id = Column(Integer, primary_key=True)
+    name = Column(String, nullable=False)
+    description = Column(String, default='')
+    user = Column(Integer, ForeignKey('user.id'), nullable=False)
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+
+
+class RecordingTraffic(Base):
+    __tablename__ = "recording_traffic"
+
+    id = Column(Integer, primary_key=True)
+    recording = Column(Integer, ForeignKey('recording.id'), nullable=False)
+    http_request = Column(Integer, ForeignKey('http_request.id'), nullable=False)
