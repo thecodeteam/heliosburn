@@ -58,3 +58,6 @@ target/
 
 # JetBrains IDE
 .idea/
+
+# OS X DS_Store
+.DS_Store
