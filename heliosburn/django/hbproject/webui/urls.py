@@ -2,6 +2,8 @@ from django.conf.urls import patterns, url
 from django.views.generic import TemplateView
 
 urlpatterns = patterns(
-    'django.views.generic.simple',
-    (r'^$', TemplateView.as_view(template_name='index.html')),
+    'webui.views',
+    url(r'^$', 'dashboard', name='dashboard'),
+    url(r'^sessions/$', 'session_manager', name='session_manager'),
+    url(r'^sessions/(?P<id>[\w-]+)$', 'session_details', name='session_details'),
 )
