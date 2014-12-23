@@ -1,10 +1,17 @@
 {% extends 'base.html' %}
 
 {% load staticfiles %}
+{% load django_bootstrap_breadcrumbs %}
 
 {% block title %}Session Manager{% endblock %}
 {% block content_header %}Session Manager{% endblock %}
 {% block content_subheader %}{% endblock %}
+
+{% block breadcrumbs %}
+    {{ block.super }}
+    {% breadcrumb "Session Manager" "session_manager" %}
+{% endblock %}
+
 
 
 {% block contents %}

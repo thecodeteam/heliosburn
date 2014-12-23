@@ -1,4 +1,10 @@
 {% load staticfiles %}
+{% load django_bootstrap_breadcrumbs %}
+
+{% block breadcrumbs %}
+    {% clear_breadcrumbs %}
+    {% breadcrumb "Home" "dashboard" %}
+{% endblock %}
 
 <!DOCTYPE html>
 <html>
@@ -298,10 +304,9 @@
                         {% block content_header %}Title{% endblock %}
                         <small>{% block content_subheader %}Subtitle{% endblock %}</small>
                     </h1>
-                    <ol class="breadcrumb">
-                        <li><a href="#"><i class="fa fa-dashboard"></i> Home</a></li>
-                        <li class="active">Dashboard</li>
-                    </ol>
+
+                    {% render_breadcrumbs "breadcrumbs.html" %}
+
                 </section>
 
                 <!-- Main content -->

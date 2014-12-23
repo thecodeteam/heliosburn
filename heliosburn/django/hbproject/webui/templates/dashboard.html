@@ -1,10 +1,16 @@
 {% extends 'base.html' %}
 
 {% load staticfiles %}
+{% load django_bootstrap_breadcrumbs %}
 
 {% block title %}Dashboard{% endblock %}
 {% block content_header %}Dashboard{% endblock %}
 {% block content_subheader %}Control panel{% endblock %}
+
+{% block breadcrumbs %}
+    {{ block.super }}
+    {% breadcrumb "Dashboard" "dashboard" %}
+{% endblock %}
 
 {% block content %}
 <!-- Small boxes (Stat box) -->

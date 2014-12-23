@@ -1,0 +1,16 @@
+<ol class="breadcrumb">
+    {% for url, label in breadcrumbs %}
+        {% if not forloop.last %}
+            <li>
+                <a href="{{ url }}">
+                    {% if forloop.first %} <i class="fa fa-dashboard"></i> {% endif %}
+                    {{ label | safe }}
+                </a>
+            </li>
+        {% else %}
+            <li class="active">
+                {{ label | safe }}
+            </li>
+        {% endif %}
+    {% endfor %}
+</ol>
