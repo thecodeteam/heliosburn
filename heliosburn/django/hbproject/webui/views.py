@@ -55,5 +55,17 @@ def testplan_list(request):
     return render(request, 'testplan/list.html', args)
 
 
-def testplan_details(request):
-    return render(request, 'testplan/list.html')
+def testplan_details(request, id):
+
+    testplan = {
+        'id': 4,
+        'name': 'Test Plan for EMC Atmos',
+        'description': 'bla bla bla bla bla blaaaa...',
+        'rules': 2134,
+        'updated_at': '2014-02-12 03:34:51'
+    }
+
+    args = {}
+    args['testplan'] = testplan
+
+    return render(request, 'testplan/details.html', args)
