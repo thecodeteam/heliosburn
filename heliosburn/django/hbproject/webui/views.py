@@ -9,9 +9,17 @@ def dashboard(request):
     return render(request, 'dashboard.html')
 
 
-def session_manager(request):
-    return render(request, 'sessions/manager.html')
+def session_list(request):
+    return render(request, 'sessions/list.html')
 
 
 def session_details(request):
-    return render(request, 'sessions/manager.html')
+    return render(request, 'sessions/list.html')
+
+
+def testplan_list(request):
+    return render(request, 'testplan/list.html')
+
+
+def testplan_details(request):
+    return render(request, 'testplan/list.html')

@@ -5,8 +5,8 @@ register = template.Library()
 
 @register.simple_tag
 def active(request, name):
-    url = reverse(name)
     try:
+        url = reverse(name)
         if request.path == url:
             return 'active'
     except:
