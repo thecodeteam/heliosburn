@@ -56,16 +56,69 @@ def testplan_list(request):
 
 
 def testplan_details(request, id):
-
     testplan = {
         'id': 4,
         'name': 'Test Plan for EMC Atmos',
         'description': 'bla bla bla bla bla blaaaa...',
-        'rules': 2134,
-        'updated_at': '2014-02-12 03:34:51'
+        'updated_at': '2014-02-12 03:34:51',
+        'created_at': '2014-02-12 03:34:51',
+        'latency_enabled': True,
+        'client_latency': 100,
+        'server_latency': 300,
+        'rules': [
+            {'id': 1,
+             'filter': 'GET, http://asdas.com/safg',
+             'action': 'New response',
+             'enabled': True,
+             'type': 'request'},
+            {'id': 2,
+             'filter': 'GET, http://asdas.com/safg',
+             'action': 'Modify header(X-Storage-URL)="blabla"',
+             'enabled': False,
+             'type': 'request'},
+            {'id': 3,
+             'filter': '200, Header="Hello"',
+             'action': 'New response',
+             'enabled': True,
+             'type': 'response'},
+            {'id': 4,
+             'filter': 'DELETE, http://asdas.com/safg',
+             'action': 'Drop connection',
+             'enabled': True,
+             'type': 'request'},
+            {'id': 5,
+             'filter': 'GET, http://asdas.com/safg',
+             'action': 'New response',
+             'enabled': True,
+             'type': 'request'},
+            {'id': 6,
+             'filter': 'GET, http://asdas.com/safg',
+             'action': 'New response',
+             'enabled': False,
+             'type': 'request'},
+            {'id': 7,
+             'filter': 'GET, http://asdas.com/safg',
+             'action': 'New response',
+             'enabled': True,
+             'type': 'request'},
+        ],
+
     }
 
     args = {}
     args['testplan'] = testplan
 
     return render(request, 'testplan/details.html', args)
+
+
+def rule_details(request, id):
+    rule = {'id': 1,
+            'filter': 'GET, http://asdas.com/safg',
+            'action': 'New response',
+            'enabled': True,
+            'type': 'request'}
+
+    args = {}
+    args['rule'] = rule
+
+    return render(request, 'testplan/rule_details.html', args)

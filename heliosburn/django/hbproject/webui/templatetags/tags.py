@@ -12,3 +12,14 @@ def active(request, name):
     except:
         None
     return ''
+
+@register.filter(name='boolicon')
+def boolicon(value):
+    try:
+        if type(value) is bool:
+            style = 'glyphicon-ok green' if value else 'glyphicon-remove red'
+            return '<span class="glyphicon glyphicon-2x %s" aria-hidden="true"></span>' % (style, )
+        else:
+            return value
+    except:
+        return ''
