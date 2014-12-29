@@ -1,4 +1,7 @@
+from django.http import HttpResponseRedirect, HttpResponse, HttpResponseBadRequest
 from django.shortcuts import render
+from django.core.urlresolvers import reverse
+import json
 
 
 def signin(request):
@@ -109,6 +112,22 @@ def testplan_details(request, id):
     args['testplan'] = testplan
 
     return render(request, 'testplan/details.html', args)
+
+
+def testplan_update(request):
+    if not request.POST:
+        return HttpResponseRedirect(reverse('testplan_list'))
+
+    name = request.POST.get('name')
+    pk = request.POST.get('pk')
+    value = request.POST.get('value')
+
+    if not name or not pk or not value:
+        response = 'field cannot be empty!'
+        return HttpResponseBadRequest(response)
+    else:
+        #TODO: API call to update value
+        return HttpResponse()
 
 
 def rule_details(request, id):

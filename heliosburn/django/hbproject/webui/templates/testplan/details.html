@@ -5,7 +5,9 @@
 {% load tags %}
 
 {% block title %}Test Plan Manager{% endblock %}
-{% block content_header %}{{ testplan.name }}{% endblock %}
+{% block content_header %}
+    <a href="#" id="testplan-name">{{ testplan.name }}</a>
+{% endblock %}
 {% block content_subheader %}{% endblock %}
 
 {% block breadcrumbs %}
@@ -17,6 +19,8 @@
 {% block styles %}
     <!-- DATA TABLES -->
     <link href="{% static 'webui/css/datatables/dataTables.bootstrap.css' %}" rel="stylesheet" type="text/css" />
+    <!-- X-editable -->
+    <link href="//cdnjs.cloudflare.com/ajax/libs/x-editable/1.5.0/bootstrap3-editable/css/bootstrap-editable.css" rel="stylesheet"/>
 {% endblock %}
 
 {% block scripts %}
@@ -36,48 +40,95 @@
             } );
         } );
     </script>
+    <!-- X-Editable -->
+    <script src="//cdnjs.cloudflare.com/ajax/libs/x-editable/1.5.0/bootstrap3-editable/js/bootstrap-editable.min.js"></script>
+    <script type="text/javascript">
+        $.fn.editable.defaults.mode = 'inline';
+
+        //enable / disable
+        $('#details-edit').click(function() {
+            $('#testplan-description').editable('toggleDisabled');
+        });
+
+
+        //editables
+        $('#testplan-name').editable({
+            url: '{% url 'testplan_update' %}',
+            type: 'text',
+            pk: {{ testplan.id }},
+            name: 'name',
+            title: 'Test Plan name',
+            params: '{csrfmiddlewaretoken:"{{csrf_token}}"}'
+        });
+
+        $('#testplan-description').editable({
+            url: '{% url 'testplan_update' %}',
+            type: 'textarea',
+            pk: {{ testplan.id }},
+            name: 'description',
+            title: 'Test Plan description',
+            params: '{csrfmiddlewaretoken:"{{csrf_token}}"}'
+        });
+
+        $('#testplan-clientlatency').editable({
+            url: '{% url 'testplan_update' %}',
+            type: 'text',
+            pk: {{ testplan.id }},
+            name: 'client_latency',
+            title: 'Client latency',
+            params: '{csrfmiddlewaretoken:"{{csrf_token}}"}'
+        });
+
+        $('#testplan-serverlatency').editable({
+            url: '{% url 'testplan_update' %}',
+            type: 'text',
+            pk: {{ testplan.id }},
+            name: 'client_latency',
+            title: 'Client latency',
+            params: '{csrfmiddlewaretoken:"{{csrf_token}}"}'
+        });
+
+    </script>
 {% endblock %}
 
 {% block content %}
 
     <div class="row">
         <div class="col-md-6">
-            <div class="box">
-                <div class="box-header">
-                    <i class="fa fa-info-circle"></i>
-                    <h3 class="box-title">Test Plan details</h3>
-                </div><!-- /.box-header -->
-                <div class="box-body table-responsive">
-
+            <div class="nav-tabs-custom">
+                <ul class="nav nav-tabs">
+                    <li class="header"><i class="fa fa-info-circle"></i>Test Plan details</li>
+                    <li class="pull-right"><a href="#" id="details-edit" class="text-muted"><i class="fa fa-pencil"></i></a></li>
+                </ul>
+                <div class="tab-content">
                     <dl class="dl-horizontal">
                         <dt>Description</dt>
-                        <dd>{{ testplan.description }}</dd>
+                        <dd><a href="#" id="testplan-description">{{ testplan.description }}</a></dd>
                         <dt>Created at</dt>
                         <dd>{{ testplan.created_at }}</dd>
                         <dt>Last updated</dt>
                         <dd>{{ testplan.updated_at }}</dd>
                     </dl>
-                </div><!-- /.box-body -->
-            </div><!-- /.box -->
+                </div><!-- /.tab-content -->
+            </div>
         </div>
         <div class="col-md-6">
-            <div class="box">
-                <div class="box-header">
-                    <i class="fa fa-clock-o"></i>
-                    <h3 class="box-title">Latency</h3>
-                </div><!-- /.box-header -->
-                <div class="box-body table-responsive">
-
+            <div class="nav-tabs-custom">
+                <ul class="nav nav-tabs">
+                    <li class="header"><i class="fa fa-clock-o"></i>Latency</li>
+                    <li class="pull-right"><a href="#" onclick="$('#detais-edit').trigger('click');" class="text-muted"><i class="fa fa-pencil"></i></a></li>
+                </ul>
+                <div class="tab-content">
                     <dl class="dl-horizontal">
                         <dt>Latency enabled</dt>
                         <dd>{{ testplan.latency_enabled|boolicon|safe }}</dd>
                         <dt>Client latency</dt>
-                        <dd>{{ testplan.client_latency }} ms</dd>
+                        <dd><a href="#" id="testplan-clientlatency">{{ testplan.client_latency }}</a> ms</dd>
                         <dt>Server latency</dt>
-                        <dd>{{ testplan.server_latency }} ms</dd>
+                        <dd><a href="#" id="testplan-serverlatency">{{ testplan.server_latency }}</a> ms</dd>
                     </dl>
-                </div><!-- /.box-body -->
-            </div><!-- /.box -->
+                </div><!-- /.tab-content -->
+            </div>
         </div>
     </div>
 
