@@ -122,7 +122,7 @@ def testplan_update(request):
     pk = request.POST.get('pk')
     value = request.POST.get('value')
 
-    if not name or not pk or not value:
+    if not name or not pk:
         response = 'field cannot be empty!'
         return HttpResponseBadRequest(response)
     else:

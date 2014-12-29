@@ -23,3 +23,13 @@ def boolicon(value):
             return value
     except:
         return ''
+
+@register.filter(name='enabler')
+def enabler(value):
+    try:
+        if type(value) is bool:
+            return 'Enabled' if value else 'Disabled'
+        else:
+            return 'Disabled'
+    except:
+        return 'Disabled'

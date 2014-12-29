@@ -58,6 +58,7 @@
             pk: {{ testplan.id }},
             name: 'name',
             title: 'Test Plan name',
+            inputclass: 'title-input',
             params: '{csrfmiddlewaretoken:"{{csrf_token}}"}'
         });
 
@@ -67,6 +68,19 @@
             pk: {{ testplan.id }},
             name: 'description',
             title: 'Test Plan description',
+            inputclass: 'description-input',
+            params: '{csrfmiddlewaretoken:"{{csrf_token}}"}'
+        });
+
+        $('#testplan-enablelatency').editable({
+            url: '{% url 'testplan_update' %}',
+            type: 'checklist',
+            pk: {{ testplan.id }},
+            name: 'enable_latency',
+            title: 'Latency',
+            value: '1',
+            source: [{value: 1, text: "Enabled"}],
+            emptytext: 'Disabled',
             params: '{csrfmiddlewaretoken:"{{csrf_token}}"}'
         });
 
@@ -121,7 +135,7 @@
                 <div class="tab-content">
                     <dl class="dl-horizontal">
                         <dt>Latency enabled</dt>
-                        <dd>{{ testplan.latency_enabled|boolicon|safe }}</dd>
+                        <dd><a href="#" id="testplan-enablelatency">{{ testplan.latency_enabled|enabler }}</a></dd>
                         <dt>Client latency</dt>
                         <dd><a href="#" id="testplan-clientlatency">{{ testplan.client_latency }}</a> ms</dd>
                         <dt>Server latency</dt>
