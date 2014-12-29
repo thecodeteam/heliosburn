@@ -13,11 +13,72 @@ def dashboard(request):
 
 
 def session_list(request):
-    return render(request, 'sessions/session_list.html')
+    sessions = [
+        {
+            'id': 1,
+            'name': 'Session A',
+            'testplan':
+                {
+                    'id': 12,
+                    'name': 'ViPR Test plan'
+                },
+            'duration': 42,
+            'created_at': '2014-02-12 03:34:51'
+        },
+        {
+            'id': 2,
+            'name': 'ViPR Session 1',
+            'testplan':
+                {
+                    'id': 12,
+                    'name': 'ViPR Test plan'
+                },
+            'duration': 634,
+            'created_at': '2014-02-12 03:34:51'
+        },
+        {
+            'id': 3,
+            'name': 'ViPR Session 2',
+            'testplan':
+                {
+                    'id': 12,
+                    'name': 'ViPR Test plan'
+                },
+            'duration': 341,
+            'created_at': '2014-02-12 03:34:51'
+        },
+        {
+            'id': 4,
+            'name': 'Swift on-premise session',
+            'testplan':
+                {
+                    'id': 12,
+                    'name': 'Swift Test plan'
+                },
+            'duration': 654,
+            'created_at': '2014-02-12 03:34:51'
+        },
+        {
+            'id': 5,
+            'name': 'S3 America session',
+            'testplan':
+                {
+                    'id': 12,
+                    'name': 'Amazon S3 Test plan'
+                },
+            'duration': 244,
+            'created_at': '2014-02-12 03:34:51'
+        }
+    ]
+
+    args = {}
+    args['sessions'] = sessions
+
+    return render(request, 'sessions/session_list.html', args)
 
 
-def session_details(request):
-    return render(request, 'sessions/session_list.html')
+def session_details(request, id):
+    return render(request, 'sessions/session_details.html')
 
 
 def testplan_list(request):
