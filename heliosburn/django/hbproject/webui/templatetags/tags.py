@@ -7,6 +7,8 @@ register = template.Library()
 def active(request, name):
     try:
         url = reverse(name)
+        print request.path
+        print url
         if request.path == url:
             return 'active'
     except:

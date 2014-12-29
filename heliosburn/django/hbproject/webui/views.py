@@ -13,11 +13,11 @@ def dashboard(request):
 
 
 def session_list(request):
-    return render(request, 'sessions/list.html')
+    return render(request, 'sessions/session_list.html')
 
 
 def session_details(request):
-    return render(request, 'sessions/list.html')
+    return render(request, 'sessions/session_list.html')
 
 
 def testplan_list(request):
@@ -55,7 +55,7 @@ def testplan_list(request):
     args = {}
     args['data'] = data
 
-    return render(request, 'testplan/list.html', args)
+    return render(request, 'testplan/testplan_list.html', args)
 
 
 def testplan_details(request, id):
@@ -111,7 +111,7 @@ def testplan_details(request, id):
     args = {}
     args['testplan'] = testplan
 
-    return render(request, 'testplan/details.html', args)
+    return render(request, 'testplan/testplan_details.html', args)
 
 
 def testplan_update(request):
@@ -126,7 +126,7 @@ def testplan_update(request):
         response = 'field cannot be empty!'
         return HttpResponseBadRequest(response)
     else:
-        #TODO: API call to update value
+        # TODO: API call to update value
         return HttpResponse()
 
 
@@ -141,3 +141,131 @@ def rule_details(request, id):
     args['rule'] = rule
 
     return render(request, 'testplan/rule_details.html', args)
+
+
+def recording_list(request):
+    recordings = [
+        {
+            'id': 1,
+            'name': 'Recording 1',
+            'description': 'My recording bla bla bla...',
+            'requests': 42,
+            'created_at': '2014-02-12 03:34:51'
+        },
+        {
+            'id': 2,
+            'name': 'Recording 2',
+            'description': 'My recording bla bla bla...',
+            'requests': 23,
+            'created_at': '2014-02-12 03:34:51'
+        },
+        {
+            'id': 3,
+            'name': 'Recording 3',
+            'description': 'My recording bla bla bla...',
+            'requests': 2,
+            'created_at': '2014-02-12 03:34:51'
+        },
+        {
+            'id': 4,
+            'name': 'Recording 4',
+            'description': 'My recording bla bla bla...',
+            'requests': 442,
+            'created_at': '2014-02-12 03:34:51'
+        },
+        {
+            'id': 5,
+            'name': 'Recording 5',
+            'description': 'My recording bla bla bla...',
+            'requests': 345,
+            'created_at': '2014-02-12 03:34:51'
+        },
+        {
+            'id': 6,
+            'name': 'Recording 6',
+            'description': 'My recording bla bla bla...',
+            'requests': 93,
+            'created_at': '2014-02-12 03:34:51'
+        },
+        {
+            'id': 7,
+            'name': 'Recording 7',
+            'description': 'My recording bla bla bla...',
+            'requests': 12,
+            'created_at': '2014-02-12 03:34:51'
+        },
+    ]
+
+    args = {}
+    args['recordings'] = recordings
+
+    return render(request, 'recording/recording_list.html', args)
+
+
+def recording_details(request, id):
+    recording = {
+        'id': 1,
+        'name': 'Recording 1',
+        'description': 'My recording bla bla bla...',
+        'created_at': '2014-02-12 03:34:51',
+        'duration': 343,
+        'traffic': [
+            {
+                'id': 23,
+                'method': 'GET',
+                'url': 'http://asdasdasd.com/ikdsf',
+                'date': '2014-02-12 03:34:51',
+                'response': {
+                    'status_code': 200
+                }
+            },
+            {
+                'id': 43,
+                'method': 'GET',
+                'url': 'http://asdasdasd.com/ikdsf',
+                'date': '2014-02-12 03:34:51',
+                'response': {
+                    'status_code': 200
+                }
+            },
+            {
+                'id': 54,
+                'method': 'GET',
+                'url': 'http://asdasdasd.com/ikdsf',
+                'date': '2014-02-12 03:34:51',
+                'response': {
+                    'status_code': 500
+                }
+            },
+            {
+                'id': 87,
+                'method': 'GET',
+                'url': 'http://asdasdasd.com/ikdsf',
+                'date': '2014-02-12 03:34:51',
+                'response': {
+                    'status_code': 200
+                }
+            }
+        ]
+    }
+
+    args = {}
+    args['recording'] = recording
+
+    return render(request, 'recording/recording_details.html', args)
+
+
+def recording_update(request):
+    if not request.POST:
+        return HttpResponseRedirect(reverse('recording_list'))
+
+    name = request.POST.get('name')
+    pk = request.POST.get('pk')
+    value = request.POST.get('value')
+
+    if not name or not pk:
+        response = 'field cannot be empty!'
+        return HttpResponseBadRequest(response)
+    else:
+        # TODO: API call to update value
+        return HttpResponse()

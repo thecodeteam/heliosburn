@@ -55,43 +55,35 @@
                 </div><!-- /.box-header -->
                 <div class="box-body table-responsive">
 
-                    {% if data %}
-                        <table id="example1" class="table table-bordered table-striped">
-                            <thead>
+                    <table id="example1" class="table table-bordered table-striped">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Name</th>
+                                <th>Description</th>
+                                <th>Rules</th>
+                            </tr>
+                        </thead>
+                        <tfoot>
+                            <tr>
+                                <th>ID</th>
+                                <th>Name</th>
+                                <th>Description</th>
+                                <th>Rules</th>
+                            </tr>
+                        </tfoot>
+                        <tbody>
+
+                            {% for testplan in data %}
                                 <tr>
-                                    <th>ID</th>
-                                    <th>Name</th>
-                                    <th>Description</th>
-                                    <th>Rules</th>
+                                    <td>{{ testplan.id }}</td>
+                                    <td><a href="{% url 'testplan_details' testplan.id %}">{{ testplan.name }}</a></td>
+                                    <td>{{ testplan.description }}</td>
+                                    <td>{{ testplan.rules }}</td>
                                 </tr>
-                            </thead>
-                            <tfoot>
-                                <tr>
-                                    <th>ID</th>
-                                    <th>Name</th>
-                                    <th>Description</th>
-                                    <th>Rules</th>
-                                </tr>
-                            </tfoot>
-                            <tbody>
-
-                                {% for testplan in data %}
-                                    <tr>
-                                        <td>{{ testplan.id }}</td>
-                                        <td><a href="{% url 'testplan_details' testplan.id %}">{{ testplan.name }}</a></td>
-                                        <td>{{ testplan.description }}</td>
-                                        <td>{{ testplan.rules }}</td>
-                                    </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-
-
-                    {% else %}
-
-                        No test plans found
-
-                    {% endif %}
+                            {% endfor %}
+                        </tbody>
+                    </table>
 
                 </div><!-- /.box-body -->
             </div><!-- /.box -->
