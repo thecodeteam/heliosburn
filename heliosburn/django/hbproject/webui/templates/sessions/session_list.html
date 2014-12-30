@@ -19,12 +19,24 @@
 
 {% block scripts %}
     <!-- DATA TABES SCRIPT -->
-    <script src="{% static 'webui/js/plugins/datatables/jquery.dataTables.js' %}" type="text/javascript"></script>
+    <script src="{% static 'webui/js/plugins/datatables/jquery.dataTables.min.js' %}" type="text/javascript"></script>
     <script src="{% static 'webui/js/plugins/datatables/dataTables.bootstrap.js' %}" type="text/javascript"></script>
     <!-- page script -->
     <script type="text/javascript">
         $(document).ready(function() {
-            $('#example1').DataTable();
+            $('#example1').dataTable( {
+                "columnDefs": [
+                    {
+                        "targets": [ 2 ],
+                        "visible": false,
+                        "searchable": false
+                    },
+                    {
+                        "targets": [ 3 ],
+                        "visible": false
+                    }
+                ]
+            } );
         } );
     </script>
 {% endblock %}
@@ -48,19 +60,19 @@
                         <thead>
                             <tr>
                                 <th>ID</th>
-                                <th>Date</th>
                                 <th>Session name</th>
                                 <th>Test Plan</th>
-                                <th>Duration</th>
+                                <th>Latest execution</th>
+                                <th>Executions</th>
                             </tr>
                         </thead>
                         <tfoot>
                             <tr>
                                 <th>ID</th>
-                                <th>Date</th>
                                 <th>Session name</th>
                                 <th>Test Plan</th>
-                                <th>Duration</th>
+                                <th>Latest execution</th>
+                                <th>Executions</th>
                             </tr>
                         </tfoot>
                         <tbody>
@@ -68,10 +80,10 @@
                             {% for session in sessions %}
                                 <tr>
                                     <td>{{ session.id }}</td>
-                                    <td>{{ session.created_at }}</td>
                                     <td><a href="{% url "session_details" session.id %}">{{ session.name }}</a></td>
                                     <td><a href="{% url "testplan_details" session.testplan.id %}">{{ session.testplan.name }}</a></td>
-                                    <td>{{ session.duration }} s</td>
+                                    <td>{{ session.latest_execution_at }}</td>
+                                    <td>{{ session.executions }}</td>
                                 </tr>
                             {% endfor %}
                         </tbody>

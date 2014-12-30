@@ -22,8 +22,8 @@ def session_list(request):
                     'id': 12,
                     'name': 'ViPR Test plan'
                 },
-            'duration': 42,
-            'created_at': '2014-02-12 03:34:51'
+            'executions': 42,
+            'latest_execution_at': '2014-02-12 03:34:51'
         },
         {
             'id': 2,
@@ -33,8 +33,8 @@ def session_list(request):
                     'id': 12,
                     'name': 'ViPR Test plan'
                 },
-            'duration': 634,
-            'created_at': '2014-02-12 03:34:51'
+            'executions': 634,
+            'latest_execution_at': '2014-02-12 03:34:51'
         },
         {
             'id': 3,
@@ -44,8 +44,8 @@ def session_list(request):
                     'id': 12,
                     'name': 'ViPR Test plan'
                 },
-            'duration': 341,
-            'created_at': '2014-02-12 03:34:51'
+            'executions': 341,
+            'latest_execution_at': '2014-02-12 03:34:51'
         },
         {
             'id': 4,
@@ -55,8 +55,8 @@ def session_list(request):
                     'id': 12,
                     'name': 'Swift Test plan'
                 },
-            'duration': 654,
-            'created_at': '2014-02-12 03:34:51'
+            'executions': 654,
+            'latest_execution_at': '2014-02-12 03:34:51'
         },
         {
             'id': 5,
@@ -66,8 +66,8 @@ def session_list(request):
                     'id': 12,
                     'name': 'Amazon S3 Test plan'
                 },
-            'duration': 244,
-            'created_at': '2014-02-12 03:34:51'
+            'executions': 244,
+            'latest_execution_at': '2014-02-12 03:34:51'
         }
     ]
 
