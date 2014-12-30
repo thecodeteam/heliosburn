@@ -24,13 +24,21 @@
     <!-- page script -->
     <script type="text/javascript">
         $(document).ready(function() {
-            $('#example1').dataTable( {
+            var table = $('#example1').dataTable( {
                 "columnDefs": [
                     {
                         "targets": [ 0 ],
                         "visible": false
                     }
                 ]
+            } );
+
+            $('#example1 tbody').on( 'click', 'tr', function () {
+                $(this).toggleClass('active');
+            } );
+
+            $('#delete').click( function () {
+                alert( table.rows('.active').data().length +' row(s) selected' );
             } );
         } );
     </script>
@@ -50,35 +58,43 @@
                     <h3 class="box-title">Test Plan list</h3>
                 </div><!-- /.box-header -->
                 <div class="box-body table-responsive">
-                    <table id="example1" class="table table-bordered table-striped">
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Name</th>
-                                <th>Description</th>
-                                <th>Rules</th>
-                            </tr>
-                        </thead>
-                        <tfoot>
-                            <tr>
-                                <th>ID</th>
-                                <th>Name</th>
-                                <th>Description</th>
-                                <th>Rules</th>
-                            </tr>
-                        </tfoot>
-                        <tbody>
-                            {% for testplan in data %}
-                                <tr>
-                                    <td>{{ testplan.id }}</td>
-                                    <td><a href="{% url 'testplan_details' testplan.id %}">{{ testplan.name }}</a></td>
-                                    <td>{{ testplan.description }}</td>
-                                    <td>{{ testplan.rules }}</td>
-                                </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-
+                    <div class="row">
+                        <div class="col-xs-12">
+                            <table id="example1" class="table table-bordered table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Name</th>
+                                        <th>Description</th>
+                                        <th>Rules</th>
+                                    </tr>
+                                </thead>
+                                <tfoot>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Name</th>
+                                        <th>Description</th>
+                                        <th>Rules</th>
+                                    </tr>
+                                </tfoot>
+                                <tbody>
+                                    {% for testplan in data %}
+                                        <tr>
+                                            <td>{{ testplan.id }}</td>
+                                            <td><a href="{% url 'testplan_details' testplan.id %}">{{ testplan.name }}</a></td>
+                                            <td>{{ testplan.description }}</td>
+                                            <td>{{ testplan.rules }}</td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-xs-12">
+                            <button id="delete" class="btn btn-primary pull-right">Delete selected</button>
+                        </div>
+                    </div>
                 </div><!-- /.box-body -->
             </div><!-- /.box -->
         </div>

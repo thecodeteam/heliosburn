@@ -24,13 +24,21 @@
     <!-- page script -->
     <script type="text/javascript">
         $(document).ready(function() {
-            $('#example1').dataTable( {
+            var table = $('#example1').dataTable( {
                 "columnDefs": [
                     {
                         "targets": [ 0 ],
                         "visible": false
                     }
                 ]
+            } );
+
+            $('#example1 tbody').on( 'click', 'tr', function () {
+                $(this).toggleClass('active');
+            } );
+
+            $('#delete').click( function () {
+                alert( table.rows('.active').data().length +' row(s) selected' );
             } );
         } );
     </script>
