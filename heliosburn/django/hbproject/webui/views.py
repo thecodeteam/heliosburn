@@ -78,7 +78,84 @@ def session_list(request):
 
 
 def session_details(request, id):
-    return render(request, 'sessions/session_details.html')
+    session = {
+        'id': 1,
+        'name': 'Session A',
+        'description': 'My session bla bla bla bla',
+        'created_at': '2014-02-12 03:34:51',
+        'updated_at': '2014-02-12 03:34:51',
+        'testplan':
+            {
+                'id': 12,
+                'name': 'Amazon S3 Test Plan',
+                'description': 'My test plan for Amazon S3...',
+                'rules': 42,
+                'updated_at': '2014-02-12 03:34:51'
+            },
+        'executions': [
+            {
+                'id': 1,
+                'date': '2014-02-12 03:34:51',
+                'duration': 39,
+                'requests': 48,
+                'testplan': {
+                    'id': 12,
+                    'name': 'Amazon S3 Test Plan'
+                }
+            },
+            {
+                'id': 4,
+                'date': '2014-02-12 03:34:51',
+                'duration': 432,
+                'requests': 74,
+                'testplan': {
+                    'id': 12,
+                    'name': 'Amazon S3 Test Plan'
+                }
+            },
+            {
+                'id': 5,
+                'date': '2014-02-12 03:34:51',
+                'duration': 123,
+                'requests': 324,
+                'testplan': {
+                    'id': 12,
+                    'name': 'Amazon S3 Test Plan'
+                }
+            },
+            {
+                'id': 12,
+                'date': '2014-02-12 03:34:51',
+                'duration': 75,
+                'requests': 436,
+                'testplan': {
+                    'id': 12,
+                    'name': 'Swift Test Plan'
+                }
+            }
+        ]
+    }
+
+    args = {}
+    args['session'] = session
+
+    return render(request, 'sessions/session_details.html', args)
+
+
+def session_update(request):
+    if not request.POST:
+        return HttpResponseRedirect(reverse('session_list'))
+
+    name = request.POST.get('name')
+    pk = request.POST.get('pk')
+    value = request.POST.get('value')
+
+    if not name or not pk:
+        response = 'field cannot be empty!'
+        return HttpResponseBadRequest(response)
+    else:
+        # TODO: API call to update value
+        return HttpResponse()
 
 
 def testplan_list(request):
@@ -189,6 +266,11 @@ def testplan_update(request):
     else:
         # TODO: API call to update value
         return HttpResponse()
+
+
+def execution_details(request, id):
+    args = {}
+    return render(request, 'execution/execution_details.html', args)
 
 
 def rule_details(request, id):
