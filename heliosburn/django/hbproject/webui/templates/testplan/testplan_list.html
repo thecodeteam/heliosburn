@@ -24,10 +24,10 @@
     <!-- page script -->
     <script type="text/javascript">
         $(document).ready(function() {
-            var table = $('#example1').dataTable( {
+            var table = $('#example1').DataTable( {
                 "columnDefs": [
                     {
-                        "targets": [ 0 ],
+                        "targets": [ 0, 1 ],
                         "visible": false
                     }
                 ]
@@ -38,7 +38,22 @@
             } );
 
             $('#delete').click( function () {
-                alert( table.rows('.active').data().length +' row(s) selected' );
+                var entries = table.rows('.active').data();
+
+                if(entries.length <= 0){
+                    alert('No entries selected');
+                    return;
+                }
+
+                var message = 'You are about to delete the following entries:\n\n'
+                for(i = 0; i < entries.length; i++){
+                    message += '- ' + entries[i][1] + '\n';
+                }
+                message += '\nAre you sure?'
+
+                if (confirm(message)){
+                    //Delete entries
+                }
             } );
         } );
     </script>
@@ -64,6 +79,7 @@
                                 <thead>
                                     <tr>
                                         <th>ID</th>
+                                        <th>Plain name</th>
                                         <th>Name</th>
                                         <th>Description</th>
                                         <th>Rules</th>
@@ -72,6 +88,7 @@
                                 <tfoot>
                                     <tr>
                                         <th>ID</th>
+                                        <th>Plain name</th>
                                         <th>Name</th>
                                         <th>Description</th>
                                         <th>Rules</th>
@@ -81,6 +98,7 @@
                                     {% for testplan in data %}
                                         <tr>
                                             <td>{{ testplan.id }}</td>
+                                            <td>{{ testplan.name }}</td>
                                             <td><a href="{% url 'testplan_details' testplan.id %}">{{ testplan.name }}</a></td>
                                             <td>{{ testplan.description }}</td>
                                             <td>{{ testplan.rules }}</td>

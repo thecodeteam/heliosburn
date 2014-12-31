@@ -24,10 +24,10 @@
     <!-- page script -->
     <script type="text/javascript">
         $(document).ready(function() {
-            var table = $('#example1').dataTable( {
+            var table = $('#example1').DataTable( {
                 "columnDefs": [
                     {
-                        "targets": [ 0 ],
+                        "targets": [ 0, 1 ],
                         "visible": false
                     }
                 ]
@@ -38,7 +38,22 @@
             } );
 
             $('#delete').click( function () {
-                alert( table.rows('.active').data().length +' row(s) selected' );
+                var entries = table.rows('.active').data();
+
+                if(entries.length <= 0){
+                    alert('No entries selected');
+                    return;
+                }
+
+                var message = 'You are about to delete the following entries:\n\n'
+                for(i = 0; i < entries.length; i++){
+                    message += '- ' + entries[i][1] + '\n';
+                }
+                message += '\nAre you sure?'
+
+                if (confirm(message)){
+                    //Delete entries
+                }
             } );
         } );
     </script>
@@ -58,40 +73,50 @@
                     <h3 class="box-title">Session list</h3>
                 </div><!-- /.box-header -->
                 <div class="box-body table-responsive">
+                    <div class="row">
+                        <div class="col-xs-12">
+                            <table id="example1" class="table table-bordered table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Plain name</th>
+                                        <th>Session name</th>
+                                        <th>Test Plan</th>
+                                        <th>Latest execution</th>
+                                        <th>Executions</th>
+                                    </tr>
+                                </thead>
+                                <tfoot>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Plain name</th>
+                                        <th>Session name</th>
+                                        <th>Test Plan</th>
+                                        <th>Latest execution</th>
+                                        <th>Executions</th>
+                                    </tr>
+                                </tfoot>
+                                <tbody>
 
-                    <table id="example1" class="table table-bordered table-striped">
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Session name</th>
-                                <th>Test Plan</th>
-                                <th>Latest execution</th>
-                                <th>Executions</th>
-                            </tr>
-                        </thead>
-                        <tfoot>
-                            <tr>
-                                <th>ID</th>
-                                <th>Session name</th>
-                                <th>Test Plan</th>
-                                <th>Latest execution</th>
-                                <th>Executions</th>
-                            </tr>
-                        </tfoot>
-                        <tbody>
-
-                            {% for session in sessions %}
-                                <tr>
-                                    <td>{{ session.id }}</td>
-                                    <td><a href="{% url "session_details" session.id %}">{{ session.name }}</a></td>
-                                    <td><a href="{% url "testplan_details" session.testplan.id %}">{{ session.testplan.name }}</a></td>
-                                    <td>{{ session.latest_execution_at }}</td>
-                                    <td>{{ session.executions }}</td>
-                                </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-
+                                    {% for session in sessions %}
+                                        <tr>
+                                            <td>{{ session.id }}</td>
+                                            <td>{{ session.name }}</td>
+                                            <td><a href="{% url "session_details" session.id %}">{{ session.name }}</a></td>
+                                            <td><a href="{% url "testplan_details" session.testplan.id %}">{{ session.testplan.name }}</a></td>
+                                            <td>{{ session.latest_execution_at }}</td>
+                                            <td>{{ session.executions }}</td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-xs-12">
+                            <button id="delete" class="btn btn-primary pull-right">Delete selected</button>
+                        </div>
+                    </div>
                 </div><!-- /.box-body -->
             </div><!-- /.box -->
         </div>
