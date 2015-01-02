@@ -1,4 +1,7 @@
 from rest_framework import serializers
+from api.models import User, HttpRequest, HttpRequestHeaders, HttpResponse, HttpResponseHeaders, HttpHeader
+from api.models import Session, SessionTraffic, TestPlan, Rule, Filter, FilterHeaders, Action
+from api.models import ActionResponse, ActionRequest, ActionHeaders, Match, Recording, RecordingTraffic
 
 class UserSerializer(serializers.Serializer):
     id = serializers.IntegerField()
@@ -7,6 +10,18 @@ class UserSerializer(serializers.Serializer):
     password = serializers.CharField()
     created_at = serializers.DateTimeField()
     update_at = serializers.DateTimeField()
+
+    def create(self, validated_data):
+        """
+        Create a new User.
+        """
+        return User(**validated_data)
+
+    def update(self, instance, validated_data):
+        """
+        Update and return existing User.
+        """
+        pass
 
 
 class HttpRequestSerializer(serializers.Serializer):
