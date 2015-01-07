@@ -19,4 +19,6 @@ urlpatterns = patterns(
     url(r'^recordings/$', 'recording_list', name='recording_list'),
     url(r'^recordings/(?P<id>[\w-]+)$', 'recording_details', name='recording_details'),
     url(r'^recordings/update/$', 'recording_update', name='recording_update'),
+
+    url(r'^settings/$', 'settings', name='settings'),
 )

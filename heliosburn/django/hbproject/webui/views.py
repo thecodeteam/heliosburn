@@ -412,3 +412,7 @@ def recording_update(request):
     else:
         # TODO: API call to update value
         return HttpResponse()
+
+
+def settings(request):
+    return render(request, 'settings/settings.html')
