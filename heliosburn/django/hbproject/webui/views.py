@@ -3,6 +3,8 @@ from django.shortcuts import render
 from django.core.urlresolvers import reverse
 import json
 
+WIZARD_STEPS = ['1', '2', '3', '4']
+
 
 def signin(request):
     return render(request, 'signin.html')
@@ -10,6 +12,21 @@ def signin(request):
 
 def dashboard(request):
     return render(request, 'dashboard.html')
+
+
+def session_new(request):
+
+    step = request.GET.get('step')
+    if step not in WIZARD_STEPS:
+        step = '1'
+
+    progress = int(step) * 100 / len(WIZARD_STEPS)
+
+    args = {}
+    args['progress'] = progress
+    args['step'] = step
+
+    return render(request, 'sessions/session_new.html', args)
 
 
 def session_list(request):

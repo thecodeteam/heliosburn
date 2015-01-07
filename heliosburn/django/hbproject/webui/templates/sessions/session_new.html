@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+
+{% load staticfiles %}
+{% load django_bootstrap_breadcrumbs %}
+
+{% block title %}Session Manager{% endblock %}
+{% block content_header %}Session Manager{% endblock %}
+{% block content_subheader %}{% endblock %}
+
+{% block breadcrumbs %}
+    {{ block.super }}
+    {% breadcrumb "Session Manager" "session_manager" %}
+{% endblock %}
+
+{% block styles %}
+    <!-- DATA TABLES -->
+    <link href="{% static 'webui/css/datatables/dataTables.bootstrap.css' %}" rel="stylesheet" type="text/css" />
+{% endblock %}
+
+{% block scripts %}
+{% endblock %}
+
+{% block content %}
+
+    <div class="row">
+        <div class="col-xs-12">
+            <div class="progress xs progress-striped active">
+                <div class="progress-bar progress-bar-warning" role="progressbar" aria-valuenow="{{ progress }}" aria-valuemin="0" aria-valuemax="100" style="width: {{ progress }}%">
+                    <span class="sr-only">{{ progress }}% Complete (warning)</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if step == '1' %}
+        {% include "sessions/session_new_step1.html" %}
+    {% elif step == '2' %}
+        {% include "sessions/session_new_step2.html" %}
+    {% endif %}
+
+
+
+{% endblock %}

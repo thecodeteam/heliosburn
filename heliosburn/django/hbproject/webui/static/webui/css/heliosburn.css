@@ -28,3 +28,8 @@
 .description-input{
    width: 300px !important;
 }
+
+/* font style */
+.bold {
+    font-weight: bold !important;
+}
