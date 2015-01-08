@@ -1,10 +1,9 @@
+<h2 class="page-header">Step 1: Session details</h2>
+
 <div class="row">
     <div class="col-xs-12">
         <!-- general form elements -->
         <div class="box box-primary">
-            <div class="box-header">
-                <h3 class="box-title">Session details</h3>
-            </div><!-- /.box-header -->
             <!-- form start -->
             <form role="form" method="post" action="?step=2">
                 {% csrf_token %}
@@ -22,7 +21,8 @@
                 </div><!-- /.box-body -->
 
                 <div class="box-footer">
-                    <button type="submit" class="btn btn-primary">Save and next</button>
+                    <a class="btn btn-default" href="{% url "session_list" %}" role="button">Cancel</a>
+                    <button type="submit" class="btn btn-primary pull-right">Save and next</button>
                 </div>
             </form>
         </div><!-- /.box -->

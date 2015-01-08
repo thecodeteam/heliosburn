@@ -1,7 +1,6 @@
 from django.http import HttpResponseRedirect, HttpResponse, HttpResponseBadRequest
 from django.shortcuts import render
 from django.core.urlresolvers import reverse
-import json
 
 WIZARD_STEPS = ['1', '2', '3', '4']
 

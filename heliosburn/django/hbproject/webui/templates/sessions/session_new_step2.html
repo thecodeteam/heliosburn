@@ -1,3 +1,8 @@
+<h2 class="page-header">
+    Step 2: Select a Test Plan
+    <small>You can either select an existing Test Plan or create a new one.</small>
+</h2>
+
 <div class="row">
     <div class="col-md-6">
         <!-- general form elements -->
@@ -6,7 +11,7 @@
                 <h3 class="box-title">Select an existing Test Plan</h3>
             </div><!-- /.box-header -->
             <!-- form start -->
-            <form role="form" method="post" action="?step=2">
+            <form role="form" method="post" action="?step=3">
                 {% csrf_token %}
                 <div class="box-body">
                     <div class="form-group">
@@ -23,7 +28,8 @@
                 </div><!-- /.box-body -->
 
                 <div class="box-footer">
-                    <button type="submit" class="btn btn-primary">Save and next</button>
+                    <a class="btn btn-default" href="?step=1" role="button">Back</a>
+                    <button type="submit" class="btn btn-primary pull-right">Save and next</button>
                 </div>
             </form>
         </div><!-- /.box -->
@@ -34,16 +40,35 @@
             <div class="box-header">
                 <h3 class="box-title">Create a new Test Plan</h3>
             </div><!-- /.box-header -->
-            <!-- form start -->
-            <form role="form" method="post" action="?step=2">
-                {% csrf_token %}
-                <div class="box-body">
-                    <button type="submit" class="btn btn-primary">Create a new Test Plan</button>
-                </div><!-- /.box-body -->
+            <div class="box-body">
+                <p>
+                    You can create a Test Plan from a recording source or create it manually from the beginning.
+                </p>
+                <p>
+                    Please, select the option that best fits your needs:
+                </p>
 
-                <div class="box-footer">
+                <div class="radio">
+                  <label>
+                    <input type="radio" name="optionsRadios" id="optionsRadios1" value="option1">
+                    Use a previous recording
+                  </label>
                 </div>
-            </form>
+                <div class="radio">
+                  <label>
+                    <input type="radio" name="optionsRadios" id="optionsRadios2" value="option2">
+                    Use a new recording
+                  </label>
+                </div>
+                <div class="radio">
+                  <label>
+                    <input type="radio" name="optionsRadios" id="optionsRadios3" value="option3">
+                    Create the Test Plan from the beginning
+                  </label>
+                </div>
+            </div><!-- /.box-body -->
+            <div class="box-footer">
+            </div>
         </div><!-- /.box -->
     </div><!--/.col -->
 </div>

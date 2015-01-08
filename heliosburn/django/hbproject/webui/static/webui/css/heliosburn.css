@@ -33,3 +33,20 @@
 .bold {
     font-weight: bold !important;
 }
+
+/* Wizard */
+.navbar-wizard {
+    background-color: #1b1b1b !important;
+}
+
+.navbar-wizard .navbar-nav>.active>a {
+    color: #fff !important;
+    font-weight: bold !important;
+    background-color: #3f3f3f !important;
+}
+
+/* Margins */
+
+.lmargin10 {
+    margin-left: 10px;
+}
