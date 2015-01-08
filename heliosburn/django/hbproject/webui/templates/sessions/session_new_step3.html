@@ -5,7 +5,7 @@
 
         <div class="box box-solid">
             <!-- form start -->
-            <form role="form" method="post" action="?step=2">
+            <form role="form" method="post" action="{% url "session_execution" 1 %}">
                 {% csrf_token %}
                 <div class="box-body">
                     <div class="box-group" id="accordion">

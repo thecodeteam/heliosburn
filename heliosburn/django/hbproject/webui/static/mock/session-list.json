@@ -1,0 +1,57 @@
+[
+    {
+        "id": 1,
+        "name": "Session A",
+        "testplan":
+            {
+                "id": 12,
+                "name": "ViPR Test plan"
+            },
+        "executions": 42,
+        "latest_execution_at": "2014-02-12 03:34:51"
+    },
+    {
+        "id": 2,
+        "name": "ViPR Session 1",
+        "testplan":
+            {
+                "id": 12,
+                "name": "ViPR Test plan"
+            },
+        "executions": 634,
+        "latest_execution_at": "2014-02-12 03:34:51"
+    },
+    {
+        "id": 3,
+        "name": "ViPR Session 2",
+        "testplan":
+            {
+                "id": 12,
+                "name": "ViPR Test plan"
+            },
+        "executions": 341,
+        "latest_execution_at": "2014-02-12 03:34:51"
+    },
+    {
+        "id": 4,
+        "name": "Swift on-premise session",
+        "testplan":
+            {
+                "id": 12,
+                "name": "Swift Test plan"
+            },
+        "executions": 654,
+        "latest_execution_at": "2014-02-12 03:34:51"
+    },
+    {
+        "id": 5,
+        "name": "S3 America session",
+        "testplan":
+            {
+                "id": 12,
+                "name": "Amazon S3 Test plan"
+            },
+        "executions": 244,
+        "latest_execution_at": "2014-02-12 03:34:51"
+    }
+]

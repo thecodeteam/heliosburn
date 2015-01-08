@@ -1,0 +1,45 @@
+{
+    "id": 1,
+    "name": "Recording 1",
+    "description": "My recording bla bla bla...",
+    "created_at": "2014-02-12 03:34:51",
+    "duration": 343,
+    "traffic": [
+        {
+            "id": 23,
+            "method": "GET",
+            "url": "http://asdasdasd.com/ikdsf",
+            "date": "2014-02-12 03:34:51",
+            "response": {
+                "status_code": 200
+            }
+        },
+        {
+            "id": 43,
+            "method": "GET",
+            "url": "http://asdasdasd.com/ikdsf",
+            "date": "2014-02-12 03:34:51",
+            "response": {
+                "status_code": 200
+            }
+        },
+        {
+            "id": 54,
+            "method": "GET",
+            "url": "http://asdasdasd.com/ikdsf",
+            "date": "2014-02-12 03:34:51",
+            "response": {
+                "status_code": 500
+            }
+        },
+        {
+            "id": 87,
+            "method": "GET",
+            "url": "http://asdasdasd.com/ikdsf",
+            "date": "2014-02-12 03:34:51",
+            "response": {
+                "status_code": 200
+            }
+        }
+    ]
+}
