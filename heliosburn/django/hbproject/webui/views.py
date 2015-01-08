@@ -158,6 +158,29 @@ def session_details(request, id):
     return render(request, 'sessions/session_details.html', args)
 
 
+def session_execution(request, id):
+    session = {
+        'id': 1,
+        'name': 'Session A',
+        'description': 'My session bla bla bla bla',
+        'created_at': '2014-02-12 03:34:51',
+        'updated_at': '2014-02-12 03:34:51',
+        'testplan':
+            {
+                'id': 12,
+                'name': 'Amazon S3 Test Plan',
+                'description': 'My test plan for Amazon S3...',
+                'rules': 42,
+                'updated_at': '2014-02-12 03:34:51'
+            }
+        }
+
+    args = {}
+    args['session'] = session
+
+    return render(request, 'sessions/session_execution.html', args)
+
+
 def session_update(request):
     if not request.POST:
         return HttpResponseRedirect(reverse('session_list'))
