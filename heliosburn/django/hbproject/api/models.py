@@ -7,7 +7,6 @@ from sqlalchemy.ext.declarative import declarative_base
 
 Base = declarative_base()
 
-
 class User(Base):
     __tablename__ = "user"
 
@@ -210,3 +209,16 @@ class RecordingTraffic(Base):
     id = Column(Integer, primary_key=True)
     recording_id = Column(Integer, ForeignKey('recording.id'), nullable=False)
     http_request = Column(Integer, ForeignKey('http_request.id'), nullable=False)
+
+
+def init_db():
+    """Returns dbsession"""
+    from sqlalchemy import create_engine
+    from sqlalchemy.orm import scoped_session
+    from sqlalchemy.orm.session import sessionmaker
+
+    dbsession = scoped_session(sessionmaker())
+    engine = create_engine("postgresql://postgres:postgres@localhost/heliosburn")
+    dbsession.configure(bind=engine, autoflush=False, expire_on_commit=False)
+    return dbsession
+
