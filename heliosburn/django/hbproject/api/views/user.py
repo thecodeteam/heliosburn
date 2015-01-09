@@ -1,9 +1,11 @@
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from api import models
+from IPython.core.debugger import Tracer
 
 @csrf_exempt
 def rest(request):
+    Tracer()()
     if request.method == 'GET':
         return get(request, **request.GET)
     elif request.method == 'POST':
