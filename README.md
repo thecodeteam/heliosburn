@@ -11,7 +11,7 @@ Helios Burn can be deployed in a standalone server, in a Virtual Machine, or co-
 
 It implements a man-in-the-middle interception using self-signed certificates to be able to intercept and interpret HTTPS traffic.
 
-[Helios-Burn-Overview]: https://github.com/emccode/HeliosBurn/tree/master/docs/figures/Helios-Burn-Overview.png "Helios Burn Overview"
+![Helios-Burn-Overview](https://github.com/emccode/HeliosBurn/tree/master/docs/figures/Helios-Burn-Overview.png "Helios Burn Overview")
 
 In general terms, the traffic flow is as follows:
 
