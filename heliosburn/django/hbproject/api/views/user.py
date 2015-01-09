@@ -4,22 +4,41 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session
 from sqlalchemy.orm.session import sessionmaker
 from api import models
+import inspect
 
 from IPython.core.debugger import Tracer
+
 @csrf_exempt
 def rest(request):
+    """
+    Calls python function corresponding with HTTP METHOD name. 
+    Calls with incomplete arguments will return HTTP 400 with a description and argument list.
+    """
     if request.method == 'GET':
-        return get(request, **request.GET)
+        rest_function = get
     elif request.method == 'POST':
-        return post(request, **request.GET)
+        rest_function = post
     elif request.method == 'PUT':
-        return put(request, **request.GET)
+        rest_function = put
     elif request.method == 'DELETE':
-        return delete(request, **request.GET)
+        rest_function = delete
     else:
         return JsonResponse({"error": "HTTP METHOD UNKNOWN"})
 
+    # Call appropriate REST function, passing the conents of request.GET as keyword paremeters
+    # Calls that raise a TypeError will return a serialized description and arg list to the client
+    try:
+        return rest_function(request, **request.GET)
+    except TypeError:
+            required_arguments = inspect.getargspec(rest_function).args
+            required_arguments.remove('request') # Remove the request object, client doesn't need to see this
+            description = inspect.getdoc(rest_function)
+            r = JsonResponse({"description": description, "arguments": required_arguments})
+            r.status_code = 400 # 400 "BAD REQUEST"
+            return r
+
 def get(request, username):
+    """Retrieve a user."""
     dbsession = models.init_db()
     user = dbsession.query(models.User).filter_by(username=username[0]).first()
     if user is None:
@@ -39,6 +58,7 @@ def get(request, username):
 
 
 def post(request, username, email, password):
+    """Create a new user."""
     dbsession = models.init_db()
     user = dbsession.query(models.User).filter_by(username=username[0]).first()
     if user is not None:
@@ -59,6 +79,7 @@ def post(request, username, email, password):
 
 
 def put(request, username, email=None, password=None):
+    """Update existing user with matching username."""
     dbsession = models.init_db()
     user = dbsession.query(models.User).filter_by(username=username[0]).first()
     if user is None:
@@ -85,4 +106,5 @@ def put(request, username, email=None, password=None):
         
 
 def delete(request):
+    # TODO this call should (possibly) not be accessible to the user, do we want them to be able to delete themselves?
     return JsonResponse({__name__: request.method})
