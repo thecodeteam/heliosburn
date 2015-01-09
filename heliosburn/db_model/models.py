@@ -1,3 +1,4 @@
+### SQLAlchemy models, NOT django model definitions
 import datetime
 from sqlalchemy import Column, Integer, Boolean, String, ForeignKey, DateTime, UniqueConstraint
 from sqlalchemy.orm import relationship, backref
@@ -16,6 +17,7 @@ class User(Base):
     password = Column(String, nullable=False)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
     update_at = Column(DateTime, default=datetime.datetime.utcnow)
+    sessions = relationship("Session", backref="user")
 
 
 class HttpRequest(Base):
@@ -26,7 +28,7 @@ class HttpRequest(Base):
     http_protocol = Column(String, nullable=False)
     method = Column(String, nullable=False)
     url = Column(String, nullable=False)
-    response = Column(Integer, ForeignKey('http_response.id'), nullable=True)
+    response_id = Column(Integer, ForeignKey('http_response.id'), nullable=True)
 
 
 class HttpRequestHeaders(Base):
@@ -69,24 +71,38 @@ class Session(Base):
     id = Column(Integer, primary_key=True)
     name = Column(String, nullable=False)
     description = Column(String, default='')
-    test_plan = Column(Integer, ForeignKey('test_plan.id'))
-    user = Column(Integer, ForeignKey('user.id'), nullable=False)
+    testplan = relationship("TestPlan", uselist=False, backref="session")
+    testplan_id = Column(Integer, ForeignKey('testplan.id'), nullable=True)
+    user_id = Column(Integer, ForeignKey('user.id'), nullable=False)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.datetime.utcnow)
     started_at = Column(DateTime)
     stopped_at = Column(DateTime)
+    session_executions = relationship("SessionExecution", backref="session")
+
+
+class SessionExecution(Base):
+    __tablename__ = "session_execution"
+
+    id = Column(Integer, primary_key=True)
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+    started_at = Column(DateTime)
+    stopped_at = Column(DateTime)
+    session_id = Column(Integer, ForeignKey('session.id'), nullable=False)
+    session_traffic = relationship("SessionTraffic", backref="session_execution")
+    matches = relationship("Match", backref="session_execution")
 
 
 class SessionTraffic(Base):
     __tablename__ = "session_traffic"
 
     id = Column(Integer, primary_key=True)
-    session = Column(Integer, ForeignKey('session.id'), nullable=False)
-    http_request = Column(Integer, ForeignKey('http_request.id'), nullable=False)
+    session_execution_id = Column(Integer, ForeignKey('session_execution.id'), nullable=False)
+    http_request_id = Column(Integer, ForeignKey('http_request.id'), nullable=False)
 
 
 class TestPlan(Base):
-    __tablename__ = "test_plan"
+    __tablename__ = "testplan"
 
     id = Column(Integer, primary_key=True)
     name = Column(String, nullable=False)
@@ -96,7 +112,7 @@ class TestPlan(Base):
     latency_enabled = Column(Boolean, default=False)
     client_latency = Column(Integer)
     server_latency = Column(Integer)
-    rules = relationship("Rule", backref="test_plan")
+    rules = relationship("Rule", backref="testplan")
 
 
 class Rule(Base):
@@ -106,9 +122,9 @@ class Rule(Base):
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.datetime.utcnow)
     rule_type = Column(String, nullable=False)  # "request" or "response"
-    filters = relationship("Filter")
-    actions = relationship("Action")
-    test_plan = Column(Integer, ForeignKey('test_plan.id'), nullable=False)
+    filter = relationship("Filter", uselist=False, backref="rule")
+    action = relationship("Action", uselist=False, backref="rule")
+    testplan_id = Column(Integer, ForeignKey('testplan.id'), nullable=False)
 
 
 # TODO: Should we have a unified Filter table or 2 (request and response)?
@@ -120,14 +136,15 @@ class Filter(Base):
     status_code = Column(String)
     url = Column(String)
     protocol = Column(String)
-    rule = Column(Integer, ForeignKey('rule.id'), nullable=False)
+    rule_id = Column(Integer, ForeignKey('rule.id'), nullable=False)
+    filter_headers = relationship("FilterHeaders", backref="filter")
 
 
 class FilterHeaders(Base):
     __tablename__ = "filter_headers"
 
     id = Column(Integer, primary_key=True)
-    filter = Column(Integer, ForeignKey('filter.id'))
+    filter_id= Column(Integer, ForeignKey('filter.id'))
     header = Column(Integer, ForeignKey('http_header.id'))
 
 
@@ -136,7 +153,7 @@ class Action(Base):
 
     id = Column(Integer, primary_key=True)
     type = Column(String, nullable=False)  # "request" or "response"
-    rule = Column(Integer, ForeignKey('rule.id'), nullable=False)
+    rule_id = Column(Integer, ForeignKey('rule.id'), nullable=False)
 
 
 class ActionResponse(Action):
@@ -171,8 +188,8 @@ class Match(Base):
     __tablename__ = "match"
 
     id = Column(Integer, primary_key=True)
-    session = Column(Integer, ForeignKey('session.id'), nullable=False)
-    rule = Column(Integer, ForeignKey('rule.id'), nullable=False)
+    session_execution_id = Column(Integer, ForeignKey('session_execution.id'), nullable=False)
+    rule_id = Column(Integer, ForeignKey('rule.id'), nullable=False)
     http_request = Column(Integer, ForeignKey('http_request.id'), nullable=False)
 
 
@@ -184,11 +201,12 @@ class Recording(Base):
     description = Column(String, default='')
     user = Column(Integer, ForeignKey('user.id'), nullable=False)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
+    session_traffic = relationship("RecordingTraffic", backref="recording")
 
 
 class RecordingTraffic(Base):
     __tablename__ = "recording_traffic"
 
     id = Column(Integer, primary_key=True)
-    recording = Column(Integer, ForeignKey('recording.id'), nullable=False)
+    recording_id = Column(Integer, ForeignKey('recording.id'), nullable=False)
     http_request = Column(Integer, ForeignKey('http_request.id'), nullable=False)
