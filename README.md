@@ -13,6 +13,7 @@ It implements a man-in-the-middle interception using self-signed certificates to
 
 ![Helios-Burn-Overview](https://github.com/emccode/HeliosBurn/blob/master/docs/figures/Helios-Burn-Overview.png "Helios Burn Overview")
 
+
 In general terms, the traffic flow is as follows:
 
     The Helios Burn proxy gets requests from clients that are willing to access resources exposed by a REST application running on a web server (e.g. Amazon S3, OpenStack Swift, EMC Atmos, etc...).
