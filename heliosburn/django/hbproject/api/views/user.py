@@ -4,18 +4,45 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session
 from sqlalchemy.orm.session import sessionmaker
 from api import models
+import inspect
 
 from IPython.core.debugger import Tracer
+
 @csrf_exempt
 def rest(request):
+    """
+    Calls python function corresponding with HTTP METHOD name. 
+    Calls with incomplete arguments will return HTTP 400 with 'required_arguments' containing the spec.
+    """
+    Tracer()()
     if request.method == 'GET':
-        return get(request, **request.GET)
+        try:
+            return get(request, **request.GET)
+        except TypeError:
+            r = JsonResponse({"required_arguments": inspect.getargspec(get).args})
+            r.status_code = 400
+            return r
     elif request.method == 'POST':
-        return post(request, **request.GET)
+        try:
+            return post(request, **request.GET)
+        except TypeError:
+            r = JsonResponse({"required_arguments": inspect.getargspec(post).args})
+            r.status_code = 400
+            return r
     elif request.method == 'PUT':
-        return put(request, **request.GET)
+        try:
+            return put(request, **request.GET)
+        except TypeError:
+            r = JsonResponse({"required_arguments": inspect.getargspec(put).args})
+            r.status_code = 400
+            return r
     elif request.method == 'DELETE':
-        return delete(request, **request.GET)
+        try:
+            return put(request, **request.GET)
+        except TypeError:
+            r = JsonResponse({"required_arguments": inspect.getargspec(put).args})
+            r.status_code = 400
+            return r
     else:
         return JsonResponse({"error": "HTTP METHOD UNKNOWN"})
 
@@ -85,4 +112,5 @@ def put(request, username, email=None, password=None):
         
 
 def delete(request):
+    # TODO this call should (possibly) not be accessible to the user, do we want them to be able to delete themselves?
     return JsonResponse({__name__: request.method})
