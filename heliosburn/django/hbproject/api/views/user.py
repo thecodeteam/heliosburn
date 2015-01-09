@@ -12,41 +12,33 @@ from IPython.core.debugger import Tracer
 def rest(request):
     """
     Calls python function corresponding with HTTP METHOD name. 
-    Calls with incomplete arguments will return HTTP 400 with 'required_arguments' containing the spec.
+    Calls with incomplete arguments will return HTTP 400 with a description and argument list.
     """
-    Tracer()()
     if request.method == 'GET':
-        try:
-            return get(request, **request.GET)
-        except TypeError:
-            r = JsonResponse({"required_arguments": inspect.getargspec(get).args})
-            r.status_code = 400
-            return r
+        rest_function = get
     elif request.method == 'POST':
-        try:
-            return post(request, **request.GET)
-        except TypeError:
-            r = JsonResponse({"required_arguments": inspect.getargspec(post).args})
-            r.status_code = 400
-            return r
+        rest_function = post
     elif request.method == 'PUT':
-        try:
-            return put(request, **request.GET)
-        except TypeError:
-            r = JsonResponse({"required_arguments": inspect.getargspec(put).args})
-            r.status_code = 400
-            return r
+        rest_function = put
     elif request.method == 'DELETE':
-        try:
-            return put(request, **request.GET)
-        except TypeError:
-            r = JsonResponse({"required_arguments": inspect.getargspec(put).args})
-            r.status_code = 400
-            return r
+        rest_function = delete
     else:
         return JsonResponse({"error": "HTTP METHOD UNKNOWN"})
 
+    # Call appropriate REST function, passing the conents of request.GET as keyword paremeters
+    # Calls that raise a TypeError will return a serialized description and arg list to the client
+    try:
+        return rest_function(request, **request.GET)
+    except TypeError:
+            required_arguments = inspect.getargspec(rest_function).args
+            required_arguments.remove('request') # Remove the request object, client doesn't need to see this
+            description = inspect.getdoc(rest_function)
+            r = JsonResponse({"description": description, "arguments": required_arguments})
+            r.status_code = 400 # 400 "BAD REQUEST"
+            return r
+
 def get(request, username):
+    """Retrieve a user."""
     dbsession = models.init_db()
     user = dbsession.query(models.User).filter_by(username=username[0]).first()
     if user is None:
@@ -66,6 +58,7 @@ def get(request, username):
 
 
 def post(request, username, email, password):
+    """Create a new user."""
     dbsession = models.init_db()
     user = dbsession.query(models.User).filter_by(username=username[0]).first()
     if user is not None:
@@ -86,6 +79,7 @@ def post(request, username, email, password):
 
 
 def put(request, username, email=None, password=None):
+    """Update existing user with matching username."""
     dbsession = models.init_db()
     user = dbsession.query(models.User).filter_by(username=username[0]).first()
     if user is None:
