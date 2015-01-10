@@ -6,7 +6,7 @@ from sqlalchemy.orm.session import sessionmaker
 from api import models
 import inspect
 
-from IPython.core.debugger import Tracer
+#from IPython.core.debugger import Tracer
 
 @csrf_exempt
 def rest(request):
