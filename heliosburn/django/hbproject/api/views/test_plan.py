@@ -43,7 +43,7 @@ def get(request, name):
     return JsonResponse({"todo": "todo"})
 
 
-def post(request, name, description, testplan_id=None, user_id):
+def post(request, name, description, testplan_id, user_id):
     """Create a new test_plan."""
     #TODO
     return JsonResponse({"todo": "todo"})
