@@ -59,7 +59,7 @@ def get(request, name):
         return r
 
 
-def post(request, name, description, testplan_id=None, user_id):
+def post(request, name, description, testplan_id, user_id):
     """Create a new session."""
     dbsession = models.init_db()
     session = dbsession.query(models.Session).filter_by(name=name[0]).first()
