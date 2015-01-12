@@ -4,9 +4,9 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session
 from sqlalchemy.orm.session import sessionmaker
 from api import models
-import inspect
+import json
 
-#from IPython.core.debugger import Tracer
+from IPython.core.debugger import Tracer
 
 @csrf_exempt
 def rest(request, *pargs):
@@ -34,8 +34,9 @@ def rest(request, *pargs):
 
 def get(request, username):
     """Retrieve a user."""
+    Tracer()()
     dbsession = models.init_db()
-    user = dbsession.query(models.User).filter_by(username=username[0]).first()
+    user = dbsession.query(models.User).filter_by(username=username).first()
     if user is None:
         r = JsonResponse({"error": "user not found"})
         r.status_code = 404
@@ -52,16 +53,29 @@ def get(request, username):
         return r
 
 
-def post(request, username, email, password):
+def post(request):
     """Create a new user."""
+    Tracer()()
+    try:
+        in_json = json.loads(request.body)
+        new = {
+            'username': in_json['username'],
+            'email': in_json['email'],
+            'password': in_json['password'],
+            }
+    except Exception as e:
+        r = JsonResponse({"error": "required arguments missing"})
+        r.status_code = 400
+        return r
+
     dbsession = models.init_db()
-    user = dbsession.query(models.User).filter_by(username=username[0]).first()
+    user = dbsession.query(models.User).filter_by(username=new['username']).first()
     if user is not None:
         r = JsonResponse({"error": "user already exists"})
         r.status_code = 409
         return r
     else:
-        user = models.User(username=username[0], email=email[0], password=password[0])
+        user = models.User(username=new['username'], email=new['email'], password=new['email'])
         dbsession.add(user)
         dbsession.commit()
         user_dict = {

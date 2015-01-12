@@ -9,7 +9,7 @@ from api import models
 from IPython.core.debugger import Tracer
 
 @csrf_exempt
-def rest(request, *posargs):
+def rest(request, *pargs):
     """
     Calls python function corresponding with HTTP METHOD name. 
     Calls with incomplete arguments will return HTTP 400 with a description and argument list.
@@ -26,7 +26,7 @@ def rest(request, *posargs):
         return JsonResponse({"error": "HTTP METHOD UNKNOWN"})
 
     try:
-        return rest_function(request, *posargs)
+        return rest_function(request, *pargs)
     except TypeError:
             r = JsonResponse({"error": "argument mismatch"})
             r.status_code = 400 # 400 "BAD REQUEST"
@@ -64,8 +64,8 @@ def post(request):
             'testplan_id': None,
             }
         new.update(in_json)
-    except Exception as e:
-        r = JsonResponse({"error": "brain damanage"})
+    except Exception as e:  # TODO: 
+        r = JsonResponse({"error": "required arguments missing"})
         r.status_code = 400
         return r
 
