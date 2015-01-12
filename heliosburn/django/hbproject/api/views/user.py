@@ -9,7 +9,7 @@ import inspect
 #from IPython.core.debugger import Tracer
 
 @csrf_exempt
-def rest(request):
+def rest(request, *pargs):
     """
     Calls python function corresponding with HTTP METHOD name. 
     Calls with incomplete arguments will return HTTP 400 with a description and argument list.
@@ -25,15 +25,10 @@ def rest(request):
     else:
         return JsonResponse({"error": "HTTP METHOD UNKNOWN"})
 
-    # Call appropriate REST function, passing the conents of request.GET as keyword paremeters
-    # Calls that raise a TypeError will return a serialized description and arg list to the client
     try:
-        return rest_function(request, **request.GET)
+        return rest_function(request, *pargs)
     except TypeError:
-            required_arguments = inspect.getargspec(rest_function).args
-            required_arguments.remove('request') # Remove the request object, client doesn't need to see this
-            description = inspect.getdoc(rest_function)
-            r = JsonResponse({"description": description, "arguments": required_arguments})
+            r = JsonResponse({"error": "arguments mismatch"})
             r.status_code = 400 # 400 "BAD REQUEST"
             return r
 

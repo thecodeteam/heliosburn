@@ -3,13 +3,13 @@ from django.views.decorators.csrf import csrf_exempt
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session
 from sqlalchemy.orm.session import sessionmaker
+import json
 from api import models
-import inspect
 
-#from IPython.core.debugger import Tracer
+from IPython.core.debugger import Tracer
 
 @csrf_exempt
-def rest(request):
+def rest(request, *posargs):
     """
     Calls python function corresponding with HTTP METHOD name. 
     Calls with incomplete arguments will return HTTP 400 with a description and argument list.
@@ -25,24 +25,19 @@ def rest(request):
     else:
         return JsonResponse({"error": "HTTP METHOD UNKNOWN"})
 
-    # Call appropriate REST function, passing the conents of request.GET as keyword paremeters
-    # Calls that raise a TypeError will return a serialized description and arg list to the client
     try:
-        return rest_function(request, **request.GET)
+        return rest_function(request, *posargs)
     except TypeError:
-            required_arguments = inspect.getargspec(rest_function).args
-            required_arguments.remove('request') # Remove the request object, client doesn't need to see this
-            description = inspect.getdoc(rest_function)
-            r = JsonResponse({"description": description, "arguments": required_arguments})
+            r = JsonResponse({"error": "argument mismatch"})
             r.status_code = 400 # 400 "BAD REQUEST"
             return r
 
-def get(request, name):
+def get(request, session_id):
     """Retrieve a session."""
     dbsession = models.init_db()
-    session = dbsession.query(models.Session).filter_by(name=name[0]).first()
+    session = dbsession.query(models.Session).filter_by(id=session_id).first()
     if session is None:
-        r = JsonResponse({"error": "session not found"})
+        r = JsonResponse({"error": "session id '%s' not found" % session_id})
         r.status_code = 404
         return r
     else:
@@ -59,18 +54,29 @@ def get(request, name):
         return r
 
 
-def post(request, name, description, testplan_id, user_id):
+def post(request):
     """Create a new session."""
+    Tracer()()
+    try:
+        in_json = json.loads(request.body)
+        new = {
+            'description': '',
+            'testplan_id': None,
+            }
+        new.update(in_json)
+    except Exception as e:
+        r = JsonResponse({"error": "brain damanage"})
+        r.status_code = 400
+        return r
+
     dbsession = models.init_db()
-    session = dbsession.query(models.Session).filter_by(name=name[0]).first()
+    session = dbsession.query(models.Session).filter_by(name=new['name']).first()
     if session is not None:
         r = JsonResponse({"error": "session(name) already exists"})
         r.status_code = 409
         return r
     else:
-        if testplan_id is None:
-            testplan_id = [None]
-        session = models.Session(name=name[0], description=[0], testplan_id=testplan_id[0], user_id=user_id[0])
+        session = models.Session(name=new['name'], description=new['description'], testplan_id=new['testplan_id'], user_id=new['user_id'])
         dbsession.add(session)
         dbsession.commit()
         session_dict = {
