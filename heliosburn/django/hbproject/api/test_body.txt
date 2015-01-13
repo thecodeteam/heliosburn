@@ -1,5 +1,6 @@
 {
-    "username": "user4449",
-    "email": "user49@somewhere.com",
-    "password": "i have been modified"
+    "user_id": 2,
+    "name": "session 1",
+    "description": "description text",
+    "testPlan": { "id": 1 }
 }

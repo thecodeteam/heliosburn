@@ -76,14 +76,16 @@ def get_all_users(request):
 def post(request):
     """Create a new user."""
     try:
-        in_json = json.loads(request.body)
-        new = {
-            'username': in_json['username'],
-            'email': in_json['email'],
-            'password': in_json['password'],
-            }
-    except Exception as e:
-        r = JsonResponse({"error": "required arguments missing"})
+        new = json.loads(request.body)
+        assert "username" in new
+        assert "password" in new
+        assert "email" in new
+    except AssertionError:
+        r = JsonResponse({"error": "argument mismatch"})
+        r.status_code = 400
+        return r
+    except ValueError:
+        r = JsonResponse({"error": "invalid JSON"})
         r.status_code = 400
         return r
 
@@ -106,13 +108,12 @@ def post(request):
         return r
 
 
-def put(request):
+def put(request, username):
     """Update existing user with matching username."""
     try:
         in_json = json.loads(request.body)
-        username = in_json['username']
-    except Exception as e:
-        r = JsonResponse({"error": "required arguments missing"})
+    except ValueError:
+        r = JsonResponse({"error": "invalid JSON"})
         r.status_code = 400
         return r
 

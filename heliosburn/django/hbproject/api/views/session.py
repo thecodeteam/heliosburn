@@ -32,8 +32,10 @@ def rest(request, *pargs):
             r.status_code = 400 # 400 "BAD REQUEST"
             return r
 
-def get(request, session_id):
+def get(request, session_id=None):
     """Retrieve a session."""
+    if session_id is None:
+        return get_all_sessions(request)
     dbsession = models.init_db()
     session = dbsession.query(models.Session).filter_by(id=session_id).first()
     if session is None:
@@ -43,7 +45,7 @@ def get(request, session_id):
     else:
         session_dict = {
             'name': session.name,
-            'desceription': session.description,
+            'description': session.description,
             'created_at': session.created_at,
             'updated_at': session.updated_at,
             'started_at': session.started_at,
@@ -54,39 +56,57 @@ def get(request, session_id):
         return r
 
 
+def get_all_sessions(request):
+    """Retrieves all sessions."""
+    dbsession = models.init_db()
+    all_sessions = dbsession.query(models.Session).all()
+    session_list = list()
+    for session in all_sessions:
+        session_dict = {
+            'name': session.name,
+            'description': session.description,
+            'created_at': session.created_at,
+            'updated_at': session.updated_at,
+            'started_at': session.started_at,
+            'stopped_at': session.stopped_at,
+            }
+        session_list.append(session_dict)
+    r = JsonResponse({"sessions": session_list})
+    r.status_code = 200
+    return r
+
+
 def post(request):
     """Create a new session."""
     Tracer()()
     try:
-        in_json = json.loads(request.body)
-        new = {
-            'description': '',
-            'testplan_id': None,
-            }
-        new.update(in_json)
-    except Exception as e:  # TODO: 
-        r = JsonResponse({"error": "required arguments missing"})
+        new = json.loads(request.body)
+        assert "name" in new
+        assert "user_id" in new
+        assert "description" in new
+        assert "testPlan" in new
+        assert "id" in new['testPlan']
+    except AssertionError:
+        r = JsonResponse({"error": "argument mismatch"})
+        r.status_code = 400
+        return r
+    except ValueError:
+        r = JsonResponse({"error": "invalid JSON"})
         r.status_code = 400
         return r
 
     dbsession = models.init_db()
     session = dbsession.query(models.Session).filter_by(name=new['name']).first()
     if session is not None:
-        r = JsonResponse({"error": "session(name) already exists"})
+        r = JsonResponse({"error": "session name already exists"})
         r.status_code = 409
         return r
     else:
-        session = models.Session(name=new['name'], description=new['description'], testplan_id=new['testplan_id'], user_id=new['user_id'])
+        session = models.Session(name=new['name'], description=new['description'], testplan_id=new['testPlan']['id'], user_id=new['user_id'])
         dbsession.add(session)
         dbsession.commit()
-        session_dict = {
-            'name': session.name,
-            'description': session.description,
-            'testplan_id': session.testplan_id,
-            'user_id': session.user_id,
-            }
-        r = JsonResponse(session_dict)
-        r.status_code = 200
+        r = JsonResponse({})
+        r.status_code = 204
         return r
 
 
