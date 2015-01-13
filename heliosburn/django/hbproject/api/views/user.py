@@ -32,9 +32,11 @@ def rest(request, *pargs):
             r.status_code = 400 # 400 "BAD REQUEST"
             return r
 
-def get(request, username):
+def get(request, username=None):
     """Retrieve a user."""
-    Tracer()()
+    if username is None:  # Retrieve all users
+        return get_all_users(request)
+
     dbsession = models.init_db()
     user = dbsession.query(models.User).filter_by(username=username).first()
     if user is None:
@@ -53,9 +55,26 @@ def get(request, username):
         return r
 
 
+def get_all_users(request):
+    """Retrieves all users."""
+    Tracer()()
+    dbsession = models.init_db()
+    all_users = dbsession.query(models.User).all()
+    user_list = list()
+    for user in all_users:
+        user_list.append({
+            'username': user.username,
+            'email': user.email,
+            'created_at': user.created_at,
+            'update_at': user.update_at,
+            })
+    r = JsonResponse({"users": user_list})
+    r.status_code = 200
+    return r
+
+
 def post(request):
     """Create a new user."""
-    Tracer()()
     try:
         in_json = json.loads(request.body)
         new = {
@@ -75,7 +94,7 @@ def post(request):
         r.status_code = 409
         return r
     else:
-        user = models.User(username=new['username'], email=new['email'], password=new['email'])
+        user = models.User(username=new['username'], email=new['email'], password=new['password'])
         dbsession.add(user)
         dbsession.commit()
         user_dict = {
@@ -87,19 +106,27 @@ def post(request):
         return r
 
 
-def put(request, username, email=None, password=None):
+def put(request):
     """Update existing user with matching username."""
+    try:
+        in_json = json.loads(request.body)
+        username = in_json['username']
+    except Exception as e:
+        r = JsonResponse({"error": "required arguments missing"})
+        r.status_code = 400
+        return r
+
     dbsession = models.init_db()
-    user = dbsession.query(models.User).filter_by(username=username[0]).first()
+    user = dbsession.query(models.User).filter_by(username=username).first()
     if user is None:
         r = JsonResponse({"error": "user not found"})
         r.status_code = 404
         return r
     else:
-        if email is not None:
-            user.email = email[0]
-        elif password is not None:
-            user.password = password[0]
+        if 'email' in in_json:
+            user.email = in_json['email']
+        if 'password' in in_json:
+            user.password = in_json['password']
         import datetime
         user.update_at = datetime.datetime.now()
         dbsession.commit()
@@ -114,6 +141,17 @@ def put(request, username, email=None, password=None):
         return r
         
 
-def delete(request):
-    # TODO this call should (possibly) not be accessible to the user, do we want them to be able to delete themselves?
-    return JsonResponse({__name__: request.method})
+def delete(request, username):
+    """Delete existing user matching username."""
+    dbsession = models.init_db()
+    user = dbsession.query(models.User).filter_by(username=username).first()
+    if user is None:
+        r = JsonResponse({"error": "user not found"})
+        r.status_code = 404
+        return r
+    else:
+        dbsession.delete(user)
+        dbsession.commit()
+        r = JsonResponse({})
+        r.status_code = 204
+        return r
