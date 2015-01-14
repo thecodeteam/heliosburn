@@ -36,21 +36,37 @@ def get(request, session_id=None):
     """Retrieve a session."""
     if session_id is None:
         return get_all_sessions(request)
-    dbsession = models.init_db()
-    session = dbsession.query(models.Session).filter_by(id=session_id).first()
-    if session is None:
-        r = JsonResponse({"error": "session id '%s' not found" % session_id})
+    conn, cur = models.init_db_pg2()
+    cur.execute("""
+        SELECT s.*, u.id AS user__id, u.username AS user__username, u.email AS user__email, u.created_at AS user__created_at, u.update_at AS user__update_at 
+        FROM public.session AS s
+        INNER JOIN public.user AS u ON(s.user_id=u.id)
+        WHERE s.id=%s
+        LIMIT 1
+    """, (session_id,))
+
+    if cur.rowcount < 1:
+        r = JsonResponse({"error": "session_id %s not found" % session_id})
         r.status_code = 404
         return r
     else:
+        session = cur.fetchone()
         session_dict = {
-            'name': session.name,
-            'description': session.description,
-            'created_at': session.created_at,
-            'updated_at': session.updated_at,
-            'started_at': session.started_at,
-            'stopped_at': session.stopped_at,
-            }
+            'id': session['id'],
+            'name': session['name'],
+            'description': session['description'],
+            'user': {
+                        'id': session['user__id'],
+                        'username': session['user__username'],
+                        'email': session['user__email'],
+                        'created_at': session['user__created_at'],
+                        'update_at': session['user__update_at'],
+                    },
+             'created_at': session['created_at'],
+             'updated_at': session['updated_at'],
+             'started_at': session['started_at'],
+             'stopped_at': session['stopped_at'],
+             }
         r = JsonResponse(session_dict)
         r.status_code = 200
         return r
@@ -58,19 +74,30 @@ def get(request, session_id=None):
 
 def get_all_sessions(request):
     """Retrieves all sessions."""
-    dbsession = models.init_db()
-    all_sessions = dbsession.query(models.Session).all()
+    conn, cur = models.init_db_pg2()
+    cur.execute("""
+        SELECT s.*, u.id AS user__id, u.username AS user__username, u.email AS user__email, u.created_at AS user__created_at, u.update_at AS user__update_at 
+        FROM public.session AS s
+        INNER JOIN public.user AS u ON(s.user_id=u.id)
+    """)
     session_list = list()
-    for session in all_sessions:
-        session_dict = {
-            'name': session.name,
-            'description': session.description,
-            'created_at': session.created_at,
-            'updated_at': session.updated_at,
-            'started_at': session.started_at,
-            'stopped_at': session.stopped_at,
-            }
-        session_list.append(session_dict)
+    for session in cur.fetchall():
+        session_list.append({
+            'id': session['id'],
+            'name': session['name'],
+            'description': session['description'],
+            'user': {
+                        'id': session['user__id'],
+                        'username': session['user__username'],
+                        'email': session['user__email'],
+                        'created_at': session['user__created_at'],
+                        'update_at': session['user__update_at'],
+                    },
+             'created_at': session['created_at'],
+             'updated_at': session['updated_at'],
+             'started_at': session['started_at'],
+             'stopped_at': session['stopped_at'],
+            })
     r = JsonResponse({"sessions": session_list})
     r.status_code = 200
     return r
@@ -95,20 +122,21 @@ def post(request):
         r.status_code = 400
         return r
 
-    dbsession = models.init_db()
-    session = dbsession.query(models.Session).filter_by(name=new['name']).first()
-    if session is not None:
-        r = JsonResponse({"error": "session name already exists"})
-        r.status_code = 409
-        return r
-    else:
-        session = models.Session(name=new['name'], description=new['description'], testplan_id=new['testPlan']['id'], user_id=new['user_id'])
-        dbsession.add(session)
-        dbsession.commit()
+    conn, cur = models.init_db_pg2()
+    try:
+        from psycopg2 import IntegrityError
+        cur.execute("""
+            INSERT INTO session(name, description, testplan_id, user_id)
+            VALUES(%s,%s,%s,%s)
+        """, (new['name'], new['description'], new['testPlan']['id'], new['user_id']))
         r = JsonResponse({})
         r.status_code = 204
         return r
-
+    except IntegrityError as e:
+        r = JsonResponse({"error": "session could not be created(%s)" % e})
+        r.status_code = 409
+        return r
+    
 
 def put(request):
     """Update existing session."""

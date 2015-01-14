@@ -1,6 +1,6 @@
 {
-    "user_id": 2,
-    "name": "session 1",
+    "user_id": 99,
+    "name": "session 2",
     "description": "description text",
     "testPlan": { "id": 1 }
 }
