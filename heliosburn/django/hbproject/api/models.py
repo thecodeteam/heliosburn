@@ -222,3 +222,12 @@ def init_db():
     dbsession.configure(bind=engine, autoflush=False, expire_on_commit=False)
     return dbsession
 
+
+def init_db_pg2():
+    """Returns connection and cursor objects for psycopg2"""
+    import psycopg2
+    import psycopg2.extras
+    conn = psycopg2.connect(dbname='heliosburn', user='postgres', host='127.0.0.1', cursor_factory=psycopg2.extras.DictCursor)
+    conn.autocommit = True
+    cursor = conn.cursor()
+    return conn, cursor
