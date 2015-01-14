@@ -63,7 +63,19 @@
                 return res;
             }
 
-            var interactive_plot = $.plot("#interactive", [getRandomData()], {
+            function getEmptyData(){
+                while (data.length < totalPoints) {
+                    data.push(0);
+                }
+
+                var res = [];
+                for (var i = 0; i < totalPoints; ++i) {
+                    res.push([i, data[i]]);
+                }
+                return res;
+            }
+
+            var interactive_plot = $.plot("#interactive", [getEmptyData()], {
                 grid: {
                     borderColor: "#f3f3f3",
                     borderWidth: 1,
