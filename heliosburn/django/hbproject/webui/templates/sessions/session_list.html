@@ -103,7 +103,7 @@
                                             <td>{{ session.id }}</td>
                                             <td>{{ session.name }}</td>
                                             <td><a href="{% url "session_details" session.id %}">{{ session.name }}</a></td>
-                                            <td><a href="{% url "testplan_details" session.testplan.id %}">{{ session.testplan.name }}</a></td>
+                                            <td><a href="{% url "testplan_details" session.testPlan.id %}">{{ session.testPlan.name }}</a></td>
                                             <td>{{ session.latest_execution_at }}</td>
                                             <td>{{ session.executions }}</td>
                                         </tr>
