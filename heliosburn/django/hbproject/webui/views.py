@@ -5,6 +5,7 @@ from django.contrib.staticfiles.templatetags.staticfiles import static
 import requests
 import json
 import random
+import datetime
 
 
 MOCK_PROTOCOL = "http"
@@ -19,16 +20,56 @@ def signin(request):
 
 
 def dashboard(request):
-    return render(request, 'dashboard.html')
+    args = {}
+    args['maxRequests'] = 20
+
+    return render(request, 'dashboard.html', args)
 
 
 def ajax_traffic(request):
-    r = {'count': random.randint(0, 100)}
-    return JsonResponse(r)
+    methods = ['GET', 'PUT', 'DELETE', 'POST']
+    statuses = [('200', 'OK'),
+                ('204', 'No Content'),
+                ('404', 'Not Found'),
+                ('201', 'Created'),
+                ('500', 'Internal Server Error')]
+    urls = [
+        'http://example.com/api/resource1/ob543',
+        'http://example.com/api/account3/',
+        'http://example.com/api/acco955/mycontainer0092',
+        'http://example.com/api/acco955/mycontainer5/file.txt',
+        'http://example.com/api/myacc/asdfg/dfofdg.mp3',
+        'http://example.com/api/testaccount/testcontainer/helios.zip',
+        'http://example.com/api/default_account/default_container'
+    ]
+    now = datetime.datetime.now()
+    now.strftime('%Y-%m-%d %H:%M:%S')
+
+    data = {}
+    data['count'] = random.randint(0, 3)
+    data['more'] = False
+    data['requests'] = []
+
+    for i in range(data['count']):
+        request = {}
+        request['id'] = i
+        request['createdAt'] = now.strftime('%Y-%m-%d %H:%M:%S')
+        request['httpProtocol'] = "HTTP/1.1"
+        request['method'] = random.choice(methods)
+        request['url'] = random.choice(urls)
+        request['response'] = {}
+        request['response']['id'] = i
+        request['response']['createdAt'] = now.strftime('%Y-%m-%d %H:%M:%S')
+        request['response']['httpProtocol'] = "HTTP/1.1"
+        status = random.choice(statuses)
+        request['response']['statusCode'] = status[0]
+        request['response']['statusDescription'] = status[1]
+        data['requests'].append(request)
+
+    return JsonResponse(data)
 
 
 def session_new(request):
-
     step = request.GET.get('step')
     if step not in WIZARD_STEPS:
         step = '1'
@@ -43,7 +84,6 @@ def session_new(request):
 
 
 def session_list(request):
-
     url = get_mock_url('session-list.json')
     r = requests.get(url)
     sessions = json.loads(r.text)

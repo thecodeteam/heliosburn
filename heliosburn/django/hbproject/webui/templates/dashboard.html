@@ -32,29 +32,45 @@
 
             // Traffic table
             var t = $('#example1').DataTable({
-                "scrollY": "200px",
+                // "scrollY": "200px",
                 "deferRender": true,
                 "paging": false,
                 "dom": "frtiS",
-                "order": [[ 0, "desc" ]]
+                "order": [[ 0, "desc" ]],
+                "columnDefs": [
+                    {
+                        "targets": [ 0 ],
+                        "visible": false
+                    },
+                    {
+                        "targets": [ 1, 2, 3, 4 ],
+                        "bSortable": false
+                    }
+                ],
+                "bFilter": false,
+                //"bSort" : false,
+                "bInfo" : false
             });
             var counter = 1;
-            var maxRows = 10;
+            var maxRows = {{ maxRequests }};
 
-            function addRow(){
+            function addRow(requests){
 
-                while(t.rows()[0].length >= maxRows){
+                while(t.rows()[0].length > maxRows - requests.length){
                     t.row(0).remove();
                 }
 
-                t.row.add( [
-                    counter,
-                    'GET',
-                    'http://example.com/api/resource1',
-                    '404 Not Found'
-                ] ).draw();
+                for (var i = 0; i < requests.length; i++) {
+                    t.row.add( [
+                        counter,
+                        requests[i].createdAt,
+                        requests[i].method,
+                        requests[i].url,
+                        requests[i].response.statusCode + " " + requests[i].response.statusDescription
+                    ] ).draw();
 
-                counter++;
+                    counter++;
+                }
             }
 
             /*
@@ -77,7 +93,7 @@
 
             function onDataReceived(json) {
 
-                addRow();
+                addRow(json.requests);
 
                 var new_value = json.count;
                 data = data.slice(1);
@@ -125,7 +141,7 @@
                 },
                 yaxis: {
                     min: 0,
-                    max: 100,
+                    max: 10,
                     show: true
                 },
                 xaxis: {
@@ -292,9 +308,9 @@
             </div><!-- /.box-body-->
         </div>
 
-        <div class="box">
+        <div class="box box-primary">
             <div class="box-header">
-                <h3 class="box-title">Requests</h3>
+                <h3 class="box-title">Latest {{ maxRequests }} requests</h3>
             </div><!-- /.box-header -->
             <div class="box-body table-responsive">
                 <div class="row">
@@ -302,6 +318,7 @@
                         <table id="example1" class="table table-bordered table-striped">
                             <thead>
                                 <tr>
+                                    <th>ID</th>
                                     <th>Date</th>
                                     <th>Method</th>
                                     <th>URL</th>
@@ -310,6 +327,7 @@
                             </thead>
                             <tfoot>
                                 <tr>
+                                    <th>ID</th>
                                     <th>Date</th>
                                     <th>Method</th>
                                     <th>URL</th>
