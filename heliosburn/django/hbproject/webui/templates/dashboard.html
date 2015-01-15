@@ -1,0 +1,349 @@
+{% extends 'base.html' %}
+
+{% load staticfiles %}
+{% load django_bootstrap_breadcrumbs %}
+
+{% block title %}Dashboard{% endblock %}
+{% block content_header %}Dashboard{% endblock %}
+{% block content_subheader %}Control panel{% endblock %}
+
+{% block breadcrumbs %}
+    {{ block.super }}
+    {% breadcrumb "Dashboard" "dashboard" %}
+{% endblock %}
+
+{% block styles %}
+    <!-- DATA TABLES -->
+    <link href="{% static 'webui/css/datatables/dataTables.bootstrap.css' %}" rel="stylesheet" type="text/css" />
+{% endblock %}
+
+{% block scripts %}
+    <!-- DATA TABES SCRIPT -->
+    <script src="{% static 'webui/js/plugins/datatables/jquery.dataTables.min.js' %}" type="text/javascript"></script>
+    <script src="{% static 'webui/js/plugins/datatables/dataTables.bootstrap.js' %}" type="text/javascript"></script>
+    <!-- Flot charts -->
+    <script src="{% static 'webui/js/plugins/flot/jquery.flot.min.js' %}" type="text/javascript"></script>
+    <!-- FLOT RESIZE PLUGIN - allows the chart to redraw when the window is resized -->
+    <script src="{% static 'webui/js/plugins/flot/jquery.flot.resize.min.js' %}" type="text/javascript"></script>
+
+    <script type="text/javascript">
+
+        $(document).ready(function() {
+
+            // Traffic table
+            var t = $('#example1').DataTable({
+                // "scrollY": "200px",
+                "deferRender": true,
+                "paging": false,
+                "dom": "frtiS",
+                "order": [[ 0, "desc" ]],
+                "columnDefs": [
+                    {
+                        "targets": [ 0 ],
+                        "visible": false
+                    },
+                    {
+                        "targets": [ 1, 2, 3, 4 ],
+                        "bSortable": false
+                    }
+                ],
+                "bFilter": false,
+                //"bSort" : false,
+                "bInfo" : false
+            });
+            var counter = 1;
+            var maxRows = {{ maxRequests }};
+
+            function addRow(requests){
+
+                while(t.rows()[0].length > maxRows - requests.length){
+                    t.row(0).remove();
+                }
+
+                for (var i = 0; i < requests.length; i++) {
+                    t.row.add( [
+                        counter,
+                        requests[i].createdAt,
+                        requests[i].method,
+                        requests[i].url,
+                        requests[i].response.statusCode + " " + requests[i].response.statusDescription
+                    ] ).draw();
+
+                    counter++;
+                }
+            }
+
+            /*
+             * Flot Interactive Chart
+             * -----------------------
+             */
+            // We use an inline data source in the example, usually data would
+            // be fetched from a server
+            var data = [], totalPoints = 100;
+
+            function fetchData() {
+
+                $.ajax({
+					url: "{% url "ajax_traffic" %}",
+					type: "GET",
+					dataType: "json",
+					success: onDataReceived
+				});
+            };
+
+            function onDataReceived(json) {
+
+                addRow(json.requests);
+
+                var new_value = json.count;
+                data = data.slice(1);
+                data.push(new_value);
+
+                // Zip the generated y values with the x values
+                var res = [];
+                for (var i = 0; i < data.length; ++i) {
+                    res.push([i, data[i]]);
+                }
+
+                interactive_plot.setData([res]);
+
+                // Since the axes don't change, we don't need to call plot.setupGrid()
+                interactive_plot.draw();
+                if (realtime === "on")
+                    setTimeout(fetchData, updateInterval);
+            };
+
+            function getEmptyData(){
+                while (data.length < totalPoints) {
+                    data.push(0);
+                }
+
+                var res = [];
+                for (var i = 0; i < totalPoints; ++i) {
+                    res.push([i, data[i]]);
+                }
+                return res;
+            }
+
+            var interactive_plot = $.plot("#interactive", [getEmptyData()], {
+                grid: {
+                    borderColor: "#f3f3f3",
+                    borderWidth: 1,
+                    tickColor: "#f3f3f3"
+                },
+                series: {
+                    shadowSize: 0, // Drawing is faster without shadows
+                    color: "#3c8dbc"
+                },
+                lines: {
+                    fill: true, //Converts the line chart to area chart
+                    color: "#3c8dbc"
+                },
+                yaxis: {
+                    min: 0,
+                    max: 10,
+                    show: true
+                },
+                xaxis: {
+                    show: true
+                }
+            });
+
+            var updateInterval = 1000; //Fetch data ever x milliseconds
+            var realtime = "on"; //If == to on then fetch data every x seconds. else stop fetching
+
+
+            //INITIALIZE REALTIME DATA FETCHING
+            if (realtime === "on") {
+                fetchData();
+            }
+            //REALTIME TOGGLE
+            $("#realtime .btn").click(function() {
+                if ($(this).data("toggle") === "on") {
+                    realtime = "on";
+                }
+                else {
+                    realtime = "off";
+                }
+                fetchData();
+            });
+            /*
+             * END INTERACTIVE CHART
+             */
+
+        });
+
+    </script>
+
+{% endblock %}
+
+
+{% block content %}
+<!-- Small boxes (Stat box) -->
+<div class="row">
+    <div class="col-lg-3 col-xs-6">
+        <!-- small box -->
+        <div class="small-box bg-aqua">
+            <div class="inner">
+                <h3>
+                    150
+                </h3>
+                <p>
+                    Sessions
+                </p>
+            </div>
+            <div class="icon">
+                <i class="ion ion-speedometer"></i>
+            </div>
+            <a href="{% url "session_list" %}" class="small-box-footer">
+                More info <i class="fa fa-arrow-circle-right"></i>
+            </a>
+        </div>
+    </div><!-- ./col -->
+    <div class="col-lg-3 col-xs-6">
+        <!-- small box -->
+        <div class="small-box bg-green">
+            <div class="inner">
+                <h3>
+                    53
+                </h3>
+                <p>
+                    Test Plans
+                </p>
+            </div>
+            <div class="icon">
+                <i class="ion ion-compose"></i>
+            </div>
+            <a href="{% url "testplan_list" %}" class="small-box-footer">
+                More info <i class="fa fa-arrow-circle-right"></i>
+            </a>
+        </div>
+    </div><!-- ./col -->
+    <div class="col-lg-3 col-xs-6">
+        <!-- small box -->
+        <div class="small-box bg-yellow">
+            <div class="inner">
+                <h3>
+                    44
+                </h3>
+                <p>
+                    Users
+                </p>
+            </div>
+            <div class="icon">
+                <i class="ion ion-person-stalker"></i>
+            </div>
+            <a href="#" class="small-box-footer">
+                More info <i class="fa fa-arrow-circle-right"></i>
+            </a>
+        </div>
+    </div><!-- ./col -->
+    <div class="col-lg-3 col-xs-6">
+        <!-- small box -->
+        <div class="small-box bg-red">
+            <div class="inner">
+                <h3>
+                    65
+                </h3>
+                <p>
+                    Recordings
+                </p>
+            </div>
+            <div class="icon">
+                <i class="ion ion-record"></i>
+            </div>
+            <a href="{% url "recording_list" %}" class="small-box-footer">
+                More info <i class="fa fa-arrow-circle-right"></i>
+            </a>
+        </div>
+    </div><!-- ./col -->
+</div><!-- /.row -->
+
+<!-- Main row -->
+<div class="row">
+    <!-- Left col -->
+    <section class="col-xs-12 connectedSortable">
+
+
+        <div class="box box-primary">
+            <div class="box-header">
+                <i class="fa fa-bar-chart-o"></i>
+                <h3 class="box-title">HeliosBurn traffic</h3>
+                <div class="box-tools pull-right">
+                    Real time
+                    <div class="btn-group" id="realtime" data-toggle="btn-toggle">
+                        <button type="button" class="btn btn-default btn-xs active" data-toggle="on">On</button>
+                        <button type="button" class="btn btn-default btn-xs" data-toggle="off">Off</button>
+                    </div>
+                </div>
+            </div>
+            <div class="box-body">
+                <div id="interactive" style="height: 300px; padding: 0px; position: relative;">
+                    <canvas class="flot-base" width="1345" height="300" style="direction: ltr; position: absolute; left: 0px; top: 0px; width: 1345px; height: 300px;"></canvas>
+                    <div class="flot-text" style="position: absolute; top: 0px; left: 0px; bottom: 0px; right: 0px; font-size: smaller; color: rgb(84, 84, 84);">
+                        <div class="flot-x-axis flot-x1-axis xAxis x1Axis" style="position: absolute; top: 0px; left: 0px; bottom: 0px; right: 0px; display: block;">
+                            <div class="flot-tick-label tickLabel" style="position: absolute; max-width: 122px; top: 282px; left: 21px; text-align: center;">0</div>
+                            <div class="flot-tick-label tickLabel" style="position: absolute; max-width: 122px; top: 282px; left: 151px; text-align: center;">10</div>
+                            <div class="flot-tick-label tickLabel" style="position: absolute; max-width: 122px; top: 282px; left: 283px; text-align: center;">20</div>
+                            <div class="flot-tick-label tickLabel" style="position: absolute; max-width: 122px; top: 282px; left: 416px; text-align: center;">30</div>
+                            <div class="flot-tick-label tickLabel" style="position: absolute; max-width: 122px; top: 282px; left: 549px; text-align: center;">40</div>
+                            <div class="flot-tick-label tickLabel" style="position: absolute; max-width: 122px; top: 282px; left: 681px; text-align: center;">50</div>
+                            <div class="flot-tick-label tickLabel" style="position: absolute; max-width: 122px; top: 282px; left: 814px; text-align: center;">60</div>
+                            <div class="flot-tick-label tickLabel" style="position: absolute; max-width: 122px; top: 282px; left: 946px; text-align: center;">70</div>
+                            <div class="flot-tick-label tickLabel" style="position: absolute; max-width: 122px; top: 282px; left: 1079px; text-align: center;">80</div>
+                            <div class="flot-tick-label tickLabel" style="position: absolute; max-width: 122px; top: 282px; left: 1212px; text-align: center;">90</div>
+                        </div>
+                        <div class="flot-y-axis flot-y1-axis yAxis y1Axis" style="position: absolute; top: 0px; left: 0px; bottom: 0px; right: 0px; display: block;">
+                            <div class="flot-tick-label tickLabel" style="position: absolute; top: 269px; left: 13px; text-align: right;">0</div>
+                            <div class="flot-tick-label tickLabel" style="position: absolute; top: 215px; left: 7px; text-align: right;">20</div>
+                            <div class="flot-tick-label tickLabel" style="position: absolute; top: 161px; left: 7px; text-align: right;">40</div>
+                            <div class="flot-tick-label tickLabel" style="position: absolute; top: 108px; left: 7px; text-align: right;">60</div>
+                            <div class="flot-tick-label tickLabel" style="position: absolute; top: 54px; left: 7px; text-align: right;">80</div>
+                            <div class="flot-tick-label tickLabel" style="position: absolute; top: 1px; left: 1px; text-align: right;">100</div>
+                        </div>
+                    </div>
+                    <canvas class="flot-overlay" width="1345" height="300" style="direction: ltr; position: absolute; left: 0px; top: 0px; width: 1345px; height: 300px;">
+                    </canvas>
+                </div>
+            </div><!-- /.box-body-->
+        </div>
+
+        <div class="box box-primary">
+            <div class="box-header">
+                <h3 class="box-title">Latest {{ maxRequests }} requests</h3>
+            </div><!-- /.box-header -->
+            <div class="box-body table-responsive">
+                <div class="row">
+                    <div class="col-xs-12">
+                        <table id="example1" class="table table-bordered table-striped">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Date</th>
+                                    <th>Method</th>
+                                    <th>URL</th>
+                                    <th>Response</th>
+                                </tr>
+                            </thead>
+                            <tfoot>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Date</th>
+                                    <th>Method</th>
+                                    <th>URL</th>
+                                    <th>Response</th>
+                                </tr>
+                            </tfoot>
+                            <tbody>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div><!-- /.box-body -->
+        </div><!-- /.box -->
+
+    </section><!-- /.Left col -->
+
+</div><!-- /.row (main row) -->
+
+{% endblock %}

@@ -1,0 +1,65 @@
+{% load staticfiles %}
+{% load tags %}
+
+<section class="sidebar">
+    <!-- Sidebar user panel -->
+    <div class="user-panel">
+        <div class="pull-left image">
+            <img src="{% static 'webui/img/avatar3.png' %}" class="img-circle" alt="User Image" />
+        </div>
+        <div class="pull-left info">
+            <p>Hello, Jane</p>
+
+            <a href="#"><i class="fa fa-circle text-success"></i> Online</a>
+        </div>
+    </div>
+    <!-- search form -->
+    <form action="#" method="get" class="sidebar-form">
+        <div class="input-group">
+            <input type="text" name="q" class="form-control" placeholder="Search..."/>
+            <span class="input-group-btn">
+                <button type='submit' name='search' id='search-btn' class="btn btn-flat"><i class="fa fa-search"></i></button>
+            </span>
+        </div>
+    </form>
+    <!-- /.search form -->
+    <!-- sidebar menu: : style can be found in sidebar.less -->
+    <ul class="sidebar-menu">
+        <li class="{% active request "dashboard" %}">
+            <a href="{% url 'dashboard' %}">
+                <i class="fa fa-dashboard"></i> <span>Dashboard</span>
+            </a>
+        </li>
+        <li class="{% active request "session_list" %}">
+            <a href="{% url 'session_list' %}">
+                <i class="fa fa-clock-o"></i> <span>Sessions</span>
+            </a>
+        </li>
+        <li class="{% active request "testplan_list" %}">
+            <a href="{% url 'testplan_list' %}">
+                <i class="fa fa-pencil"></i> <span>Test Plans</span>
+            </a>
+        </li>
+        <li class="{% active request "recording_list" %}">
+            <a href="{% url 'recording_list' %}">
+                <i class="fa fa-play-circle-o"></i> <span>Recordings</span>
+            </a>
+        </li>
+        <li class="{% active request "template_list" %}">
+            <a href="{% url 'dashboard' %}">
+                <i class="fa fa-building-o"></i> <span>Templates</span>
+            </a>
+        </li>
+        <li class="{% active request "settings" %}">
+            <a href="{% url 'settings' %}">
+                <i class="fa fa-cog"></i> <span>Settings</span>
+            </a>
+        </li>
+        <li class="{% active request "help" %}">
+            <a href="{% url 'dashboard' %}">
+                <i class="fa fa-question-circle"></i> <span>Help</span>
+            </a>
+        </li>
+    </ul>
+</section>
+<!-- /.sidebar -->
