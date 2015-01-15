@@ -22,5 +22,7 @@ urlpatterns = patterns(
     url(r'^recordings/(?P<id>[\w-]+)$', 'recording_details', name='recording_details'),
     url(r'^recordings/update/$', 'recording_update', name='recording_update'),
 
+    url(r'^ajax/traffic/$', 'ajax_traffic', name='ajax_traffic'),
+
     url(r'^settings/$', 'settings', name='settings'),
 )

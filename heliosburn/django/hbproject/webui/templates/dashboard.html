@@ -34,22 +34,22 @@
             // We use an inline data source in the example, usually data would
             // be fetched from a server
             var data = [], totalPoints = 100;
-            function getRandomData() {
 
-                if (data.length > 0)
-                    data = data.slice(1);
+            function fetchData() {
 
-                // Do a random walk
-                var prev = data.length > 0 ? data[data.length - 1] : 50,
-                        y = prev + Math.random() * 10 - 5;
+                $.ajax({
+					url: "{% url "ajax_traffic" %}",
+					type: "GET",
+					dataType: "json",
+					success: onDataReceived
+				});
+            };
 
-                if (y < 0) {
-                    y = 0;
-                } else if (y > 100) {
-                    y = 100;
-                }
+            function onDataReceived(json) {
 
-                data.push(y);
+                var new_value = json.count;
+                data = data.slice(1);
+                data.push(new_value);
 
                 // Zip the generated y values with the x values
                 var res = [];
@@ -57,8 +57,13 @@
                     res.push([i, data[i]]);
                 }
 
-                return res;
-            }
+                interactive_plot.setData([res]);
+
+                // Since the axes don't change, we don't need to call plot.setupGrid()
+                interactive_plot.draw();
+                if (realtime === "on")
+                    setTimeout(fetchData, updateInterval);
+            };
 
             function getEmptyData(){
                 while (data.length < totalPoints) {
@@ -96,21 +101,13 @@
                 }
             });
 
-            var updateInterval = 500; //Fetch data ever x milliseconds
+            var updateInterval = 1000; //Fetch data ever x milliseconds
             var realtime = "on"; //If == to on then fetch data every x seconds. else stop fetching
-            function update() {
 
-                interactive_plot.setData([getRandomData()]);
-
-                // Since the axes don't change, we don't need to call plot.setupGrid()
-                interactive_plot.draw();
-                if (realtime === "on")
-                    setTimeout(update, updateInterval);
-            }
 
             //INITIALIZE REALTIME DATA FETCHING
             if (realtime === "on") {
-                update();
+                fetchData();
             }
             //REALTIME TOGGLE
             $("#realtime .btn").click(function() {
@@ -120,7 +117,7 @@
                 else {
                     realtime = "off";
                 }
-                update();
+                fetchData();
             });
             /*
              * END INTERACTIVE CHART

@@ -1,9 +1,10 @@
-from django.http import HttpResponseRedirect, HttpResponse, HttpResponseBadRequest
+from django.http import HttpResponseRedirect, HttpResponse, HttpResponseBadRequest, JsonResponse
 from django.shortcuts import render
 from django.core.urlresolvers import reverse
 from django.contrib.staticfiles.templatetags.staticfiles import static
 import requests
 import json
+import random
 
 
 MOCK_PROTOCOL = "http"
@@ -19,6 +20,11 @@ def signin(request):
 
 def dashboard(request):
     return render(request, 'dashboard.html')
+
+
+def ajax_traffic(request):
+    r = {'count': random.randint(0, 100)}
+    return JsonResponse(r)
 
 
 def session_new(request):
