@@ -37,11 +37,6 @@ class MyProxyClient(ProxyClient):
                 # End of modifications
                 print "UPSTREAM CODE:"
                 print code
-                #print "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
-                #print "UPSTREAM CODE :  %s" % (self.father.code)
-                #print "UPSTREAM MSG :  %s" % (self.father.code_message)
-                #print "UPSTREAM HEADERS : %s" % (self.father.responseHeaders)
-                #print "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
                
                 ProxyClient.handleStatus(self, version, code, message)
  
