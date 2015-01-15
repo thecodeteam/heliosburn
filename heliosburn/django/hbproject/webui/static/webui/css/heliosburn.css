@@ -1,0 +1,52 @@
+/* Colors */
+.green {
+  color: green;
+}
+
+.red {
+  color: red;
+}
+
+/* Icons */
+.glyphicon-2x {
+    font-size: 18px;
+}
+
+/* Spaces */
+.top5 { margin-top:5px; }
+.top7 { margin-top:7px; }
+.top10 { margin-top:10px; }
+.top15 { margin-top:15px; }
+.top17 { margin-top:17px; }
+.top30 { margin-top:30px; }
+
+/* X-Editable */
+.title-input{
+   width: 300px !important;
+}
+
+.description-input{
+   width: 300px !important;
+}
+
+/* font style */
+.bold {
+    font-weight: bold !important;
+}
+
+/* Wizard */
+.navbar-wizard {
+    background-color: #1b1b1b !important;
+}
+
+.navbar-wizard .navbar-nav>.active>a {
+    color: #fff !important;
+    font-weight: bold !important;
+    background-color: #3f3f3f !important;
+}
+
+/* Margins */
+
+.lmargin10 {
+    margin-left: 10px;
+}

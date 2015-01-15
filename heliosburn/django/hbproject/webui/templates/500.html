@@ -1,0 +1,8 @@
+{% extends "users.html" %}
+
+{% load django_bootstrap_breadcrumbs %}
+
+{% block breadcrumbs %}
+    {{ block.super }}
+    {% breadcrumb "Internal error" "" %}
+{% endblock %}

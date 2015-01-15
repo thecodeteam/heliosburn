@@ -1,0 +1,97 @@
+[
+    {
+        "id": 1,
+        "name": "Session A",
+        "description": "This is a description for a Session",
+        "createdAt": "2014-02-12 03:34:51",
+        "updatedAt": "2014-02-12 03:34:51",
+        "testPlan":
+            {
+                "id": 12,
+                "name": "ViPR Test plan"
+            },
+        "user":
+            {
+                "id": 1,
+                "username": "John Doe"
+            },
+        "executions": 42,
+        "latest_execution_at": "2014-02-12 03:34:51"
+    },
+    {
+        "id": 2,
+        "name": "ViPR Session 1",
+        "description": "This is a description for a Session",
+        "createdAt": "2014-02-12 03:34:51",
+        "updatedAt": "2014-02-12 03:34:51",
+        "testPlan":
+            {
+                "id": 12,
+                "name": "ViPR Test plan"
+            },
+        "user":
+            {
+                "id": 1,
+                "username": "John Doe"
+            },
+        "executions": 634,
+        "latest_execution_at": "2014-02-12 03:34:51"
+    },
+    {
+        "id": 3,
+        "name": "ViPR Session 2",
+        "description": "This is a description for a Session",
+        "createdAt": "2014-02-12 03:34:51",
+        "updatedAt": "2014-02-12 03:34:51",
+        "testPlan":
+            {
+                "id": 12,
+                "name": "ViPR Test plan"
+            },
+        "user":
+            {
+                "id": 1,
+                "username": "John Doe"
+            },
+        "executions": 341,
+        "latest_execution_at": "2014-02-12 03:34:51"
+    },
+    {
+        "id": 4,
+        "name": "Swift on-premise session",
+        "description": "This is a description for a Session",
+        "createdAt": "2014-02-12 03:34:51",
+        "updatedAt": "2014-02-12 03:34:51",
+        "testPlan":
+            {
+                "id": 12,
+                "name": "Swift Test plan"
+            },
+        "user":
+            {
+                "id": 1,
+                "username": "John Doe"
+            },
+        "executions": 654,
+        "latest_execution_at": "2014-02-12 03:34:51"
+    },
+    {
+        "id": 5,
+        "name": "S3 America session",
+        "description": "This is a description for a Session",
+        "createdAt": "2014-02-12 03:34:51",
+        "updatedAt": "2014-02-12 03:34:51",
+        "testPlan":
+            {
+                "id": 12,
+                "name": "Amazon S3 Test plan"
+            },
+        "user":
+            {
+                "id": 1,
+                "username": "John Doe"
+            },
+        "executions": 244,
+        "latest_execution_at": "2014-02-12 03:34:51"
+    }
+]

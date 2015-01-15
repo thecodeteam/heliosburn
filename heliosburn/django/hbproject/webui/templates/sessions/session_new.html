@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+
+{% load staticfiles %}
+{% load django_bootstrap_breadcrumbs %}
+
+{% block title %}New session{% endblock %}
+{% block content_header %}New session{% endblock %}
+{% block content_subheader %}{% endblock %}
+
+{% block breadcrumbs %}
+    {{ block.super }}
+    {% breadcrumb "Session Manager" "session_manager" %}
+{% endblock %}
+
+{% block styles %}
+    <!-- Bootstrap Timepicker -->
+    <link href="{% static 'webui/css/timepicker/bootstrap-timepicker.min.css' %}" rel="stylesheet" type="text/css" />
+{% endblock %}
+
+{% block scripts %}
+    <!-- Bootstrap Timepicker -->
+    <script src="{% static 'webui/js/plugins/timepicker/bootstrap-timepicker.min.js' %}" type="text/javascript"></script>
+
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $('#optionsRadios1').click(function () {
+
+                    alert("Allot Thai Gayo Bhai");
+
+            });
+
+            $('#optionsRadios2').click(function () {
+
+                    alert("Transfer Thai Gayo");
+
+            });
+        });
+    </script>
+    <script type="text/javascript">
+
+        $('#timepicker1').timepicker({
+                showSeconds: true,
+                showMeridian: false,
+                defaultTime: '00:00:00'
+            });
+
+    </script>
+
+{% endblock %}
+
+{% block content %}
+
+    <div class="row">
+        <div class="col-xs-12">
+
+            <nav class="navbar navbar-inverse navbar-wizard">
+                <div class="container-fluid">
+                  <div id="navbar" class="navbar-collapse collapse">
+                    <ul class="nav navbar-nav">
+                      <li {% if step == '1' %}class="active"{% endif %}><a href="#">Step 1: Session details</a></li>
+                      <li {% if step == '2' %}class="active"{% endif %}><a href="#">Step 2: Select a Test Plan</a></li>
+                      <li {% if step == '3' %}class="active"{% endif %}><a href="#">Step 3: Review Session</a></li>
+                    </ul>
+                  </div><!--/.nav-collapse -->
+                </div><!--/.container-fluid -->
+            </nav>
+
+            <div class="progress xs progress-striped active">
+                <div class="progress-bar progress-bar-warning" role="progressbar" aria-valuenow="{{ progress }}" aria-valuemin="0" aria-valuemax="100" style="width: {{ progress }}%">
+                    <span class="sr-only">{{ progress }}% Complete (warning)</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if step == '1' %}
+        {% include "sessions/session_new_step1.html" %}
+    {% elif step == '2' %}
+        {% include "sessions/session_new_step2.html" %}
+    {% elif step == '3' %}
+        {% include "sessions/session_new_step3.html" %}
+    {% endif %}
+
+
+
+{% endblock %}

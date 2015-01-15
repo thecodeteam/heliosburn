@@ -1,0 +1,154 @@
+{% extends 'base.html' %}
+
+{% load staticfiles %}
+{% load django_bootstrap_breadcrumbs %}
+{% load tags %}
+
+{% block title %}Recording Manager{% endblock %}
+{% block content_header %}
+    <a href="#" id="recording-name">{{ recording.name }}</a>
+{% endblock %}
+{% block content_subheader %}{% endblock %}
+
+{% block breadcrumbs %}
+    {{ block.super }}
+    {% breadcrumb "Recordings" "recording_list" %}
+    {% breadcrumb recording.name "recording_details" %}
+{% endblock %}
+
+{% block styles %}
+    <!-- DATA TABLES -->
+    <link href="{% static 'webui/css/datatables/dataTables.bootstrap.css' %}" rel="stylesheet" type="text/css" />
+    <!-- X-editable -->
+    <link href="//cdnjs.cloudflare.com/ajax/libs/x-editable/1.5.0/bootstrap3-editable/css/bootstrap-editable.css" rel="stylesheet"/>
+{% endblock %}
+
+{% block scripts %}
+    <!-- DATA TABES SCRIPT -->
+    <script src="{% static 'webui/js/plugins/datatables/jquery.dataTables.min.js' %}" type="text/javascript"></script>
+    <script src="{% static 'webui/js/plugins/datatables/dataTables.bootstrap.js' %}" type="text/javascript"></script>
+    <!-- page script -->
+    <script type="text/javascript">
+        $(document).ready(function() {
+            var table = $('#example1').dataTable( {
+                "columnDefs": [
+                    {
+                        "targets": [ 0 ],
+                        "visible": false
+                    }
+                ]
+            } );
+
+            $('#example1 tbody').on( 'click', 'tr', function () {
+                $(this).toggleClass('active');
+            } );
+
+            $('#delete').click( function () {
+                alert( table.rows('.active').data().length +' row(s) selected' );
+            } );
+        } );
+    </script>
+    <!-- X-Editable -->
+    <script src="//cdnjs.cloudflare.com/ajax/libs/x-editable/1.5.0/bootstrap3-editable/js/bootstrap-editable.min.js"></script>
+    <script type="text/javascript">
+        $.fn.editable.defaults.mode = 'inline';
+
+        //editables
+        $('#recording-name').editable({
+            url: '{% url 'recording_update' %}',
+            type: 'text',
+            pk: {{ recording.id }},
+            name: 'name',
+            title: 'Recording name',
+            inputclass: 'title-input',
+            params: '{csrfmiddlewaretoken:"{{csrf_token}}"}'
+        });
+
+        $('#recording-description').editable({
+            url: '{% url 'recording_update' %}',
+            type: 'textarea',
+            pk: {{ recording.id }},
+            name: 'description',
+            title: 'Recording description',
+            inputclass: 'description-input',
+            params: '{csrfmiddlewaretoken:"{{csrf_token}}"}'
+        });
+
+    </script>
+{% endblock %}
+
+{% block content %}
+
+    <div class="row">
+        <div class="col-xs-12">
+            <div class="nav-tabs-custom">
+                <ul class="nav nav-tabs">
+                    <li class="header"><i class="fa fa-info-circle"></i>Recording details</li>
+                </ul>
+                <div class="tab-content">
+                    <dl class="dl-horizontal">
+                        <dt>Description</dt>
+                        <dd><a href="#" id="recording-description">{{ recording.description }}</a></dd>
+                        <dt>Created at</dt>
+                        <dd>{{ recording.created_at }}</dd>
+                        <dt>Duration</dt>
+                        <dd>{{ recording.duration }}</dd>
+                    </dl>
+                </div><!-- /.tab-content -->
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-xs-12">
+            <div class="box">
+                <div class="box-header">
+                    <i class="fa fa-th-list"></i>
+                    <h3 class="box-title">Recorded traffic</h3>
+                </div><!-- /.box-header -->
+                <div class="box-body table-responsive">
+                    <div class="row">
+                        <div class="col-xs-12">
+                            <table id="example1" class="table table-bordered table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>View</th>
+                                        <th>Date</th>
+                                        <th>Method</th>
+                                        <th>URL</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tfoot>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>View</th>
+                                        <th>Date</th>
+                                        <th>Method</th>
+                                        <th>URL</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </tfoot>
+                                <tbody>
+                                    {% for request in recording.traffic %}
+                                        <tr>
+                                            <td>{{ request.id }}</td>
+                                            <td><a href="#">view</a></td>
+                                            <td>{{ request.date }}</td>
+                                            <td>{{ request.method }}</td>
+                                            <td>{{ request.url }}</td>
+                                            <td>{{ request.response.status_code }}</td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div><!-- /.box-body -->
+            </div><!-- /.box -->
+        </div>
+    </div>
+
+
+{% endblock %}
