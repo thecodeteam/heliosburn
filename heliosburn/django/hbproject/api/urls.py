@@ -1,5 +1,5 @@
 from django.conf.urls import patterns, url
-from api.views import default, user, session, test_plan
+from api.views import default, user, session, testplan
 
 urlpatterns = patterns('',
     url(r'^$', default.index),
@@ -8,5 +8,5 @@ urlpatterns = patterns('',
     url(r'^user/(\w+?)/$', user.rest),
     url(r'^session/$', session.rest),
     url(r'^session/(\d+?)/$', session.rest),
-    url(r'^test_plan/$', test_plan.rest),
+    url(r'^testplan/$', testplan.rest),
 )

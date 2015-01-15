@@ -37,20 +37,14 @@ def get(request, username=None):
     if username is None:  # Retrieve all users
         return get_all_users(request)
 
-    dbsession = models.init_db()
-    user = dbsession.query(models.User).filter_by(username=username).first()
-    if user is None:
+    conn, cur = models.init_db_pg2()
+    cur.execute("""SELECT id, username, email, created_at, update_at FROM public.user WHERE username=%s LIMIT 1""", (username,))
+    if cur.rowcount == 0:
         r = JsonResponse({"error": "user not found"})
         r.status_code = 404
         return r
     else:
-        user_dict = {
-            'username': user.username,
-            'email': user.email,
-            'created_at': user.created_at,
-            'update_at': user.update_at,
-            }
-        r = JsonResponse(user_dict)
+        r = JsonResponse(dict(cur.fetchone()))
         r.status_code = 200
         return r
 
@@ -58,16 +52,9 @@ def get(request, username=None):
 def get_all_users(request):
     """Retrieves all users."""
     Tracer()()
-    dbsession = models.init_db()
-    all_users = dbsession.query(models.User).all()
-    user_list = list()
-    for user in all_users:
-        user_list.append({
-            'username': user.username,
-            'email': user.email,
-            'created_at': user.created_at,
-            'update_at': user.update_at,
-            })
+    conn, cur = models.init_db_pg2()
+    cur.execute("SELECT id, username, email, created_at, update_at FROM public.user")
+    user_list = [dict(user) for user in cur.fetchall()]
     r = JsonResponse({"users": user_list})
     r.status_code = 200
     return r
@@ -89,22 +76,17 @@ def post(request):
         r.status_code = 400
         return r
 
-    dbsession = models.init_db()
-    user = dbsession.query(models.User).filter_by(username=new['username']).first()
-    if user is not None:
+    conn, cur = models.init_db_pg2()
+    cur.execute("SELECT id FROM public.user WHERE username=%s LIMIT 1", (new['username'],))
+    if cur.rowcount != 0:
         r = JsonResponse({"error": "user already exists"})
         r.status_code = 409
         return r
     else:
-        user = models.User(username=new['username'], email=new['email'], password=new['password'])
-        dbsession.add(user)
-        dbsession.commit()
-        user_dict = {
-            'username': user.username,
-            'email': user.email,
-            }
-        r = JsonResponse(user_dict)
-        r.status_code = 200
+        cur.execute("INSERT INTO public.user (username, email, password) VALUES(%s,%s,%s)",
+                    (new['username'], new['email'], new['password'],))
+        r = JsonResponse({})
+        r.status_code = 204
         return r
 
 
@@ -117,28 +99,27 @@ def put(request, username):
         r.status_code = 400
         return r
 
-    dbsession = models.init_db()
-    user = dbsession.query(models.User).filter_by(username=username).first()
-    if user is None:
+    conn, cur = models.init_db_pg2()
+    cur.execute("SELECT * FROM public.user WHERE username=%s LIMIT 1", (username,))
+    if cur.rowcount == 0:
         r = JsonResponse({"error": "user not found"})
         r.status_code = 404
         return r
     else:
-        if 'email' in in_json:
-            user.email = in_json['email']
-        if 'password' in in_json:
-            user.password = in_json['password']
-        import datetime
-        user.update_at = datetime.datetime.now()
-        dbsession.commit()
-        user_dict = {
-            'username': user.username,
-            'email': user.email,
-            'created_at': user.created_at,
-            'update_at': user.update_at,
-            }
-        r = JsonResponse(user_dict)
-        r.status_code = 200
+        user = dict(cur.fetchone())
+        user.update(in_json)
+        from psycopg2 import IntegrityError
+        try:
+            cur.execute("""
+                UPDATE public.user SET username=%s, email=%s, password=%s, update_at=NOW()
+                WHERE id=%s 
+                """, (in_json['username'], in_json['email'], in_json['password'], user['id'],))
+        except IntegrityError:
+            r = JsonResponse({"error": "new username not available"})
+            r.status_code = 409
+            return r
+        r = JsonResponse({})
+        r.status_code = 204
         return r
         
 
