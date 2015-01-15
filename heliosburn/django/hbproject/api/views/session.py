@@ -12,7 +12,7 @@ from IPython.core.debugger import Tracer
 def rest(request, *pargs):
     """
     Calls python function corresponding with HTTP METHOD name. 
-    Calls with incomplete arguments will return HTTP 400 with a description and argument list.
+    Calls with incomplete arguments will return HTTP 400
     """
     if request.method == 'GET':
         rest_function = get
@@ -105,7 +105,6 @@ def get_all_sessions(request):
 
 def post(request):
     """Create a new session."""
-    Tracer()()
     try:
         new = json.loads(request.body)
         assert "name" in new

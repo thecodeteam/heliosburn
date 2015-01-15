@@ -12,7 +12,7 @@ from IPython.core.debugger import Tracer
 def rest(request, *pargs):
     """
     Calls python function corresponding with HTTP METHOD name. 
-    Calls with incomplete arguments will return HTTP 400 with a description and argument list.
+    Calls with incomplete arguments will return HTTP 400
     """
     if request.method == 'GET':
         rest_function = get
