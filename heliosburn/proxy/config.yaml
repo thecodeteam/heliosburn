@@ -1,0 +1,12 @@
+proxy:
+  bind: '127.0.0.1'
+  protocols:
+    http: 8880
+    https: 8843
+
+upstream:
+  address: 'www.google.com'
+  port: 80
+
+
+
