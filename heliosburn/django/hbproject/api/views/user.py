@@ -1,12 +1,10 @@
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-from sqlalchemy import create_engine
-from sqlalchemy.orm import scoped_session
-from sqlalchemy.orm.session import sessionmaker
+from sqlalchemy.exc import IntegrityError
 from api import models
+
 import json
 
-from IPython.core.debugger import Tracer
 
 @csrf_exempt
 def rest(request, *pargs):
@@ -31,6 +29,7 @@ def rest(request, *pargs):
             r = JsonResponse({"error": "arguments mismatch"})
             r.status_code = 400 # 400 "BAD REQUEST"
             return r
+
 
 def get(request, username=None):
     """Retrieve a user."""
@@ -57,7 +56,6 @@ def get(request, username=None):
 
 def get_all_users(request):
     """Retrieves all users."""
-    Tracer()()
     dbsession = models.init_db()
     all_users = dbsession.query(models.User).all()
     user_list = list()
@@ -99,12 +97,8 @@ def post(request):
         user = models.User(username=new['username'], email=new['email'], password=new['password'])
         dbsession.add(user)
         dbsession.commit()
-        user_dict = {
-            'username': user.username,
-            'email': user.email,
-            }
-        r = JsonResponse(user_dict)
-        r.status_code = 200
+        r = JsonResponse({})
+        r.status_code = 204
         return r
 
 
@@ -124,21 +118,20 @@ def put(request, username):
         r.status_code = 404
         return r
     else:
-        if 'email' in in_json:
-            user.email = in_json['email']
-        if 'password' in in_json:
+        if "username" in in_json:
+            user.username = in_json['username']
+        if "password" in in_json:
             user.password = in_json['password']
-        import datetime
-        user.update_at = datetime.datetime.now()
-        dbsession.commit()
-        user_dict = {
-            'username': user.username,
-            'email': user.email,
-            'created_at': user.created_at,
-            'update_at': user.update_at,
-            }
-        r = JsonResponse(user_dict)
-        r.status_code = 200
+        if "email" in in_json:
+            user.email = in_json['email']
+        try:
+            dbsession.commit()
+        except IntegrityError:
+            r = JsonResponse({"error": "username already exists"})
+            r.status_code = 409
+            return r
+        r = JsonResponse({})
+        r.status_code = 204
         return r
         
 

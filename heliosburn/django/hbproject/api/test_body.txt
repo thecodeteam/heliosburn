@@ -1,5 +1,8 @@
 {
-    "username": "user2",
-    "password": "secret",
-    "email": "dummy@address.com"
+    "name": "session2",
+    "description": "i am a new description",
+    "user":
+    {
+        "id": 999
+    }
 }

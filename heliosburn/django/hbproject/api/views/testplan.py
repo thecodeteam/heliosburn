@@ -1,12 +1,8 @@
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-from sqlalchemy import create_engine
-from sqlalchemy.orm import scoped_session
-from sqlalchemy.orm.session import sessionmaker
 from api import models
 import json
 
-from IPython.core.debugger import Tracer
 
 @csrf_exempt
 def rest(request, *pargs):

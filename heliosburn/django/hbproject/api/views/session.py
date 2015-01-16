@@ -1,12 +1,9 @@
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-from sqlalchemy import create_engine
-from sqlalchemy.orm import scoped_session
-from sqlalchemy.orm.session import sessionmaker
 import json
 from api import models
+from sqlalchemy.exc import IntegrityError
 
-from IPython.core.debugger import Tracer
 
 @csrf_exempt
 def rest(request, *pargs):
@@ -32,6 +29,7 @@ def rest(request, *pargs):
             r.status_code = 400 # 400 "BAD REQUEST"
             return r
 
+
 def get(request, session_id=None):
     """Retrieve a session."""
     if session_id is None:
@@ -43,6 +41,10 @@ def get(request, session_id=None):
         r.status_code = 404
         return r
     else:
+        user = dbsession.query(models.User).filter_by(id=session.user_id).first()
+        user_dict = {
+            'username': user.username,
+            }
         session_dict = {
             'name': session.name,
             'description': session.description,
@@ -50,6 +52,7 @@ def get(request, session_id=None):
             'updated_at': session.updated_at,
             'started_at': session.started_at,
             'stopped_at': session.stopped_at,
+            'user': user_dict,
             }
         r = JsonResponse(session_dict)
         r.status_code = 200
@@ -62,6 +65,10 @@ def get_all_sessions(request):
     all_sessions = dbsession.query(models.Session).all()
     session_list = list()
     for session in all_sessions:
+        user = dbsession.query(models.User).filter_by(id=session.user_id).first()
+        user_dict = {
+            'username': user.username,
+            }
         session_dict = {
             'name': session.name,
             'description': session.description,
@@ -69,6 +76,7 @@ def get_all_sessions(request):
             'updated_at': session.updated_at,
             'started_at': session.started_at,
             'stopped_at': session.stopped_at,
+            'user': user_dict,
             }
         session_list.append(session_dict)
     r = JsonResponse({"sessions": session_list})
@@ -78,7 +86,6 @@ def get_all_sessions(request):
 
 def post(request):
     """Create a new session."""
-    Tracer()()
     try:
         new = json.loads(request.body)
         assert "name" in new
@@ -96,28 +103,59 @@ def post(request):
         return r
 
     dbsession = models.init_db()
-    session = dbsession.query(models.Session).filter_by(name=new['name']).first()
-    if session is not None:
-        r = JsonResponse({"error": "session name already exists"})
-        r.status_code = 409
+    session = models.Session(name=new['name'], description=new['description'], testplan_id=new['testPlan']['id'], user_id=new['user_id'])
+    dbsession.add(session)
+    dbsession.commit()
+    r = JsonResponse({})
+    r.status_code = 204
+    return r
+
+
+def put(request, session_id):
+    """Update existing session."""
+    try:
+        new = json.loads(request.body)
+    except ValueError:
+        r = JsonResponse({"error": "invalid JSON"})
+        r.status_code = 400
+        return r
+
+    dbsession = models.init_db()
+    session = dbsession.query(models.Session).filter_by(id=session_id).first()
+    if session is None:
+        r = JsonResponse({})
+        r.status_code = 404
         return r
     else:
-        session = models.Session(name=new['name'], description=new['description'], testplan_id=new['testPlan']['id'], user_id=new['user_id'])
-        dbsession.add(session)
-        dbsession.commit()
+        if "name" in new:
+            session.name = new['name']
+        if "description" in new:
+            session.description = new['description']
+        if ("user" in new) and ("id" in new['user']):
+            session.user_id = new['user']['id']
+        try:
+            dbsession.commit()
+        except IntegrityError:
+            r = JsonResponse({"error": "user id invalid"})
+            r.status_code = 409
+            return r
         r = JsonResponse({})
         r.status_code = 204
         return r
 
 
-def put(request):
-    """Update existing session."""
-    #TODO
-    return JsonResponse({"todo": "todo"})
-        
-
-def delete(request):
+def delete(request, session_id):
     """Delete existing session."""
-    #TODO
-    return JsonResponse({"todo": "todo"})
+    dbsession = models.init_db()
+    session = dbsession.query(models.Session).filter_by(id=session_id).first()
+    if session is None:
+        r = JsonResponse({"error": "session_id not found"})
+        r.status_code = 404
+        return r
+    else:
+        dbsession.delete(session)
+        dbsession.commit()
+        r = JsonResponse({})
+        r.status_code = 204
+        return r
 
