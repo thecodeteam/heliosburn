@@ -1,0 +1,8 @@
+{
+    "name": "session2",
+    "description": "i am a new description",
+    "user":
+    {
+        "id": 999
+    }
+}

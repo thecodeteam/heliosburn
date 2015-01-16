@@ -1,4 +1,4 @@
-### SQLAlchemy models, NOT django model definitions
+# SQLAlchemy models, NOT django model definitions
 import datetime
 from sqlalchemy import Column, Integer, Boolean, String, ForeignKey, DateTime, UniqueConstraint
 from sqlalchemy.orm import relationship, backref
@@ -7,17 +7,16 @@ from sqlalchemy.ext.declarative import declarative_base
 
 Base = declarative_base()
 
-
 class User(Base):
     __tablename__ = "user"
 
     id = Column(Integer, primary_key=True)
-    username = Column(String, nullable=False)
+    username = Column(String, nullable=False, unique=True)
     email = Column(String, nullable=False)
     password = Column(String, nullable=False)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
     update_at = Column(DateTime, default=datetime.datetime.utcnow)
-    sessions = relationship("Session", backref="user")
+    sessions = relationship("Session", cascade="all", backref="user")
 
 
 class HttpRequest(Base):
@@ -210,3 +209,15 @@ class RecordingTraffic(Base):
     id = Column(Integer, primary_key=True)
     recording_id = Column(Integer, ForeignKey('recording.id'), nullable=False)
     http_request = Column(Integer, ForeignKey('http_request.id'), nullable=False)
+
+
+def init_db():
+    """Returns dbsession"""
+    from sqlalchemy import create_engine
+    from sqlalchemy.orm import scoped_session
+    from sqlalchemy.orm.session import sessionmaker
+
+    dbsession = scoped_session(sessionmaker())
+    engine = create_engine("postgresql://postgres:postgres@localhost/heliosburn")
+    dbsession.configure(bind=engine, autoflush=False, expire_on_commit=False)
+    return dbsession
