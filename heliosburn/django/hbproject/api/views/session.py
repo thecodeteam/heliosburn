@@ -35,16 +35,12 @@ def get(request, session_id=None):
     if session_id is None:
         return get_all_sessions(request)
     dbsession = models.init_db()
-    session = dbsession.query(models.Session).filter_by(id=session_id).first()
+    session = dbsession.query(models.Session).filter_by(id=session_id).join(models.User).first()
     if session is None:
         r = JsonResponse({"error": "session id '%s' not found" % session_id})
         r.status_code = 404
         return r
     else:
-        user = dbsession.query(models.User).filter_by(id=session.user_id).first()
-        user_dict = {
-            'username': user.username,
-            }
         session_dict = {
             'name': session.name,
             'description': session.description,
@@ -52,7 +48,10 @@ def get(request, session_id=None):
             'updated_at': session.updated_at,
             'started_at': session.started_at,
             'stopped_at': session.stopped_at,
-            'user': user_dict,
+            'user': {
+                "username": session.user.username,
+                "email": session.user.email,
+                }
             }
         r = JsonResponse(session_dict)
         r.status_code = 200
@@ -65,10 +64,6 @@ def get_all_sessions(request):
     all_sessions = dbsession.query(models.Session).all()
     session_list = list()
     for session in all_sessions:
-        user = dbsession.query(models.User).filter_by(id=session.user_id).first()
-        user_dict = {
-            'username': user.username,
-            }
         session_dict = {
             'name': session.name,
             'description': session.description,
@@ -76,7 +71,10 @@ def get_all_sessions(request):
             'updated_at': session.updated_at,
             'started_at': session.started_at,
             'stopped_at': session.stopped_at,
-            'user': user_dict,
+            'user': {
+                "username": session.user.username,
+                "email": session.user.email,
+                }
             }
         session_list.append(session_dict)
     r = JsonResponse({"sessions": session_list})
