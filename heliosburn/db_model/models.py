@@ -1,4 +1,4 @@
-### SQLAlchemy models, NOT django model definitions
+# SQLAlchemy models, NOT django model definitions
 import datetime
 from sqlalchemy import Column, Integer, Boolean, String, ForeignKey, DateTime, UniqueConstraint
 from sqlalchemy.orm import relationship, backref
@@ -16,7 +16,7 @@ class User(Base):
     password = Column(String, nullable=False)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
     update_at = Column(DateTime, default=datetime.datetime.utcnow)
-    sessions = relationship("Session", backref="user")
+    sessions = relationship("Session", cascade="all", backref="user")
 
 
 class HttpRequest(Base):
