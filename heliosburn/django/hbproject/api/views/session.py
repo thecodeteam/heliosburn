@@ -35,7 +35,7 @@ def get(request, session_id=None):
     if session_id is None:
         return get_all_sessions(request)
     dbsession = models.init_db()
-    session = dbsession.query(models.Session).filter_by(id=session_id).join(models.User).first()
+    session = dbsession.query(models.Session).filter_by(id=session_id).first()
     if session is None:
         r = JsonResponse({"error": "session id '%s' not found" % session_id})
         r.status_code = 404
