@@ -3,7 +3,7 @@ from django.shortcuts import render, redirect
 from django.core.urlresolvers import reverse
 from django.contrib.staticfiles.templatetags.staticfiles import static
 from django.contrib.auth.decorators import login_required
-from django.contrib import auth
+from django.contrib import auth, messages
 import requests
 import json
 import random
@@ -18,14 +18,20 @@ WIZARD_STEPS = ['1', '2', '3', '4']
 
 
 def signin(request):
+
+    if not request.POST:
+        return render(request, 'signin.html')
+
     username = request.POST.get('username', '')
     password = request.POST.get('password', '')
     user = auth.authenticate(username=username, password=password)
 
     if user is not None:
         auth.login(request, user)
-        return HttpResponseRedirect(reverse('dashboard'))
+        redirect_url = request.GET.get('next', reverse('dashboard'))
+        return HttpResponseRedirect(redirect_url)
     else:
+        messages.error(request, 'Invalid login credentials')
         return render(request, 'signin.html')
 
 
