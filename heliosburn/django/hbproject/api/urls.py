@@ -1,7 +1,10 @@
 from django.conf.urls import patterns, url
-from api import views
+from api.views import default, user, session, test_plan
 
 urlpatterns = patterns('',
-    url(r'^$', views.index),
-    url(r'^version$', views.version),
+    url(r'^$', default.index),
+    url(r'^version$', default.version),
+    url(r'^user$', user.rest),
+    url(r'^session$', session.rest),
+    url(r'^test_plan$', test_plan.rest),
 )

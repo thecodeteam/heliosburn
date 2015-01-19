@@ -15,7 +15,7 @@ The development environment is provided as a Vagrant box, which will be updated 
 - **Username**: vagrant
 - **Password**: vagrant
 - **Box URL**: https://atlas.hashicorp.com/emccode/boxes/heliosburn-dev
-- **Latest box version**: 0.4
+- **Latest box version**: 0.5
 
 ## Requirements:
 
@@ -66,3 +66,5 @@ config.vm.provider "virtualbox" do |vb|
 | djangorestframework | 3.0.1 |
 | CherryPy | 3.6.0 |
 | psycopg2 | 2.5.4 |
+| PyYAML | 3.11 |
+| pika | 0.9.14 |

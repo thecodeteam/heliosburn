@@ -1,3 +1,5 @@
+# Views which do not belong to any specific module
+
 from django.shortcuts import render
 from django.http import HttpResponse, JsonResponse
 
