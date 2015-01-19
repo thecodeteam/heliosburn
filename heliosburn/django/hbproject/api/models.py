@@ -14,6 +14,7 @@ class User(Base):
     username = Column(String, nullable=False, unique=True)
     email = Column(String, nullable=False)
     password = Column(String, nullable=False)
+    token = Column(String, nullable=True)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
     update_at = Column(DateTime, default=datetime.datetime.utcnow)
     sessions = relationship("Session", cascade="all", backref="user")
