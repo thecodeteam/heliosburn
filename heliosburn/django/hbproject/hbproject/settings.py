@@ -90,3 +90,14 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, '../static')
+
+
+LOGIN_URL = '/webui/signin'
+
+
+AUTHENTICATION_BACKENDS = (
+    'webui.backends.HeliosAuthBackend',
+)
+
+ADMIN_LOGIN = 'admin'
+ADMIN_PASSWORD = 'pbkdf2_sha256$12000$d6O2rX3eWF61$GkNwEJnr1KL2b5pUuOUwl111BmUb5JPqGURSzUWk6tQ='

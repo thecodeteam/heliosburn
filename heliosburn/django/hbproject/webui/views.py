@@ -2,6 +2,8 @@ from django.http import HttpResponseRedirect, HttpResponse, HttpResponseBadReque
 from django.shortcuts import render, redirect
 from django.core.urlresolvers import reverse
 from django.contrib.staticfiles.templatetags.staticfiles import static
+from django.contrib.auth.decorators import login_required
+from django.contrib import auth
 import requests
 import json
 import random
@@ -16,9 +18,23 @@ WIZARD_STEPS = ['1', '2', '3', '4']
 
 
 def signin(request):
-    return render(request, 'signin.html')
+    username = request.POST.get('username', '')
+    password = request.POST.get('password', '')
+    user = auth.authenticate(username=username, password=password)
+
+    if user is not None:
+        auth.login(request, user)
+        return HttpResponseRedirect(reverse('dashboard'))
+    else:
+        return render(request, 'signin.html')
 
 
+def signout(request):
+    auth.logout(request)
+    return redirect(reverse('signin'))
+
+
+@login_required
 def dashboard(request):
     args = {}
     args['maxRequests'] = 20
@@ -26,6 +42,7 @@ def dashboard(request):
     return render(request, 'dashboard.html', args)
 
 
+@login_required
 def ajax_traffic(request):
     methods = ['GET', 'PUT', 'DELETE', 'POST']
     statuses = [('200', 'OK'),
@@ -69,6 +86,7 @@ def ajax_traffic(request):
     return JsonResponse(data)
 
 
+@login_required
 def session_new(request):
     step = request.GET.get('step')
     if step not in WIZARD_STEPS:
@@ -83,6 +101,7 @@ def session_new(request):
     return render(request, 'sessions/session_new.html', args)
 
 
+@login_required
 def session_list(request):
     url = get_mock_url('session-list.json')
     r = requests.get(url)
@@ -94,6 +113,7 @@ def session_list(request):
     return render(request, 'sessions/session_list.html', args)
 
 
+@login_required
 def session_details(request, id):
     url = get_mock_url('session-details.json')
     r = requests.get(url)
@@ -105,6 +125,7 @@ def session_details(request, id):
     return render(request, 'sessions/session_details.html', args)
 
 
+@login_required
 def session_execution(request, id):
     url = get_mock_url('session-details.json')
     r = requests.get(url)
@@ -116,6 +137,7 @@ def session_execution(request, id):
     return render(request, 'sessions/session_execution.html', args)
 
 
+@login_required
 def session_update(request):
     if not request.POST:
         return redirect(reverse('session_list'))
@@ -132,6 +154,7 @@ def session_update(request):
         return HttpResponse()
 
 
+@login_required
 def testplan_list(request):
     url = get_mock_url('testplan-list.json')
     r = requests.get(url)
@@ -143,6 +166,7 @@ def testplan_list(request):
     return render(request, 'testplan/testplan_list.html', args)
 
 
+@login_required
 def testplan_details(request, id):
     url = get_mock_url('testplan-details.json')
     r = requests.get(url)
@@ -154,15 +178,18 @@ def testplan_details(request, id):
     return render(request, 'testplan/testplan_details.html', args)
 
 
+@login_required
 def testplan_new(request):
     return render(request, 'testplan/testplan_new.html')
 
 
+@login_required
 def testplan_submit(request):
-    #TODO: send APU call to save test plan
+    # TODO: send APU call to save test plan
     return redirect(reverse('testplan_details', args='1'))
 
 
+@login_required
 def testplan_update(request):
     if not request.POST:
         return HttpResponseRedirect(reverse('testplan_list'))
@@ -179,11 +206,13 @@ def testplan_update(request):
         return HttpResponse()
 
 
+@login_required
 def execution_details(request, id):
     args = {}
     return render(request, 'execution/execution_details.html', args)
 
 
+@login_required
 def rule_details(request, id):
     url = get_mock_url('rule-details.json')
     r = requests.get(url)
@@ -195,6 +224,7 @@ def rule_details(request, id):
     return render(request, 'testplan/rule_details.html', args)
 
 
+@login_required
 def recording_list(request):
     url = get_mock_url('recording-list.json')
     r = requests.get(url)
@@ -206,6 +236,7 @@ def recording_list(request):
     return render(request, 'recording/recording_list.html', args)
 
 
+@login_required
 def recording_details(request, id):
     url = get_mock_url('recording-details.json')
     r = requests.get(url)
@@ -217,6 +248,7 @@ def recording_details(request, id):
     return render(request, 'recording/recording_details.html', args)
 
 
+@login_required
 def recording_update(request):
     if not request.POST:
         return HttpResponseRedirect(reverse('recording_list'))
@@ -233,6 +265,7 @@ def recording_update(request):
         return HttpResponse()
 
 
+@login_required
 def settings(request):
     return render(request, 'settings/settings.html')
 

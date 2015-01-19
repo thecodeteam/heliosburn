@@ -4,7 +4,10 @@ from django.views.generic import TemplateView
 urlpatterns = patterns(
     'webui.views',
     url(r'^$', 'dashboard', name='dashboard'),
+
     url(r'^signin/$', 'signin', name='signin'),
+    url(r'^signout/$', 'signout', name='signout'),
+
     url(r'^sessions/$', 'session_list', name='session_list'),
     url(r'^sessions/(?P<id>[\w-]+)$', 'session_details', name='session_details'),
     url(r'^sessions/update/$', 'session_update', name='session_update'),
