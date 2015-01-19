@@ -1,5 +1,5 @@
 from django.http import HttpResponseRedirect, HttpResponse, HttpResponseBadRequest, JsonResponse
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.core.urlresolvers import reverse
 from django.contrib.staticfiles.templatetags.staticfiles import static
 import requests
@@ -118,7 +118,7 @@ def session_execution(request, id):
 
 def session_update(request):
     if not request.POST:
-        return HttpResponseRedirect(reverse('session_list'))
+        return redirect(reverse('session_list'))
 
     name = request.POST.get('name')
     pk = request.POST.get('pk')
@@ -152,6 +152,15 @@ def testplan_details(request, id):
     args['testplan'] = testplan
 
     return render(request, 'testplan/testplan_details.html', args)
+
+
+def testplan_new(request):
+    return render(request, 'testplan/testplan_new.html')
+
+
+def testplan_submit(request):
+    #TODO: send APU call to save test plan
+    return redirect(reverse('testplan_details', args='1'))
 
 
 def testplan_update(request):
