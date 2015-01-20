@@ -1,0 +1,74 @@
+<h2 class="page-header">Step 3: Session review</h2>
+
+<div class="row">
+    <div class="col-xs-12">
+
+        <div class="box box-solid">
+            <!-- form start -->
+            <form role="form" method="post" action="{% url "session_execution" 1 %}">
+                {% csrf_token %}
+                <div class="box-body">
+                    <div class="box-group" id="accordion">
+                        <!-- we are adding the .panel class so bootstrap.js collapse plugin detects it -->
+                        <div class="panel box box-primary">
+                            <div class="box-header">
+                                <h4 class="box-title">Session details</h4>
+                            </div>
+                            <div class="box-body">
+                                <dl class="dl-horizontal">
+                                    <dt>Session name</dt>
+                                    <dd>Session A</dd>
+                                    <dt>Session description</dt>
+                                    <dd>Bla bla bla ... asd asd adsa sd a das d</dd>
+                                    <dt>Property 1</dt>
+                                    <dd>Future property...</dd>
+                                    <dt>Property 2</dt>
+                                    <dd>Future property...</dd>
+                                </dl>
+                            </div>
+                        </div>
+                        <div class="panel box box-danger">
+                            <div class="box-header">
+                                <h4 class="box-title">Test Plan details</h4>
+                            </div>
+                            <div class="box-body">
+                                <dl class="dl-horizontal">
+                                    <dt>Test Plan name</dt>
+                                    <dd>OpenStack Swift Test Plan</dd>
+                                    <dt>Test Plan description</dt>
+                                    <dd>Bla bla bla ... asd asd adsa sd a das d</dd>
+                                    <dt>Property 1</dt>
+                                    <dd>Future property...</dd>
+                                    <dt>Property 2</dt>
+                                    <dd>Future property...</dd>
+                                </dl>
+                            </div>
+                        </div>
+                        <div class="panel box box-success">
+                            <div class="box-header">
+                                <h4 class="box-title">Execution parameters</h4>
+                            </div>
+                            <div class="box-body">
+                                <div class="checkbox">
+                                    <label>
+                                        <input type="checkbox"> Stop session after
+                                    </label>
+                                </div>
+                                <div class="input-append bootstrap-timepicker">
+                                    <input id="timepicker1" type="text" class="input-small">
+                                    <span class="add-on"><i class="icon-time"></i></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div><!-- /.box-body -->
+                <div class="box-footer">
+                    <a class="btn btn-default" href="?step=2" role="button">Back</a>
+                    <button type="submit" class="btn btn-success pull-right lmargin10">Run session now</button>
+                    <a class="btn btn-primary pull-right" href="{% url "session_details" 1 %}" role="button">Run session later</a>
+                </div>
+            </form>
+        </div>
+
+    </div><!--/.col -->
+</div>

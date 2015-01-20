@@ -1,0 +1,125 @@
+{% extends 'base.html' %}
+
+{% load staticfiles %}
+{% load django_bootstrap_breadcrumbs %}
+{% load tags %}
+
+{% block title %}Settings{% endblock %}
+{% block content_header %}
+    Settings
+{% endblock %}
+{% block content_subheader %}{% endblock %}
+
+{% block breadcrumbs %}
+    {{ block.super }}
+    {% breadcrumb "Settings" "settings" %}
+{% endblock %}
+
+{% block styles %}
+    <!-- Bootstrap Tags -->
+    <link href="{% static 'webui/css/bootstrap-tags/bootstrap-tags.css' %}" rel="stylesheet" type="text/css" />
+{% endblock %}
+
+{% block scripts %}
+    <!-- Bootstrap Tags -->
+    <script src="{% static 'webui/js/plugins/bootstrap-tags/bootstrap-tags.min.js' %}" type="text/javascript"></script>
+
+    <script>
+        $(document).ready(function() {
+
+            $('#targetServers').tags({
+                readOnly: false,
+                tagData:["10.0.0.10", "10.0.0.11", "10.0.0.12"],
+                promptText: "Enter server hosts..."
+            });
+
+            $('#sslEnabled').click(function () {
+                //TODO: enable/disable certificate input
+            });
+        });
+    </script>
+{% endblock %}
+
+{% block content %}
+
+    <div class="row">
+        <!-- left column -->
+        <div class="col-md-6">
+            <!-- general form elements -->
+            <div class="box box-primary">
+                <div class="box-header">
+                    <h3 class="box-title">Global settings</h3>
+                </div><!-- /.box-header -->
+                <!-- form start -->
+                <form role="form">
+                    <div class="box-body">
+                        <div class="form-group">
+                            <label for="listenPort">Listen port</label>
+                            <input type="text" class="form-control" id="listenPort" value="8181">
+                            <p class="help-block">
+                                Port on which the proxy will listen for connections from clients.
+                            </p>
+                        </div>
+                        <div class="form-group">
+                            <label for="servers">Servers</label>
+                            <div id="targetServers" class="tag-list"></div>
+                            <p class="help-block">
+                                You can specify different hosts and ports. To add a new server just concatenate the host and port by a colon and then press the return key. If no port is specified, the proxy will use the port 80. The proxy will balance the requests among the given servers.
+                            </p>
+                        </div>
+                        <div class="form-group">
+                            <label for="timeout">Timeout</label>
+                            <input type="text" class="form-control" id="timeout" value="1000">
+                            <p class="help-block">
+                                Time (in milliseconds) to wait for the server to respond.
+                            </p>
+                        </div>
+                        <div class="checkbox">
+                            <label>
+                                <input type="checkbox" id="ipv6Enabled"> Enable IPv6 (if available)
+                            </label>
+                        </div>
+
+
+                    </div><!-- /.box-body -->
+
+                    <div class="box-footer">
+                        <button type="submit" class="btn btn-primary">Save</button>
+                    </div>
+                </form>
+            </div><!-- /.box -->
+        </div><!--/.col (left) -->
+        <!-- right column -->
+        <div class="col-md-6">
+            <!-- general form elements -->
+            <div class="box box-primary">
+                <div class="box-header">
+                    <h3 class="box-title">SSL</h3>
+                </div><!-- /.box-header -->
+                <!-- form start -->
+                <form role="form">
+                    <div class="box-body">
+                        <div class="checkbox">
+                            <label>
+                                <input type="checkbox" id="sslEnabled"> Enable SSL
+                            </label>
+                        </div>
+                        <div class="form-group">
+                            <label for="sslCertificate">SSL certificate</label>
+                            <input type="file" id="sslCertificate" disabled>
+                            <p class="help-block">Used by the proxy when HTTPS mode is enabled.</p>
+                        </div>
+
+                    </div><!-- /.box-body -->
+
+                    <div class="box-footer">
+                        <button type="submit" class="btn btn-primary">Submit</button>
+                    </div>
+                </form>
+            </div><!-- /.box -->
+        </div><!--/.col (right) -->
+
+    </div>
+
+
+{% endblock %}

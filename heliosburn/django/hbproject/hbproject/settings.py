@@ -36,6 +36,10 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
 #    'django.contrib.messages',
     'django.contrib.staticfiles',
+
+    'django_bootstrap_breadcrumbs',
+
+    'webui'
 )
 
 MIDDLEWARE_CLASSES = (
@@ -46,6 +50,10 @@ MIDDLEWARE_CLASSES = (
 #    'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
 #    'django.contrib.messages.middleware.MessageMiddleware',
 #    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+)
+
+TEMPLATE_CONTEXT_PROCESSORS = (
+    'django.core.context_processors.request',
 )
 
 ROOT_URLCONF = 'hbproject.urls'
@@ -84,3 +92,4 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.7/howto/static-files/
 
 STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, '../static')
