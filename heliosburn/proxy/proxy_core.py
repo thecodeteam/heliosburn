@@ -1,5 +1,6 @@
 import sys
 import yaml
+import json
 from twisted.internet import reactor
 from twisted.web import http
 from twisted.web import proxy
@@ -10,6 +11,7 @@ from twisted.web.proxy import ReverseProxyRequest
 from twisted.web.proxy import ReverseProxyResource
 from twisted.web.proxy import ProxyClientFactory
 from twisted.web.proxy import ProxyClient
+from proxy_modules import *
 
 
 with open('./config.yaml', 'r+') as config_file:
@@ -26,7 +28,9 @@ if 'http' in params['proxy']['protocols'] :
 
 upstream_host = params['upstream']['address']
 upstream_port = params['upstream']['port']
+
  
+print params
 class MyProxyClient(ProxyClient):
  
         def handleStatus(self, version, code, message):
@@ -71,12 +75,34 @@ class MyReverseProxyRequest(ReverseProxyRequest):
                 # Here we can add modifications to the Request:
                 #self.method = 'POST'
                 # End of modifications
-               
+                mq_request_info = {}
+                mq_request_info['HEADERS'] = {}
+                for key, value in self.requestHeaders.getAllRawHeaders():
+                    mq_request_info['HEADERS'][key] = value
+                mq_request_info['METHOD'] = self.method
+                mq_request_info['URI'] = self.uri
+                mq_request_json = json.dumps(mq_request_info)
+                print "json dump: %s" % (mq_request_info)
+                 
+
+                for  module_list in params['proxy']['modules']['request']:
+                    module_name = module_list[0]       
+                    if len(module_list) > 1:
+                        module_params = module_list[1] 
+                        runstring = "{}(self,*{})".format(module_name, module_params)
+                        call_string = "{}".format(module_name)
+                    else:
+                        runstring = "{}(self,*{})".format(module_name)
+
+                    print "Running: %s" % runstring
+                    eval(runstring)
+
                 print ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
                 print "VERB : %s" % (self.method)
                 print "URI : %s" % (self.uri)
                 print "HEADERS : %s" % (self.requestHeaders)
                 print ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+
                
                 self.requestHeaders.setRawHeaders(b"host", [upstream_host])
                 clientFactory = self.proxyClientFactoryClass(

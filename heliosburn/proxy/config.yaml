@@ -3,7 +3,15 @@ proxy:
   protocols:
     http: 8880
     https: 8843
-
+  modules:
+      request:
+          [ 
+           [ "addLag", [1,2] ],
+           [ "makeBanner", ["here"] ]
+          ]
+      response:
+          - responseCode:
+          - responseMessage:
 upstream:
   address: 'www.google.com'
   port: 80
