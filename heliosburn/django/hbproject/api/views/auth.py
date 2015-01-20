@@ -1,6 +1,6 @@
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-from api import models
+from api.models import db_model
 import json
 import hashlib
 import os
@@ -24,8 +24,8 @@ def login(request):
         r.status_code = 400
         return r
 
-    dbsession = models.init_db()
-    user = dbsession.query(models.User).filter_by(username=in_json['username']).first()
+    dbsession = db_model.init_db()
+    user = dbsession.query(db_model.User).filter_by(username=in_json['username']).first()
     if user is None:
         r = JsonResponse({"error": "user not found"})
         r.status_code = 404
