@@ -2,7 +2,7 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from sqlalchemy.exc import IntegrityError
 from api import models
-
+import hashlib
 import json
 
 
@@ -94,7 +94,9 @@ def post(request):
         r.status_code = 409
         return r
     else:
-        user = models.User(username=new['username'], email=new['email'], password=new['password'])
+        m = hashlib.sha512()
+        m.update(new['password'])
+        user = models.User(username=new['username'], email=new['email'], password=m.hexdigest())
         dbsession.add(user)
         dbsession.commit()
         r = JsonResponse({})
@@ -121,7 +123,9 @@ def put(request, username):
         if "username" in in_json:
             user.username = in_json['username']
         if "password" in in_json:
-            user.password = in_json['password']
+            m = hashlib.sha512()
+            m.update(in_json['password'])
+            user.password = m.hexdigest()
         if "email" in in_json:
             user.email = in_json['email']
         try:

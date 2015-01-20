@@ -7,6 +7,7 @@ from sqlalchemy.ext.declarative import declarative_base
 
 Base = declarative_base()
 
+
 class User(Base):
     __tablename__ = "user"
 
@@ -15,6 +16,7 @@ class User(Base):
     email = Column(String, nullable=False)
     password = Column(String, nullable=False)
     token = Column(String, nullable=True)
+    token_created_at = Column(DateTime, nullable=True)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
     update_at = Column(DateTime, default=datetime.datetime.utcnow)
     sessions = relationship("Session", cascade="all", backref="user")
@@ -28,15 +30,16 @@ class HttpRequest(Base):
     http_protocol = Column(String, nullable=False)
     method = Column(String, nullable=False)
     url = Column(String, nullable=False)
-    response_id = Column(Integer, ForeignKey('http_response.id'), nullable=True)
+    response_id = Column(Integer, ForeignKey('http_response.id', onupdate="CASCADE", ondelete="CASCADE"), nullable=True)
+    response = relationship("HttpResponse", uselist=False, backref="request")
 
 
 class HttpRequestHeaders(Base):
     __tablename__ = "http_request_headers"
 
     id = Column(Integer, primary_key=True)
-    request = Column(Integer, ForeignKey('http_request.id'))
-    header = Column(Integer, ForeignKey('http_header.id'))
+    request = Column(Integer, ForeignKey('http_request.id', onupdate="CASCADE", ondelete="CASCADE"))
+    header = Column(Integer, ForeignKey('http_header.id', onupdate="CASCADE", ondelete="CASCADE"))
 
 
 class HttpResponse(Base):
@@ -53,8 +56,8 @@ class HttpResponseHeaders(Base):
     __tablename__ = "http_response_headers"
 
     id = Column(Integer, primary_key=True)
-    response = Column(Integer, ForeignKey('http_response.id'))
-    header = Column(Integer, ForeignKey('http_header.id'))
+    response = Column(Integer, ForeignKey('http_response.id', onupdate="CASCADE", ondelete="CASCADE"))
+    header = Column(Integer, ForeignKey('http_header.id', onupdate="CASCADE", ondelete="CASCADE"))
 
 
 class HttpHeader(Base):
@@ -72,8 +75,8 @@ class Session(Base):
     name = Column(String, nullable=False)
     description = Column(String, default='')
     testplan = relationship("TestPlan", uselist=False, backref="session")
-    testplan_id = Column(Integer, ForeignKey('testplan.id'), nullable=True)
-    user_id = Column(Integer, ForeignKey('user.id'), nullable=False)
+    testplan_id = Column(Integer, ForeignKey('testplan.id', onupdate="CASCADE", ondelete="SET NULL"), nullable=True)
+    user_id = Column(Integer, ForeignKey('user.id', onupdate="CASCADE", ondelete="CASCADE"), nullable=False)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.datetime.utcnow)
     started_at = Column(DateTime)
@@ -88,7 +91,7 @@ class SessionExecution(Base):
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
     started_at = Column(DateTime)
     stopped_at = Column(DateTime)
-    session_id = Column(Integer, ForeignKey('session.id'), nullable=False)
+    session_id = Column(Integer, ForeignKey('session.id', onupdate="CASCADE", ondelete="CASCADE"), nullable=False)
     session_traffic = relationship("SessionTraffic", backref="session_execution")
     matches = relationship("Match", backref="session_execution")
 
@@ -97,7 +100,8 @@ class SessionTraffic(Base):
     __tablename__ = "session_traffic"
 
     id = Column(Integer, primary_key=True)
-    session_execution_id = Column(Integer, ForeignKey('session_execution.id'), nullable=False)
+    session_execution_id = Column(Integer, ForeignKey('session_execution.id', onupdate="CASCADE", ondelete="CASCADE"),
+                                  nullable=False)
     http_request_id = Column(Integer, ForeignKey('http_request.id'), nullable=False)
 
 
@@ -124,7 +128,7 @@ class Rule(Base):
     rule_type = Column(String, nullable=False)  # "request" or "response"
     filter = relationship("Filter", uselist=False, backref="rule")
     action = relationship("Action", uselist=False, backref="rule")
-    testplan_id = Column(Integer, ForeignKey('testplan.id'), nullable=False)
+    testplan_id = Column(Integer, ForeignKey('testplan.id', onupdate="CASCADE", ondelete="CASCADE"), nullable=False)
 
 
 # TODO: Should we have a unified Filter table or 2 (request and response)?
@@ -136,7 +140,7 @@ class Filter(Base):
     status_code = Column(String)
     url = Column(String)
     protocol = Column(String)
-    rule_id = Column(Integer, ForeignKey('rule.id'), nullable=False)
+    rule_id = Column(Integer, ForeignKey('rule.id', onupdate="CASCADE", ondelete="CASCADE"), nullable=False)
     filter_headers = relationship("FilterHeaders", backref="filter")
 
 
@@ -144,8 +148,8 @@ class FilterHeaders(Base):
     __tablename__ = "filter_headers"
 
     id = Column(Integer, primary_key=True)
-    filter_id= Column(Integer, ForeignKey('filter.id'))
-    header = Column(Integer, ForeignKey('http_header.id'))
+    filter_id = Column(Integer, ForeignKey('filter.id', onupdate="CASCADE", ondelete="CASCADE"))
+    header = Column(Integer, ForeignKey('http_header.id', onupdate="CASCADE", ondelete="CASCADE"))
 
 
 class Action(Base):
@@ -153,13 +157,13 @@ class Action(Base):
 
     id = Column(Integer, primary_key=True)
     type = Column(String, nullable=False)  # "request" or "response"
-    rule_id = Column(Integer, ForeignKey('rule.id'), nullable=False)
+    rule_id = Column(Integer, ForeignKey('rule.id', onupdate="CASCADE", ondelete="CASCADE"), nullable=False)
 
 
 class ActionResponse(Action):
     __tablename__ = "action_response"
 
-    id = Column(Integer, ForeignKey('action.id'), primary_key=True)
+    id = Column(Integer, ForeignKey('action.id', onupdate="CASCADE", ondelete="CASCADE"), primary_key=True)
     http_protocol = Column(String)
     status_code = Column(Integer)
     status_description = Column(String)
@@ -169,7 +173,7 @@ class ActionResponse(Action):
 class ActionRequest(Action):
     __tablename__ = "action_request"
 
-    id = Column(Integer, ForeignKey('action.id'), primary_key=True)
+    id = Column(Integer, ForeignKey('action.id', onupdate="CASCADE", ondelete="CASCADE"), primary_key=True)
     http_protocol = Column(String)
     method = Column(String)
     url = Column(String)
@@ -180,17 +184,18 @@ class ActionHeaders(Base):
     __tablename__ = "action_headers"
 
     id = Column(Integer, primary_key=True)
-    action = Column(Integer, ForeignKey('action.id'), nullable=False)
-    header = Column(Integer, ForeignKey('http_header.id'), nullable=False)
+    action = Column(Integer, ForeignKey('action.id', onupdate="CASCADE", ondelete="CASCADE"), nullable=False)
+    header = Column(Integer, ForeignKey('http_header.id', onupdate="CASCADE", ondelete="CASCADE"), nullable=False)
 
 
 class Match(Base):
     __tablename__ = "match"
 
     id = Column(Integer, primary_key=True)
-    session_execution_id = Column(Integer, ForeignKey('session_execution.id'), nullable=False)
-    rule_id = Column(Integer, ForeignKey('rule.id'), nullable=False)
-    http_request = Column(Integer, ForeignKey('http_request.id'), nullable=False)
+    session_execution_id = Column(Integer, ForeignKey('session_execution.id', onupdate="CASCADE", ondelete="CASCADE"),
+                                  nullable=False)
+    rule_id = Column(Integer, ForeignKey('rule.id', onupdate="CASCADE", ondelete="CASCADE"), nullable=False)
+    http_request = Column(Integer, ForeignKey('http_request.id', onupdate="CASCADE", ondelete="CASCADE"), nullable=False)
 
 
 class Recording(Base):
@@ -199,7 +204,7 @@ class Recording(Base):
     id = Column(Integer, primary_key=True)
     name = Column(String, nullable=False)
     description = Column(String, default='')
-    user = Column(Integer, ForeignKey('user.id'), nullable=False)
+    user = Column(Integer, ForeignKey('user.id', onupdate="CASCADE", ondelete="CASCADE"), nullable=False)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
     session_traffic = relationship("RecordingTraffic", backref="recording")
 
@@ -208,8 +213,8 @@ class RecordingTraffic(Base):
     __tablename__ = "recording_traffic"
 
     id = Column(Integer, primary_key=True)
-    recording_id = Column(Integer, ForeignKey('recording.id'), nullable=False)
-    http_request = Column(Integer, ForeignKey('http_request.id'), nullable=False)
+    recording_id = Column(Integer, ForeignKey('recording.id', onupdate="CASCADE", ondelete="CASCADE"), nullable=False)
+    http_request = Column(Integer, ForeignKey('http_request.id', onupdate="CASCADE", ondelete="CASCADE"), nullable=False)
 
 
 def init_db():
