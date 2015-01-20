@@ -26,7 +26,7 @@ def rest(request, *pargs):
         return rest_function(request, *pargs)
     except TypeError:
             r = JsonResponse({"error": "argument mismatch"})
-            r.status_code = 400 # 400 "BAD REQUEST"
+            r.status_code = 400  # 400 "BAD REQUEST"
             return r
 
 
@@ -42,6 +42,7 @@ def get(request, session_id=None):
         return r
     else:
         session_dict = {
+            'id': session.id,
             'name': session.name,
             'description': session.description,
             'created_at': session.created_at,
@@ -65,6 +66,7 @@ def get_all_sessions(request):
     session_list = list()
     for session in all_sessions:
         session_dict = {
+            'id': session.id,
             'name': session.name,
             'description': session.description,
             'created_at': session.created_at,
@@ -89,8 +91,6 @@ def post(request):
         assert "name" in new
         assert "user_id" in new
         assert "description" in new
-        assert "testPlan" in new
-        assert "id" in new['testPlan']
     except AssertionError:
         r = JsonResponse({"error": "argument mismatch"})
         r.status_code = 400
@@ -101,9 +101,15 @@ def post(request):
         return r
 
     dbsession = models.init_db()
-    session = models.Session(name=new['name'], description=new['description'], testplan_id=new['testPlan']['id'], user_id=new['user_id'])
+    session = models.Session(name=new['name'], description=new['description'],  user_id=new['user_id'])
     dbsession.add(session)
-    dbsession.commit()
+
+    try:
+        dbsession.commit()
+    except IntegrityError:
+        r = JsonResponse({"error": "user_id invalid"})
+        r.status_code = 409
+        return r
     r = JsonResponse({})
     r.status_code = 204
     return r
