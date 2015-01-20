@@ -1,15 +1,13 @@
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-from sqlalchemy import create_engine
-from sqlalchemy.orm import scoped_session
-from sqlalchemy.orm.session import sessionmaker
+from sqlalchemy.exc import IntegrityError
 from api import models
-import inspect
 
-#from IPython.core.debugger import Tracer
+import json
+
 
 @csrf_exempt
-def rest(request):
+def rest(request, *pargs):
     """
     Calls python function corresponding with HTTP METHOD name. 
     Calls with incomplete arguments will return HTTP 400 with a description and argument list.
@@ -25,22 +23,21 @@ def rest(request):
     else:
         return JsonResponse({"error": "HTTP METHOD UNKNOWN"})
 
-    # Call appropriate REST function, passing the conents of request.GET as keyword paremeters
-    # Calls that raise a TypeError will return a serialized description and arg list to the client
     try:
-        return rest_function(request, **request.GET)
+        return rest_function(request, *pargs)
     except TypeError:
-            required_arguments = inspect.getargspec(rest_function).args
-            required_arguments.remove('request') # Remove the request object, client doesn't need to see this
-            description = inspect.getdoc(rest_function)
-            r = JsonResponse({"description": description, "arguments": required_arguments})
+            r = JsonResponse({"error": "arguments mismatch"})
             r.status_code = 400 # 400 "BAD REQUEST"
             return r
 
-def get(request, username):
+
+def get(request, username=None):
     """Retrieve a user."""
+    if username is None:  # Retrieve all users
+        return get_all_users(request)
+
     dbsession = models.init_db()
-    user = dbsession.query(models.User).filter_by(username=username[0]).first()
+    user = dbsession.query(models.User).filter_by(username=username).first()
     if user is None:
         r = JsonResponse({"error": "user not found"})
         r.status_code = 404
@@ -57,54 +54,99 @@ def get(request, username):
         return r
 
 
-def post(request, username, email, password):
-    """Create a new user."""
+def get_all_users(request):
+    """Retrieves all users."""
     dbsession = models.init_db()
-    user = dbsession.query(models.User).filter_by(username=username[0]).first()
+    all_users = dbsession.query(models.User).all()
+    user_list = list()
+    for user in all_users:
+        user_list.append({
+            'username': user.username,
+            'email': user.email,
+            'created_at': user.created_at,
+            'update_at': user.update_at,
+            })
+    r = JsonResponse({"users": user_list})
+    r.status_code = 200
+    return r
+
+
+def post(request):
+    """Create a new user."""
+    try:
+        new = json.loads(request.body)
+        assert "username" in new
+        assert "password" in new
+        assert "email" in new
+    except AssertionError:
+        r = JsonResponse({"error": "argument mismatch"})
+        r.status_code = 400
+        return r
+    except ValueError:
+        r = JsonResponse({"error": "invalid JSON"})
+        r.status_code = 400
+        return r
+
+    dbsession = models.init_db()
+    user = dbsession.query(models.User).filter_by(username=new['username']).first()
     if user is not None:
         r = JsonResponse({"error": "user already exists"})
         r.status_code = 409
         return r
     else:
-        user = models.User(username=username[0], email=email[0], password=password[0])
+        user = models.User(username=new['username'], email=new['email'], password=new['password'])
         dbsession.add(user)
         dbsession.commit()
-        user_dict = {
-            'username': user.username,
-            'email': user.email,
-            }
-        r = JsonResponse(user_dict)
-        r.status_code = 200
+        r = JsonResponse({})
+        r.status_code = 204
         return r
 
 
-def put(request, username, email=None, password=None):
+def put(request, username):
     """Update existing user with matching username."""
+    try:
+        in_json = json.loads(request.body)
+    except ValueError:
+        r = JsonResponse({"error": "invalid JSON"})
+        r.status_code = 400
+        return r
+
     dbsession = models.init_db()
-    user = dbsession.query(models.User).filter_by(username=username[0]).first()
+    user = dbsession.query(models.User).filter_by(username=username).first()
     if user is None:
         r = JsonResponse({"error": "user not found"})
         r.status_code = 404
         return r
     else:
-        if email is not None:
-            user.email = email[0]
-        elif password is not None:
-            user.password = password[0]
-        import datetime
-        user.update_at = datetime.datetime.now()
-        dbsession.commit()
-        user_dict = {
-            'username': user.username,
-            'email': user.email,
-            'created_at': user.created_at,
-            'update_at': user.update_at,
-            }
-        r = JsonResponse(user_dict)
-        r.status_code = 200
+        if "username" in in_json:
+            user.username = in_json['username']
+        if "password" in in_json:
+            user.password = in_json['password']
+        if "email" in in_json:
+            user.email = in_json['email']
+        try:
+            dbsession.commit()
+        except IntegrityError:
+            r = JsonResponse({"error": "username already exists"})
+            r.status_code = 409
+            return r
+        r = JsonResponse({})
+        r.status_code = 204
         return r
         
 
-def delete(request):
-    # TODO this call should (possibly) not be accessible to the user, do we want them to be able to delete themselves?
-    return JsonResponse({__name__: request.method})
+def delete(request, username):
+    """Delete existing user matching username."""
+    dbsession = models.init_db()
+    user = dbsession.query(models.User).filter_by(username=username).first()
+    if user is None:
+        r = JsonResponse({"error": "user not found"})
+        r.status_code = 404
+        return r
+    else:
+        dbsession.delete(user)
+        dbsession.commit()
+        r = JsonResponse({})
+        r.status_code = 204
+        return r
+
