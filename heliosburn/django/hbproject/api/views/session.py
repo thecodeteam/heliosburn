@@ -30,6 +30,7 @@ def rest(request, *pargs):
             r.status_code = 400  # 400 "BAD REQUEST"
             return r
 
+
 @RequireLogin
 def get(request, session_id=None):
     """Retrieve a session."""
@@ -85,6 +86,7 @@ def get_all_sessions(request):
     return r
 
 
+@RequireLogin
 def post(request):
     """Create a new session."""
     try:
@@ -116,6 +118,7 @@ def post(request):
     return r
 
 
+@RequireLogin
 def put(request, session_id):
     """Update existing session."""
     try:
@@ -149,6 +152,7 @@ def put(request, session_id):
         return r
 
 
+@RequireLogin
 def delete(request, session_id):
     """Delete existing session."""
     dbsession = db_model.init_db()

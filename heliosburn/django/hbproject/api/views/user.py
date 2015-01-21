@@ -2,6 +2,7 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from sqlalchemy.exc import IntegrityError
 from api.models import db_model
+from api.models.auth import RequireLogin
 import hashlib
 import json
 
@@ -31,6 +32,7 @@ def rest(request, *pargs):
             return r
 
 
+@RequireLogin
 def get(request, username=None):
     """Retrieve a user."""
     if username is None:  # Retrieve all users
@@ -71,6 +73,7 @@ def get_all_users(request):
     return r
 
 
+@RequireLogin
 def post(request):
     """Create a new user."""
     try:
@@ -104,6 +107,7 @@ def post(request):
         return r
 
 
+@RequireLogin
 def put(request, username):
     """Update existing user with matching username."""
     try:
@@ -139,6 +143,7 @@ def put(request, username):
         return r
         
 
+@RequireLogin
 def delete(request, username):
     """Delete existing user matching username."""
     dbsession = db_model.init_db()
