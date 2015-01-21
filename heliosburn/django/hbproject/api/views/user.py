@@ -1,8 +1,8 @@
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from sqlalchemy.exc import IntegrityError
-from api import models
-
+from api.models import db_model
+import hashlib
 import json
 
 
@@ -36,8 +36,8 @@ def get(request, username=None):
     if username is None:  # Retrieve all users
         return get_all_users(request)
 
-    dbsession = models.init_db()
-    user = dbsession.query(models.User).filter_by(username=username).first()
+    dbsession = db_model.init_db()
+    user = dbsession.query(db_model.User).filter_by(username=username).first()
     if user is None:
         r = JsonResponse({"error": "user not found"})
         r.status_code = 404
@@ -56,8 +56,8 @@ def get(request, username=None):
 
 def get_all_users(request):
     """Retrieves all users."""
-    dbsession = models.init_db()
-    all_users = dbsession.query(models.User).all()
+    dbsession = db_model.init_db()
+    all_users = dbsession.query(db_model.User).all()
     user_list = list()
     for user in all_users:
         user_list.append({
@@ -87,14 +87,16 @@ def post(request):
         r.status_code = 400
         return r
 
-    dbsession = models.init_db()
-    user = dbsession.query(models.User).filter_by(username=new['username']).first()
+    dbsession = db_model.init_db()
+    user = dbsession.query(db_model.User).filter_by(username=new['username']).first()
     if user is not None:
         r = JsonResponse({"error": "user already exists"})
         r.status_code = 409
         return r
     else:
-        user = models.User(username=new['username'], email=new['email'], password=new['password'])
+        m = hashlib.sha512()
+        m.update(new['password'])
+        user = db_model.User(username=new['username'], email=new['email'], password=m.hexdigest())
         dbsession.add(user)
         dbsession.commit()
         r = JsonResponse({})
@@ -111,8 +113,8 @@ def put(request, username):
         r.status_code = 400
         return r
 
-    dbsession = models.init_db()
-    user = dbsession.query(models.User).filter_by(username=username).first()
+    dbsession = db_model.init_db()
+    user = dbsession.query(db_model.User).filter_by(username=username).first()
     if user is None:
         r = JsonResponse({"error": "user not found"})
         r.status_code = 404
@@ -121,7 +123,9 @@ def put(request, username):
         if "username" in in_json:
             user.username = in_json['username']
         if "password" in in_json:
-            user.password = in_json['password']
+            m = hashlib.sha512()
+            m.update(in_json['password'])
+            user.password = m.hexdigest()
         if "email" in in_json:
             user.email = in_json['email']
         try:
@@ -137,8 +141,8 @@ def put(request, username):
 
 def delete(request, username):
     """Delete existing user matching username."""
-    dbsession = models.init_db()
-    user = dbsession.query(models.User).filter_by(username=username).first()
+    dbsession = db_model.init_db()
+    user = dbsession.query(db_model.User).filter_by(username=username).first()
     if user is None:
         r = JsonResponse({"error": "user not found"})
         r.status_code = 404
