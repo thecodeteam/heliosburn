@@ -16,13 +16,20 @@ class HeliosAuthBackend(object):
         r = requests.post(url, data=json.dumps(payload))
 
         if r.status_code == requests.codes.ok:
+
+            token = r.headers.get('x-auth-token')
+            if not token:
+                return None
+
             try:
                 user = User.objects.get(username=username)
+                user.password = token
+                user.save()
             except User.DoesNotExist:
                 # Create a new user. Note that we can set password
                 # to anything, because it won't be checked; the password
                 # from settings.py will.
-                user = User(username=username, password='unused_password')
+                user = User(username=username, password=token)
                 user.is_staff = True
                 user.is_superuser = True
                 user.save()
