@@ -2,3 +2,4 @@ django
 psycopg2
 requests
 django-bootstrap-breadcrumbs
+redis

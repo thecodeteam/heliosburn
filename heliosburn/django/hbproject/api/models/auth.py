@@ -10,11 +10,9 @@ class RequireLogin(object):
             if self.valid_token_redis():
                 return self.f(request)
 
-        # 403 forbidden if you reach this point
-        from django.http import JsonResponse
-        r = JsonResponse({})
-        r.status_code = 403
-        return r
+        # 401 Unauthorized if you reach this point
+        from django.http import HttpResponse
+        return HttpResponse(status=401)
 
     def valid_token(self):  # TODO: DEPRECATED, remove this once redis is 100% confirmed for tokens
         import db_model
