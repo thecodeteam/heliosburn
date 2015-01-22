@@ -3,6 +3,7 @@ from django.views.decorators.csrf import csrf_exempt
 from sqlalchemy.exc import IntegrityError
 from api.models import db_model
 from api.models.auth import RequireLogin
+from api.models import redis_wrapper
 import hashlib
 import json
 
@@ -31,10 +32,25 @@ def rest(request, *pargs):
             return HttpResponseBadRequest("unknown method")
 
 
-#@RequireLogin
+@RequireLogin
 def get(request):
-
-    pass
+    if "from" in request.GET:
+        t_from = int(request.GET['from'])
+    else:
+        t_from = None
+    if "to" in request.GET:
+        t_to = int(request.GET['to'])
+    else:
+        t_to = None
+    r = redis_wrapper.init_redis(0)
+    traffic = r.zrangebyscore('heliosburn.traffic', '-inf', '+inf', withscores=False)
+    traffic = [json.loads(traf) for traf in traffic]
+    r = {
+        "count": len(traffic),
+        "more": False,
+        "requests": traffic
+        }
+    return JsonResponse(r)
 
 @RequireLogin
 def post(request):

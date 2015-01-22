@@ -11,7 +11,7 @@ if __name__ == "__main__":
     while True:
 
         # gets the new traffic
-        traffic = r.zrangebyscore('test_traffic', last_time, '+inf', withscores=True)
+        traffic = r.zrangebyscore('heliosburn.traffic', last_time, '+inf', withscores=True)
         print "* Received %d requests" % (len(traffic), )
 
         for message in traffic:
@@ -27,4 +27,3 @@ if __name__ == "__main__":
                 request['response']['statusDescription'])
 
         raw_input("Press key to get more traffic...")
-        #time.sleep(2)

@@ -51,11 +51,11 @@ if __name__ == "__main__":
         score = current_milli_time()
 
         # Remove traffic older than 10 seconds
-        result = r.zremrangebyscore('test_traffic', '-inf', score - 10*1000)
+        result = r.zremrangebyscore('heliosburn.traffic', '-inf', score - 10*1000)
         print '* Cleaned %d messages' % (result,)
 
         # Add request to set
-        result = r.zadd('test_traffic', score, request)
+        result = r.zadd('heliosburn.traffic', score, request)
         print '* Message with score %d sent successfully' % (score, ) if result else 'Could not sent message (%d)' % (score,)
 
         print "Traffic piece #%d added" % i
