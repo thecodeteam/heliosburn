@@ -89,7 +89,10 @@ def post(request):
     try:
         new = json.loads(request.body)
         assert "name" in new
-        assert "user_id" in new
+        if hasattr(request, "user_id"):
+            new['user_id'] = request.user_id
+        else:
+            assert "user_id" in new
         assert "description" in new
     except AssertionError:
         r = JsonResponse({"error": "argument mismatch"})
