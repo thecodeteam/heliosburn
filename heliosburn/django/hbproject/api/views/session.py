@@ -1,4 +1,4 @@
-from django.http import JsonResponse, HttpResponseBadRequest
+from django.http import JsonResponse, HttpResponseBadRequest, HttpResponseNotFound, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 import json
 from api.models import db_model
@@ -38,9 +38,7 @@ def get(request, session_id=None):
     dbsession = db_model.init_db()
     session = dbsession.query(db_model.Session).filter_by(id=session_id).first()
     if session is None:
-        r = JsonResponse({"error": "session id '%s' not found" % session_id})
-        r.status_code = 404
-        return r
+        return HttpResponseNotFound("", status=404)
     else:
         session_dict = {
             'id': session.id,
@@ -79,8 +77,7 @@ def get_all_sessions(request):
         }
         session_list.append(session_dict)
 
-    r = JsonResponse({"sessions": session_list})
-    return r
+    return JsonResponse({"sessions": session_list}, status=200)
 
 
 @RequireLogin
@@ -95,13 +92,9 @@ def post(request):
             assert "user_id" in new
         assert "description" in new
     except AssertionError:
-        r = JsonResponse({"error": "argument mismatch"})
-        r.status_code = 400
-        return r
+        return HttpResponseBadRequest("argument mismatch", status=400)
     except ValueError:
-        r = JsonResponse({"error": "invalid JSON"})
-        r.status_code = 400
-        return r
+        return HttpResponseBadRequest("invalid JSON", status=400)
 
     dbsession = db_model.init_db()
     session = db_model.Session(name=new['name'], description=new['description'], user_id=new['user_id'])
@@ -115,12 +108,8 @@ def post(request):
     try:
         dbsession.commit()
     except IntegrityError as e:
-        r = JsonResponse({"error": "%s" % e})
-        r.status_code = 409
-        return r
-    r = JsonResponse({})
-    r.status_code = 204
-    return r
+        return HttpResponseBadRequest("constraint violated", status=409)
+    return HttpResponse("", status=204)
 
 
 @RequireLogin
@@ -129,16 +118,12 @@ def put(request, session_id):
     try:
         new = json.loads(request.body)
     except ValueError:
-        r = JsonResponse({"error": "invalid JSON"})
-        r.status_code = 400
-        return r
+        return HttpResponseBadRequest("invalid JSON", status=400)
 
     dbsession = db_model.init_db()
     session = dbsession.query(db_model.Session).filter_by(id=session_id).first()
     if session is None:
-        r = JsonResponse({})
-        r.status_code = 404
-        return r
+        return HttpResponseNotFound("", status=404)
     else:
         if "name" in new:
             session.name = new['name']
@@ -151,12 +136,8 @@ def put(request, session_id):
         try:
             dbsession.commit()
         except IntegrityError as e:
-            r = JsonResponse({"error": "%s" % e})
-            r.status_code = 409
-            return r
-        r = JsonResponse({})
-        r.status_code = 204
-        return r
+            return HttpResponseBadRequest("constraint violated", status=409)
+        return HttpResponse("", status=204)
 
 
 @RequireLogin
@@ -171,7 +152,5 @@ def delete(request, session_id):
     else:
         dbsession.delete(session)
         dbsession.commit()
-        r = JsonResponse({})
-        r.status_code = 204
-        return r
+        return HttpResponse("", status=204)
 
