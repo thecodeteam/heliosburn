@@ -29,6 +29,7 @@ def rest(request, *pargs):
             return HttpResponseBadRequest("argument mismatch")
 
 
+@RequireLogin
 def get(request, testplan_id=None):
     """Retrieve a test plan."""
     if testplan_id is None:
@@ -72,6 +73,7 @@ def get_all_testplans():
     return JsonResponse({"testplans": all_testplans}, status=200)
 
 
+@RequireLogin
 def post(request):
     """Create a new test plan."""
     try:
@@ -98,6 +100,7 @@ def post(request):
     return HttpResponse("", status=204)
 
 
+@RequireLogin
 def put(request, testplan_id):
     """Update existing test plan."""
     try:
@@ -127,6 +130,7 @@ def put(request, testplan_id):
         return HttpResponse("", status=204)
 
 
+@RequireLogin
 def delete(request, testplan_id):
     """Delete existing test plan."""
     dbsession = db_model.init_db()
