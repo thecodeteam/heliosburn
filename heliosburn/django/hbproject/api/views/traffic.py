@@ -34,14 +34,6 @@ def rest(request, *pargs):
 
 @RequireLogin
 def get(request):
-    if "from" in request.GET:
-        t_from = int(request.GET['from'])
-    else:
-        t_from = None
-    if "to" in request.GET:
-        t_to = int(request.GET['to'])
-    else:
-        t_to = None
     r = redis_wrapper.init_redis(0)
     traffic = r.zrangebyscore('heliosburn.traffic', '-inf', '+inf', withscores=False)
     traffic = [json.loads(traf) for traf in traffic]
