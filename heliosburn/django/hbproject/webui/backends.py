@@ -1,23 +1,35 @@
 from django.conf import settings
-from django.contrib.auth.models import User, check_password, make_password
+from django.contrib.auth.models import User
+import requests
+import json
 
 
 class HeliosAuthBackend(object):
     """
-    Authenticate against the settings ADMIN_LOGIN and ADMIN_PASSWORD.
+    Authenticate against the API.
     """
 
     def authenticate(self, username=None, password=None):
-        login_valid = (settings.ADMIN_LOGIN == username)
-        pwd_valid = check_password(password, settings.ADMIN_PASSWORD)
-        if login_valid and pwd_valid:
+
+        payload = {'username': username, 'password': password}
+        url = '%s/auth/login/' % (settings.API_BASE_URL,)
+        r = requests.post(url, data=json.dumps(payload))
+
+        if r.status_code == requests.codes.ok:
+
+            token = r.headers.get('x-auth-token')
+            if not token:
+                return None
+
             try:
                 user = User.objects.get(username=username)
+                user.password = token
+                user.save()
             except User.DoesNotExist:
                 # Create a new user. Note that we can set password
                 # to anything, because it won't be checked; the password
                 # from settings.py will.
-                user = User(username=username, password='unused_password')
+                user = User(username=username, password=token)
                 user.is_staff = True
                 user.is_superuser = True
                 user.save()

@@ -30,5 +30,5 @@ urlpatterns = patterns(
 
     url(r'^ajax/traffic/$', 'ajax_traffic', name='ajax_traffic'),
 
-    url(r'^settings/$', 'settings', name='settings'),
+    url(r'^settings/$', 'settings_view', name='settings'),
 )

@@ -1,4 +1,4 @@
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponseBadRequest
 from django.views.decorators.csrf import csrf_exempt
 import json
 from api.models import db_model
@@ -10,7 +10,7 @@ from sqlalchemy.exc import IntegrityError
 def rest(request, *pargs):
     """
     Calls python function corresponding with HTTP METHOD name. 
-    Calls with incomplete arguments will return HTTP 400 with a description and argument list.
+    Calls with incomplete arguments will return HTTP 400
     """
     if request.method == 'GET':
         rest_function = get
@@ -25,10 +25,10 @@ def rest(request, *pargs):
 
     try:
         return rest_function(request, *pargs)
-    except TypeError:
-            r = JsonResponse({"error": "argument mismatch"})
-            r.status_code = 400  # 400 "BAD REQUEST"
-            return r
+    except TypeError as inst:
+        print inst
+        return HttpResponseBadRequest("argument mismatch")
+
 
 @RequireLogin
 def get(request, session_id=None):
@@ -46,17 +46,15 @@ def get(request, session_id=None):
             'id': session.id,
             'name': session.name,
             'description': session.description,
-            'created_at': session.created_at,
-            'updated_at': session.updated_at,
-            'started_at': session.started_at,
-            'stopped_at': session.stopped_at,
+            'testPlan': session.testplan,
+            'createdAt': session.created_at,
+            'updatedAt': session.updated_at,
             'user': {
                 "username": session.user.username,
                 "email": session.user.email,
-                }
             }
+        }
         r = JsonResponse(session_dict)
-        r.status_code = 200
         return r
 
 
@@ -70,21 +68,22 @@ def get_all_sessions(request):
             'id': session.id,
             'name': session.name,
             'description': session.description,
-            'created_at': session.created_at,
-            'updated_at': session.updated_at,
-            'started_at': session.started_at,
-            'stopped_at': session.stopped_at,
+            'testPlan': session.testplan,
+            'createdAt': session.created_at,
+            'updatedAt': session.updated_at,
             'user': {
                 "username": session.user.username,
                 "email": session.user.email,
-                }
-            }
+            },
+            "executions": 0  # TODO: get the real value here
+        }
         session_list.append(session_dict)
+
     r = JsonResponse({"sessions": session_list})
-    r.status_code = 200
     return r
 
 
+@RequireLogin
 def post(request):
     """Create a new session."""
     try:
@@ -102,13 +101,18 @@ def post(request):
         return r
 
     dbsession = db_model.init_db()
-    session = db_model.Session(name=new['name'], description=new['description'],  user_id=new['user_id'])
+    session = db_model.Session(name=new['name'], description=new['description'], user_id=new['user_id'])
+
+    # Add optional column values
+    if "testplan_id" in new:
+        session.testplan_id = new['testplan_id']
+
     dbsession.add(session)
 
     try:
         dbsession.commit()
-    except IntegrityError:
-        r = JsonResponse({"error": "user_id invalid"})
+    except IntegrityError as e:
+        r = JsonResponse({"error": "%s" % e})
         r.status_code = 409
         return r
     r = JsonResponse({})
@@ -116,6 +120,7 @@ def post(request):
     return r
 
 
+@RequireLogin
 def put(request, session_id):
     """Update existing session."""
     try:
@@ -136,12 +141,14 @@ def put(request, session_id):
             session.name = new['name']
         if "description" in new:
             session.description = new['description']
-        if ("user" in new) and ("id" in new['user']):
-            session.user_id = new['user']['id']
+        if "user_id" in new['user']:
+            session.user_id = new['user_id']
+        if "testplan_id" in new['user']:
+            session.testplan_id = new['user_id']
         try:
             dbsession.commit()
-        except IntegrityError:
-            r = JsonResponse({"error": "user id invalid"})
+        except IntegrityError as e:
+            r = JsonResponse({"error": "%s" % e})
             r.status_code = 409
             return r
         r = JsonResponse({})
@@ -149,6 +156,7 @@ def put(request, session_id):
         return r
 
 
+@RequireLogin
 def delete(request, session_id):
     """Delete existing session."""
     dbsession = db_model.init_db()

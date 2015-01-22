@@ -2,6 +2,7 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from sqlalchemy.exc import IntegrityError
 from api.models import db_model
+from api.models.auth import RequireLogin
 import hashlib
 import json
 
@@ -10,7 +11,7 @@ import json
 def rest(request, *pargs):
     """
     Calls python function corresponding with HTTP METHOD name. 
-    Calls with incomplete arguments will return HTTP 400 with a description and argument list.
+    Calls with incomplete arguments will return HTTP 400
     """
     if request.method == 'GET':
         rest_function = get
@@ -27,10 +28,11 @@ def rest(request, *pargs):
         return rest_function(request, *pargs)
     except TypeError:
             r = JsonResponse({"error": "arguments mismatch"})
-            r.status_code = 400 # 400 "BAD REQUEST"
+            r.status_code = 400
             return r
 
 
+@RequireLogin
 def get(request, username=None):
     """Retrieve a user."""
     if username is None:  # Retrieve all users
@@ -71,6 +73,7 @@ def get_all_users(request):
     return r
 
 
+@RequireLogin
 def post(request):
     """Create a new user."""
     try:
@@ -104,6 +107,7 @@ def post(request):
         return r
 
 
+@RequireLogin
 def put(request, username):
     """Update existing user with matching username."""
     try:
@@ -139,6 +143,7 @@ def put(request, username):
         return r
         
 
+@RequireLogin
 def delete(request, username):
     """Delete existing user matching username."""
     dbsession = db_model.init_db()

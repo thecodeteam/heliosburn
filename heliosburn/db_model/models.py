@@ -9,14 +9,12 @@ Base = declarative_base()
 
 
 class User(Base):
-    __tablename__ = "user"
+    __tablename__ = "hbuser"
 
     id = Column(Integer, primary_key=True)
     username = Column(String, nullable=False, unique=True)
     email = Column(String, nullable=False)
     password = Column(String, nullable=False)
-    token = Column(String, nullable=True)
-    token_created_at = Column(DateTime, nullable=True)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
     update_at = Column(DateTime, default=datetime.datetime.utcnow)
     sessions = relationship("Session", cascade="all", backref="user")
@@ -76,11 +74,9 @@ class Session(Base):
     description = Column(String, default='')
     testplan = relationship("TestPlan", uselist=False, backref="session")
     testplan_id = Column(Integer, ForeignKey('testplan.id', onupdate="CASCADE", ondelete="SET NULL"), nullable=True)
-    user_id = Column(Integer, ForeignKey('user.id', onupdate="CASCADE", ondelete="CASCADE"), nullable=False)
+    user_id = Column(Integer, ForeignKey('hbuser.id', onupdate="CASCADE", ondelete="CASCADE"), nullable=False)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.datetime.utcnow)
-    started_at = Column(DateTime)
-    stopped_at = Column(DateTime)
     session_executions = relationship("SessionExecution", backref="session")
 
 
@@ -204,7 +200,7 @@ class Recording(Base):
     id = Column(Integer, primary_key=True)
     name = Column(String, nullable=False)
     description = Column(String, default='')
-    user = Column(Integer, ForeignKey('user.id', onupdate="CASCADE", ondelete="CASCADE"), nullable=False)
+    user = Column(Integer, ForeignKey('hbuser.id', onupdate="CASCADE", ondelete="CASCADE"), nullable=False)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
     session_traffic = relationship("RecordingTraffic", backref="recording")
 
