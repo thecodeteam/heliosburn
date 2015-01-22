@@ -9,7 +9,7 @@ Base = declarative_base()
 
 
 class User(Base):
-    __tablename__ = "user"
+    __tablename__ = "hbuser"
 
     id = Column(Integer, primary_key=True)
     username = Column(String, nullable=False, unique=True)
@@ -74,7 +74,7 @@ class Session(Base):
     description = Column(String, default='')
     testplan = relationship("TestPlan", uselist=False, backref="session")
     testplan_id = Column(Integer, ForeignKey('testplan.id', onupdate="CASCADE", ondelete="SET NULL"), nullable=True)
-    user_id = Column(Integer, ForeignKey('user.id', onupdate="CASCADE", ondelete="CASCADE"), nullable=False)
+    user_id = Column(Integer, ForeignKey('hbuser.id', onupdate="CASCADE", ondelete="CASCADE"), nullable=False)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.datetime.utcnow)
     started_at = Column(DateTime)
@@ -202,7 +202,7 @@ class Recording(Base):
     id = Column(Integer, primary_key=True)
     name = Column(String, nullable=False)
     description = Column(String, default='')
-    user = Column(Integer, ForeignKey('user.id', onupdate="CASCADE", ondelete="CASCADE"), nullable=False)
+    user = Column(Integer, ForeignKey('hbuser.id', onupdate="CASCADE", ondelete="CASCADE"), nullable=False)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
     session_traffic = relationship("RecordingTraffic", backref="recording")
 
