@@ -4,7 +4,7 @@ from api.models import db_model
 import json
 import hashlib
 import os
-from datetime import datetime
+
 
 @csrf_exempt
 def login(request):
@@ -38,9 +38,9 @@ def login(request):
             m = hashlib.sha512()
             m.update(os.urandom(64))
             token_string = m.hexdigest()
-            user.token = token_string
-            user.token_created_at = datetime.now()
-            dbsession.commit()
+            from api.models import redis_wrapper
+            r = redis_wrapper.init_redis(1)
+            r.set(token_string, user.id, 3600)  # Store tokens to expire in 1 hour
             r = JsonResponse({})
             r['X-Auth-Token'] = token_string
             r.status_code = 204
