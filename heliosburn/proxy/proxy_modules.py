@@ -20,15 +20,16 @@ def addLag(RequestObject, minimum = 1, maximum = 1):
     import time
     import random
 
+    lagtime = None
     if minimum > 0 and maximum > minimum:
         lagtime = random.randrange(minimum, maximum)
 
     if minimum == maximum:
         lagtime = minimum
 
-    if lagtime in locals():
+    if lagtime is not None:
         print "sleeping for: %s (%s, %s)" % (lagtime, minimum, maximum)
-        #time.sleep(lagtime)
+        time.sleep(lagtime)
     else:
         print "pretend we slept here"
 

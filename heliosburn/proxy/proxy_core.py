@@ -11,26 +11,46 @@ from twisted.web.proxy import ReverseProxyRequest
 from twisted.web.proxy import ReverseProxyResource
 from twisted.web.proxy import ProxyClientFactory
 from twisted.web.proxy import ProxyClient
-from proxy_modules import *
+from modules import *
+from modules import addLag
 
 
+
+print dir()
+print globals()
 with open('./config.yaml', 'r+') as config_file:
-    params = yaml.load(config_file.read())
+    config = yaml.load(config_file.read())
 
 log.startLogging(sys.stdout)
 
-site = server.Site(proxy.ReverseProxyResource(params['upstream']['address'], 
-                                                params['upstream']['port'],
+site = server.Site(proxy.ReverseProxyResource(config['upstream']['address'], 
+                                                config['upstream']['port'],
                                                 ''))
-if 'http' in params['proxy']['protocols'] : 
-    http_address = params['proxy']['protocols']
-    http_port = 8880
+if 'http' in config['proxy']['protocols'] : 
+    http_address = config['proxy']['bind']
+    http_port = config['proxy']['protocols']['http']
 
-upstream_host = params['upstream']['address']
-upstream_port = params['upstream']['port']
+upstream_host = config['upstream']['address']
+upstream_port = config['upstream']['port']
 
  
-print params
+print config
+
+def get_class(mod_dict):
+    print "mod_dict: %s" % mod_dict
+    module_path = mod_dict['path']
+    class_name = mod_dict['name']
+    try:
+        module = __import__(module_path, fromlist=[class_name])
+    except ImportError:
+        raise ValueError("Module '%s' could not be imported" % (module_path,))
+
+    try:
+        class_ = getattr(module, class_name)
+    except AttributeError:
+        raise ValueError("Module '%s' has no class '%s'" %(module_path, class_name,))
+    return class_
+
 class MyProxyClient(ProxyClient):
  
         def handleStatus(self, version, code, message):
@@ -59,7 +79,15 @@ class MyProxyClient(ProxyClient):
                     print "UPSTREAM MSG :  %s" % (self.father.code_message)
                     print "UPSTREAM HEADERS : %s" % (self.father.responseHeaders)
                     print "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
-                       
+
+                    for  module_dict in config['proxy']['modules']:
+                        class_ = get_class(module_dict)
+                        print class_
+                        print type(class_)
+                        instance_ = class_( context='response', proxy_object=self,
+                                        run_contexts=module_dict['run_contexts'])
+                        instance_.run(**module_dict['kwargs'])
+
                 ProxyClient.handleResponseEnd(self)
                
  
@@ -67,35 +95,19 @@ class MyProxyClientFactory(ProxyClientFactory):
         protocol = MyProxyClient
  
        
+
 class MyReverseProxyRequest(ReverseProxyRequest):
         proxyClientFactoryClass = MyProxyClientFactory
        
         def process(self):
                
-                # Here we can add modifications to the Request:
-                #self.method = 'POST'
-                # End of modifications
-                mq_request_info = {}
-                mq_request_info['HEADERS'] = {}
-                for key, value in self.requestHeaders.getAllRawHeaders():
-                    mq_request_info['HEADERS'][key] = value
-                mq_request_info['METHOD'] = self.method
-                mq_request_info['URI'] = self.uri
-                mq_request_json = json.dumps(mq_request_info)
-                print "json dump: %s" % (mq_request_info)
-                 
-
-                for  module_list in params['proxy']['modules']['request']:
-                    module_name = module_list[0]       
-                    if len(module_list) > 1:
-                        module_params = module_list[1] 
-                        runstring = "{}(self,*{})".format(module_name, module_params)
-                        call_string = "{}".format(module_name)
-                    else:
-                        runstring = "{}(self,*{})".format(module_name)
-
-                    print "Running: %s" % runstring
-                    eval(runstring)
+                for  module_dict in config['proxy']['modules']:
+                    class_ = get_class(module_dict)
+                    print class_
+                    print type(class_)
+                    instance_ = class_( context='request', proxy_object=self,
+                                        run_contexts=module_dict['run_contexts'])
+                    instance_.run(**module_dict['kwargs'])
 
                 print ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
                 print "VERB : %s" % (self.method)
@@ -124,5 +136,5 @@ class MyReverseProxyResource(ReverseProxyResource):
 resource = MyReverseProxyResource(upstream_host, upstream_port, '')              
 f = server.Site(resource)
 f.requestFactory = MyReverseProxyRequest
-reactor.listenTCP(http_port, f)
+reactor.listenTCP(http_port, f, interface=http_address)
 reactor.run()

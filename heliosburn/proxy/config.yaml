@@ -2,19 +2,23 @@ proxy:
   bind: '127.0.0.1'
   protocols:
     http: 8880
-    https: 8843
   modules:
-      request:
-          [ 
-           [ "addLag", [1,2] ],
-           [ "makeBanner", ["here"] ]
-          ]
-      response:
-          - responseCode:
-          - responseMessage:
+    [ 
+        {
+          name: 'serialize',
+          path: 'modules.serialize',
+          run_contexts: ['request', 'response'],
+          kwargs: {}
+        },
+        { name: 'addLag',
+          path: 'modules.addLag',
+          run_contexts: ['request'],
+          kwargs: { minimum: 1, maximum: 5, }
+        }
+    ]
 upstream:
-  address: 'www.google.com'
-  port: 80
+  address: '127.0.0.1'
+  port: 9980
 
 
 
