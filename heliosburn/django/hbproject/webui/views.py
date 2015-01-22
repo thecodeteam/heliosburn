@@ -24,15 +24,24 @@ def signin(request):
 
     username = request.POST.get('username', '')
     password = request.POST.get('password', '')
-    user = auth.authenticate(username=username, password=password)
 
-    if user is not None:
-        auth.login(request, user)
-        redirect_url = request.GET.get('next', reverse('dashboard'))
-        return HttpResponseRedirect(redirect_url)
-    else:
+    if not username or not password:
         messages.error(request, 'Invalid login credentials')
         return render(request, 'signin.html')
+
+    try:
+        user = auth.authenticate(username=username, password=password)
+    except Exception as inst:
+        messages.error(request, 'Something went wrong.')
+        return render(request, 'signin.html')
+
+    if not user:
+        messages.error(request, 'Invalid login credentials')
+        return render(request, 'signin.html')
+
+    auth.login(request, user)
+    redirect_url = request.GET.get('next', reverse('dashboard'))
+    return HttpResponseRedirect(redirect_url)
 
 
 def signout(request):

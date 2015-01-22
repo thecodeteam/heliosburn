@@ -1,16 +1,21 @@
 from django.conf import settings
-from django.contrib.auth.models import User, check_password, make_password
+from django.contrib.auth.models import User
+import requests
+import json
 
 
 class HeliosAuthBackend(object):
     """
-    Authenticate against the settings ADMIN_LOGIN and ADMIN_PASSWORD.
+    Authenticate against the API.
     """
 
     def authenticate(self, username=None, password=None):
-        login_valid = (settings.ADMIN_LOGIN == username)
-        pwd_valid = check_password(password, settings.ADMIN_PASSWORD)
-        if login_valid and pwd_valid:
+
+        payload = {'username': username, 'password': password}
+        url = '%s/api/auth/login/' % (settings.API_BASE_URL,)
+        r = requests.post(url, data=json.dumps(payload))
+
+        if r.status_code == requests.codes.ok:
             try:
                 user = User.objects.get(username=username)
             except User.DoesNotExist:
