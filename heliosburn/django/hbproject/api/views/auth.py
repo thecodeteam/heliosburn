@@ -11,6 +11,11 @@ def login(request):
     """
     Authenticates given 'username' and 'password_hash' against user in database.
     """
+    if request.method != 'POST':
+        r = HttpResponse('Invalid method. Only POST method accepted.', status=405)
+        r['Allow'] = 'POST'
+        return r
+    
     try:
         in_json = json.loads(request.body)
         assert "username" in in_json
