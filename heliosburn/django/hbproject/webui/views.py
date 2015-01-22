@@ -4,6 +4,7 @@ from django.core.urlresolvers import reverse
 from django.contrib.staticfiles.templatetags.staticfiles import static
 from django.contrib.auth.decorators import login_required
 from django.contrib import auth, messages
+from django.conf import settings
 import requests
 import json
 import random
@@ -118,14 +119,17 @@ def session_new(request):
 
 @login_required
 def session_list(request):
-    url = get_mock_url('session-list.json')
-    r = requests.get(url)
+
+    url = '%s/session/' % (settings.API_BASE_URL,)
+    headers = {'X-Auth-Token': request.user.password}
+    r = requests.get(url, headers=headers)
+
+    if r.status_code != requests.codes.ok:
+        return signout(request)
+
     sessions = json.loads(r.text)
 
-    args = {}
-    args['sessions'] = sessions
-
-    return render(request, 'sessions/session_list.html', args)
+    return render(request, 'sessions/session_list.html', sessions)
 
 
 @login_required
@@ -281,7 +285,7 @@ def recording_update(request):
 
 
 @login_required
-def settings(request):
+def settings_view(request):
     return render(request, 'settings/settings.html')
 
 

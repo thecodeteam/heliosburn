@@ -12,7 +12,7 @@ class HeliosAuthBackend(object):
     def authenticate(self, username=None, password=None):
 
         payload = {'username': username, 'password': password}
-        url = '%s/api/auth/login/' % (settings.API_BASE_URL,)
+        url = '%s/auth/login/' % (settings.API_BASE_URL,)
         r = requests.post(url, data=json.dumps(payload))
 
         if r.status_code == requests.codes.ok:
