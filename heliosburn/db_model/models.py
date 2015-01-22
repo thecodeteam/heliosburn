@@ -77,8 +77,6 @@ class Session(Base):
     user_id = Column(Integer, ForeignKey('hbuser.id', onupdate="CASCADE", ondelete="CASCADE"), nullable=False)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.datetime.utcnow)
-    started_at = Column(DateTime)
-    stopped_at = Column(DateTime)
     session_executions = relationship("SessionExecution", backref="session")
 
 
