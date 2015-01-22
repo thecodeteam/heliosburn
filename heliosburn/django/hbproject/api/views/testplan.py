@@ -1,4 +1,4 @@
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponseNotFound, HttpResponseBadRequest, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from api.models import db_model
 from api.models.auth import RequireLogin
@@ -26,9 +26,7 @@ def rest(request, *pargs):
     try:
         return rest_function(request, *pargs)
     except TypeError:
-            r = JsonResponse({"error": "arguments mismatch"})
-            r.status_code = 400
-            return r
+            return HttpResponseBadRequest("argument mismatch")
 
 
 def get(request, testplan_id=None):
@@ -39,11 +37,9 @@ def get(request, testplan_id=None):
     dbsession = db_model.init_db()
     testplan = dbsession.query(db_model.TestPlan).filter_by(id=testplan_id).first()
     if testplan is None:
-        r = JsonResponse({})
-        r.status_code = 404
-        return r
+        return HttpResponseNotFound("")
     else:
-        r = JsonResponse({
+        return JsonResponse({
             'id': testplan.id,
             'name': testplan.name,
             'description': testplan.description,
@@ -53,9 +49,7 @@ def get(request, testplan_id=None):
             'client_latency': testplan.client_latency,
             'server_latency': testplan.server_latency,
             'rules': testplan.rules,
-            })
-        r.status_code = 200
-        return r
+            }, status=200)
 
 
 def get_all_testplans():
@@ -75,9 +69,7 @@ def get_all_testplans():
             'server_latency': testplan.server_latency,
             'rules': testplan.rules,
             })
-    r = JsonResponse({"testplans": all_testplans})
-    r.status_code = 200
-    return r
+    return JsonResponse({"testplans": all_testplans}, status=200)
 
 
 def post(request):
@@ -86,13 +78,9 @@ def post(request):
         new = json.loads(request.body)
         assert "name" in new
     except ValueError:
-        r = JsonResponse({"error": "invalid JSON"})
-        r.status_code = 400
-        return r
+        return HttpResponseBadRequest("invalid JSON")
     except AssertionError:
-        r = JsonResponse({"error": "argument mismatch"})
-        r.status_code = 400
-        return r
+        return HttpResponseBadRequest("argument mismatch")
 
     dbsession = db_model.init_db()
     testplan = db_model.TestPlan(name=new['name'])
@@ -107,9 +95,7 @@ def post(request):
 
     dbsession.add(testplan)
     dbsession.commit()
-    r = JsonResponse({})
-    r.status_code = 204
-    return r
+    return HttpResponse("", status=204)
 
 
 def put(request, testplan_id):
@@ -117,16 +103,12 @@ def put(request, testplan_id):
     try:
         in_json = json.loads(request.body)
     except ValueError:
-        r = JsonResponse({"error": "invalid JSON"})
-        r.status_code = 400
-        return r
+        return HttpResponseBadRequest("invalid JSON")
 
     dbsession = db_model.init_db()
-    testplan = db_model.query(db_model.TestPlan).filter_by(id=testplan_id).first()
+    testplan = dbsession.query(db_model.TestPlan).filter_by(id=testplan_id).first()
     if testplan is None:
-        r = JsonResponse({})
-        r.status_code = 404
-        return r
+        return HttpResponseNotFound("")
     else:
         if "name" in in_json:
             testplan.name = in_json['name']
@@ -141,14 +123,23 @@ def put(request, testplan_id):
         try:
             dbsession.commit()
         except IntegrityError:
-            r = JsonResponse({"error": "constraint violated"})
-            r.status_code = 409
-            return r
-        r = JsonResponse({})
-        r.status_code = 204
-        return r
+            return HttpResponseBadRequest("constraint violated")
+        return HttpResponse("", status=204)
 
 
 def delete(request, testplan_id):
     """Delete existing test plan."""
+    dbsession = db_model.init_db()
+    testplan = dbsession.query(db_model.TestPlan).filter_by(id=testplan_id).first()
+    if testplan is None:
+        return HttpResponseNotFound("")
+    else:
+        dbsession.delete(testplan)
+        try:
+            dbsession.commit()
+        except IntegrityError:
+            return HttpResponseBadRequest("constraint violated")
+        return HttpResponse("", status=204)
+
+
 
