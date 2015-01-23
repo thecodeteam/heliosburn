@@ -1,30 +1,25 @@
+import time
 from modules.base import ProxyModuleBase
+
+current_milli_time = lambda: int(round(time.time() * 1000))
 
 class redisDump(ProxyModuleBase):
 
+
+
     def onRequest(self, **kwargs):
-        import json
-        request_info = {}
-        request_info['HEADERS'] = {}
-        for key, value in self.request_object.requestHeaders.getAllRawHeaders():
-            request_info['HEADERS'][key] = value
-        request_info['METHOD'] = self.request_object.method
-        request_info['URI'] = self.request_object.uri
-        request_json = json.dumps(request_info)
-        print "serializing request META-DATA for MQ"
-        print request_json
+        pass
 
     def onResponse(self, **kwargs):
         import json
         import redis
         import datetime
-        import time 
-        import random 
+        import random
         now = datetime.datetime.now()
 
         request = {}
         request['createdAt'] = now.strftime('%Y-%m-%d %H:%M:%S')
-        request['httpProtocol'] = "HTTP/1.1" 
+        request['httpProtocol'] = "HTTP/1.1"
         request['method'] = self.request_object.method
         request['url'] = self.request_object.uri
         request['response'] = {}
@@ -41,16 +36,14 @@ class redisDump(ProxyModuleBase):
                                 port = kwargs['redis_port'],
                                 db = kwargs['redis_db'] )
 
-        current_milli_time = lambda: int(round(time.time() * 1000))
-
         score = current_milli_time()
 
         # Remove traffic older than 10 seconds
-        result = r.zremrangebyscore('test_traffic', '-inf', score - 10*1000)
+        result = r.zremrangebyscore('heliosburn.traffic', '-inf', score - 10*1000)
         print '* Cleaned %d messages' % (result,)
 
         # Add request to set
-        result = r.zadd('test_traffic', score, request)
+        result = r.zadd('heliosburn.traffic', score, response_json)
         print '* Message with score %d sent successfully' % (score, ) if result else 'Could not sent message (%d)' % (score,)
 
 
@@ -81,4 +74,3 @@ class serialize(ProxyModuleBase):
         response_json = json.dumps(response_info)
         print "serializing response META-DATA for MQ"
         print response_json
-
