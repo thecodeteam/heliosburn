@@ -1,9 +1,10 @@
-from django.http import JsonResponse, HttpResponse, HttpResponseBadRequest
-from django.views.decorators.csrf import csrf_exempt
-from api.models import db_model
 import json
 import hashlib
 import os
+from django.http import HttpResponse, HttpResponseBadRequest
+from django.views.decorators.csrf import csrf_exempt
+from django.conf import settings
+from api.models import db_model
 
 
 @csrf_exempt
@@ -39,8 +40,8 @@ def login(request):
             m.update(os.urandom(64))
             token_string = m.hexdigest()
             from api.models import redis_wrapper
-            r = redis_wrapper.init_redis(1)
-            r.set(token_string, user.id, 3600)  # Store tokens to expire in 1 hour
+            r = redis_wrapper.init_redis()
+            r.set(token_string, user.id, settings.TOKEN_TTL)  # Store tokens to expire in 1 hour
             r = HttpResponse()
             r['X-Auth-Token'] = token_string
             return r

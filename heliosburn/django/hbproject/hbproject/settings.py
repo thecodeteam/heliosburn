@@ -10,6 +10,7 @@ https://docs.djangoproject.com/en/1.7/ref/settings/
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 import os
+
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
 
@@ -95,12 +96,17 @@ USE_TZ = True
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, '../static')
 
-
 LOGIN_URL = '/webui/signin'
-
 
 AUTHENTICATION_BACKENDS = (
     'webui.backends.HeliosAuthBackend',
 )
 
 API_BASE_URL = 'http://127.0.0.1:8000/api'
+
+
+TOKEN_TTL = 3600  # milliseconds
+
+REDIS_HOST = 'localhost'
+REDIS_PORT = 6379
+REDIS_DB = 0

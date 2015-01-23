@@ -1,6 +1,9 @@
-def init_redis(db=0):
+from django.conf import settings
+
+
+def init_redis():
     """
-    Returns redis connection. Default db is 0 unless db=<n> is passed.
+    Returns redis connection.
     """
     import redis
-    return redis.StrictRedis('localhost', db=db)
+    return redis.StrictRedis(host=settings.REDIS_HOST, port=settings.REDIS_PORT, db=settings.REDIS_DB)

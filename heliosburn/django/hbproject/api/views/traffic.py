@@ -1,11 +1,8 @@
-from django.http import JsonResponse, HttpResponseBadRequest, HttpResponseNotFound, HttpResponse
+import json
+from django.http import JsonResponse, HttpResponseBadRequest, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
-from sqlalchemy.exc import IntegrityError
-from api.models import db_model
 from api.models.auth import RequireLogin
 from api.models import redis_wrapper
-import hashlib
-import json
 
 
 @csrf_exempt
@@ -34,26 +31,55 @@ def rest(request, *pargs):
 
 @RequireLogin
 def get(request):
-    r = redis_wrapper.init_redis(0)
-    traffic = r.zrangebyscore('heliosburn.traffic', '-inf', '+inf', withscores=False)
-    traffic = [json.loads(traf) for traf in traffic]
+    r = redis_wrapper.init_redis()
+
+    key = 'token:%s' % (request.token_string,)
+    last_score = r.hget(key, 'last_score')
+
+    if last_score:
+        last_score = int(last_score)
+    else:
+        # get the last score from Redis
+        traffic = r.zrevrange('heliosburn.traffic', 0, 0, withscores=True)
+        last_score = int(traffic[0][1])+1 if len(traffic) > 0 else 0
+
+    traffic = r.zrangebyscore('heliosburn.traffic', last_score, '+inf', withscores=True)
+
+    requests = []
+    for message in traffic:
+        request = json.loads(message[0])
+        requests.append(request)
+        score = int(message[1])
+
+        # update the last_time to obtain new traffic the next time
+        if score > last_score:
+            last_score = score + 1  # increment by 1 to avoid getting the last request again
+
+    # update last score of the user
+    r.hset(key, 'last_score', last_score)
+
     r = {
-        "count": len(traffic),
-        "more": False,
-        "requests": traffic
+        "count": len(requests),
+        "requests": requests
         }
     return JsonResponse(r)
 
 @RequireLogin
 def post(request):
-    pass
+    r = HttpResponse('Invalid method. Only GET method accepted.', status=405)
+    r['Allow'] = 'GET'
+    return r
 
 @RequireLogin
 def put(request):
-    pass
+    r = HttpResponse('Invalid method. Only GET method accepted.', status=405)
+    r['Allow'] = 'GET'
+    return r
         
 
 @RequireLogin
 def delete(request):
-    pass
+    r = HttpResponse('Invalid method. Only GET method accepted.', status=405)
+    r['Allow'] = 'GET'
+    return r
 
