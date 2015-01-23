@@ -1,3 +1,5 @@
+import json
+
 from django.http import HttpResponseRedirect, HttpResponse, HttpResponseBadRequest, JsonResponse
 from django.shortcuts import render, redirect
 from django.core.urlresolvers import reverse
@@ -6,9 +8,6 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import auth, messages
 from django.conf import settings
 import requests
-import json
-import random
-import datetime
 
 
 MOCK_PROTOCOL = "http"
@@ -60,46 +59,16 @@ def dashboard(request):
 
 @login_required
 def ajax_traffic(request):
-    methods = ['GET', 'PUT', 'DELETE', 'POST']
-    statuses = [('200', 'OK'),
-                ('204', 'No Content'),
-                ('404', 'Not Found'),
-                ('201', 'Created'),
-                ('500', 'Internal Server Error')]
-    urls = [
-        'http://example.com/api/resource1/ob543',
-        'http://example.com/api/account3/',
-        'http://example.com/api/acco955/mycontainer0092',
-        'http://example.com/api/acco955/mycontainer5/file.txt',
-        'http://example.com/api/myacc/asdfg/dfofdg.mp3',
-        'http://example.com/api/testaccount/testcontainer/helios.zip',
-        'http://example.com/api/default_account/default_container'
-    ]
-    now = datetime.datetime.now()
-    now.strftime('%Y-%m-%d %H:%M:%S')
+    url = '%s/traffic/' % (settings.API_BASE_URL,)
+    headers = {'X-Auth-Token': request.user.password}
+    r = requests.get(url, headers=headers)
 
-    data = {}
-    data['count'] = random.randint(0, 3)
-    data['more'] = False
-    data['requests'] = []
+    if r.status_code != requests.codes.ok:
+        return signout(request)
 
-    for i in range(data['count']):
-        request = {}
-        request['id'] = i
-        request['createdAt'] = now.strftime('%Y-%m-%d %H:%M:%S')
-        request['httpProtocol'] = "HTTP/1.1"
-        request['method'] = random.choice(methods)
-        request['url'] = random.choice(urls)
-        request['response'] = {}
-        request['response']['id'] = i
-        request['response']['createdAt'] = now.strftime('%Y-%m-%d %H:%M:%S')
-        request['response']['httpProtocol'] = "HTTP/1.1"
-        status = random.choice(statuses)
-        request['response']['statusCode'] = status[0]
-        request['response']['statusDescription'] = status[1]
-        data['requests'].append(request)
+    traffic = json.loads(r.text)
 
-    return JsonResponse(data)
+    return JsonResponse(traffic)
 
 
 @login_required
