@@ -46,14 +46,20 @@ def get(request):
 
 @RequireLogin
 def post(request):
-    pass
+    r = HttpResponse('Invalid method. Only GET method accepted.', status=405)
+    r['Allow'] = 'GET'
+    return r
 
 @RequireLogin
 def put(request):
-    pass
+    r = HttpResponse('Invalid method. Only GET method accepted.', status=405)
+    r['Allow'] = 'GET'
+    return r
         
 
 @RequireLogin
 def delete(request):
-    pass
+    r = HttpResponse('Invalid method. Only GET method accepted.', status=405)
+    r['Allow'] = 'GET'
+    return r
 
