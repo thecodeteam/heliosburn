@@ -35,7 +35,13 @@ def get(request):
 
     key = 'token:%s' % (request.token_string,)
     last_score = r.hget(key, 'last_score')
-    last_score = int(last_score) if last_score else 0
+
+    if last_score:
+        last_score = int(last_score)
+    else:
+        # get the last score from Redis
+        traffic = r.zrevrange('heliosburn.traffic', 0, 0, withscores=True)
+        last_score = int(traffic[0][1])+1 if len(traffic) > 0 else 0
 
     traffic = r.zrangebyscore('heliosburn.traffic', last_score, '+inf', withscores=True)
 
