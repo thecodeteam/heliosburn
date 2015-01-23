@@ -5,20 +5,40 @@ proxy:
   modules:
     [ 
         {
+          name: 'allFail',
+          path: 'modules.404s',
+          run_contexts: [''],
+          #run_contexts: ['response'],
+          kwargs: {}
+        },
+        {
           name: 'serialize',
           path: 'modules.serialize',
           run_contexts: ['request', 'response'],
           kwargs: {}
         },
-        { name: 'addLag',
+        {
+          name: 'addLag',
           path: 'modules.addLag',
           run_contexts: ['request'],
           kwargs: { minimum: 1, maximum: 5, }
-        }
+        },
+        {
+          name: 'redisDump',
+          path: 'modules.serialize',
+          run_contexts: ['response'],
+          kwargs:
+              { 
+                redis_host: '127.0.0.1',
+                redis_port: 9999,
+                redis_db: 3,
+              } 
+        },
     ]
 upstream:
   address: '127.0.0.1'
   port: 9980
-
+log:
+  path: '{}/logs'
 
 

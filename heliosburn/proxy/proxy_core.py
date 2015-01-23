@@ -12,7 +12,6 @@ from twisted.web.proxy import ReverseProxyResource
 from twisted.web.proxy import ProxyClientFactory
 from twisted.web.proxy import ProxyClient
 from modules import *
-from modules import addLag
 
 
 
@@ -32,6 +31,8 @@ if 'http' in config['proxy']['protocols'] :
 
 upstream_host = config['upstream']['address']
 upstream_port = config['upstream']['port']
+request_object = None
+response_object = None
 
  
 print config
@@ -51,86 +52,90 @@ def get_class(mod_dict):
         raise ValueError("Module '%s' has no class '%s'" %(module_path, class_name,))
     return class_
 
+def run_modules(context, request_object = None, response_object = None):
+    for  module_dict in config['proxy']['modules']:
+        class_ = get_class(module_dict)
+        instance_ = class_( context=context,
+                            request_object=request_object,
+                            response_object=response_object,
+                            run_contexts=module_dict['run_contexts'])
+        instance_.run(**module_dict['kwargs'])
+
 class MyProxyClient(ProxyClient):
  
-        def handleStatus(self, version, code, message):
-                # Here we can modify the status code
-                #code = 404
-                #code = 220
-                #message = "Not found"
-                # End of modifications
-                print "UPSTREAM CODE:"
-                print code
+    def handleStatus(self, version, code, message):
+        # Here we can modify the status code
+        #code = 404
+        #code = 220
+        #message = "Not found"
+        # End of modifications
+        print "UPSTREAM CODE:"
+        print code
                
-                ProxyClient.handleStatus(self, version, code, message)
+        ProxyClient.handleStatus(self, version, code, message)
  
-        def handleHeader(self, key, value):
-                # Here we can modify the headers
-                if key == "Server":
-                        value = "My custom server"
-                # End of modifications
+    def handleHeader(self, key, value):
+        # Here we can modify the headers
+        if key == "Server":
+            value = "My custom server"
+        # End of modifications
+        
+        ProxyClient.handleHeader(self, key, value)
                
-                ProxyClient.handleHeader(self, key, value)
-               
-        def handleResponseEnd(self):
-                if self._finished:
-                    print "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
-                    print "UPSTREAM CODE :  %s" % (self.father.code)
-                    print "UPSTREAM MSG :  %s" % (self.father.code_message)
-                    print "UPSTREAM HEADERS : %s" % (self.father.responseHeaders)
-                    print "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
+    def handleResponseEnd(self):
+        if self._finished:
+            print "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
+            print "UPSTREAM CODE :  %s" % (self.father.code)
+            print "UPSTREAM MSG :  %s" % (self.father.code_message)
+            print "UPSTREAM HEADERS : %s" % (self.father.responseHeaders)
+            print "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
 
-                    for  module_dict in config['proxy']['modules']:
-                        class_ = get_class(module_dict)
-                        print class_
-                        print type(class_)
-                        instance_ = class_( context='response', proxy_object=self,
-                                        run_contexts=module_dict['run_contexts'])
-                        instance_.run(**module_dict['kwargs'])
+            run_modules(context = 'response', response_object=self,
+                        request_object=request_object)
 
-                ProxyClient.handleResponseEnd(self)
+        ProxyClient.handleResponseEnd(self)
                
  
 class MyProxyClientFactory(ProxyClientFactory):
-        protocol = MyProxyClient
+    protocol = MyProxyClient
  
        
 
 class MyReverseProxyRequest(ReverseProxyRequest):
-        proxyClientFactoryClass = MyProxyClientFactory
+    proxyClientFactoryClass = MyProxyClientFactory
        
-        def process(self):
-               
-                for  module_dict in config['proxy']['modules']:
-                    class_ = get_class(module_dict)
-                    print class_
-                    print type(class_)
-                    instance_ = class_( context='request', proxy_object=self,
-                                        run_contexts=module_dict['run_contexts'])
-                    instance_.run(**module_dict['kwargs'])
+    def process(self):
+        global request_object
+        request_object = self
+        run_modules(context = 'request',
+                    request_object=self,
+                    response_object=None)
 
-                print ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-                print "VERB : %s" % (self.method)
-                print "URI : %s" % (self.uri)
-                print "HEADERS : %s" % (self.requestHeaders)
-                print ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+        print ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+        print "VERB : %s" % (self.method)
+        print "URI : %s" % (self.uri)
+        print "HEADERS : %s" % (self.requestHeaders)
+        print ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 
-               
-                self.requestHeaders.setRawHeaders(b"host", [upstream_host])
-                clientFactory = self.proxyClientFactoryClass(
-                self.method, self.uri, self.clientproto, self.getAllHeaders(),
-                self.content.read(), self)
-                self.reactor.connectTCP(upstream_host, upstream_port, clientFactory)
+        
+        self.requestHeaders.setRawHeaders(b"host", [upstream_host])
+        clientFactory = self.proxyClientFactoryClass( self.method, self.uri,
+                                                        self.clientproto,
+                                                        self.getAllHeaders(),
+                                                        self.content.read(),
+                                                        self)
+        self.reactor.connectTCP(upstream_host, upstream_port, clientFactory)
        
  
 class MyReverseProxyResource(ReverseProxyResource):
  
-        proxyClientFactoryClass = MyProxyClientFactory
+    proxyClientFactoryClass = MyProxyClientFactory
        
-        def getChild(self, path, request):
-                return MyReverseProxyResource(
-                        self.host, self.port, self.path + '/' + urlquote(path, safe=""),
-                        self.reactor)
+    def getChild(self, path, request):
+        return MyReverseProxyResource(
+                                        self.host, self.port,
+                                        self.path + '/' + urlquote(path, safe=""),
+                                        self.reactor)
  
                
 resource = MyReverseProxyResource(upstream_host, upstream_port, '')              
