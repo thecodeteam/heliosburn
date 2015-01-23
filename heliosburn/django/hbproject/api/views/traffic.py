@@ -1,11 +1,10 @@
-from django.http import JsonResponse, HttpResponseBadRequest, HttpResponseNotFound, HttpResponse
+import json
+
+from django.http import JsonResponse, HttpResponseBadRequest, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
-from sqlalchemy.exc import IntegrityError
-from api.models import db_model
+
 from api.models.auth import RequireLogin
 from api.models import redis_wrapper
-import hashlib
-import json
 
 
 @csrf_exempt
