@@ -39,7 +39,7 @@ def login(request):
             m.update(os.urandom(64))
             token_string = m.hexdigest()
             from api.models import redis_wrapper
-            r = redis_wrapper.init_redis(1)
+            r = redis_wrapper.init_redis()
             r.set(token_string, user.id, 3600)  # Store tokens to expire in 1 hour
             r = HttpResponse()
             r['X-Auth-Token'] = token_string

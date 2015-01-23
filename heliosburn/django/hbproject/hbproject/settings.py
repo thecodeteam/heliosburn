@@ -104,3 +104,8 @@ AUTHENTICATION_BACKENDS = (
 )
 
 API_BASE_URL = 'http://127.0.0.1:8000/api'
+
+
+REDIS_HOST = 'localhost'
+REDIS_PORT = 6379
+REDIS_DB = 0

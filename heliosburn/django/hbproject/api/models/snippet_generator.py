@@ -44,7 +44,7 @@ if __name__ == "__main__":
 
         return json.dumps(request)
 
-    r = redis_wrapper.init_redis(0)
+    r = redis_wrapper.init_redis()
 
     for i in range(1, 11):
         request = generate_request()

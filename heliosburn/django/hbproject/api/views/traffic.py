@@ -1,8 +1,6 @@
 import json
-
 from django.http import JsonResponse, HttpResponseBadRequest, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
-
 from api.models.auth import RequireLogin
 from api.models import redis_wrapper
 
@@ -33,13 +31,30 @@ def rest(request, *pargs):
 
 @RequireLogin
 def get(request):
-    r = redis_wrapper.init_redis(0)
-    traffic = r.zrangebyscore('heliosburn.traffic', '-inf', '+inf', withscores=False)
-    traffic = [json.loads(traf) for traf in traffic]
+    r = redis_wrapper.init_redis()
+
+    key = 'token:%s' % (request.token_string,)
+    last_score = r.hget(key, 'last_score')
+    last_score = int(last_score) if last_score else 0
+
+    traffic = r.zrangebyscore('heliosburn.traffic', last_score, '+inf', withscores=True)
+
+    requests = []
+    for message in traffic:
+        request = json.loads(message[0])
+        requests.append(request)
+        score = int(message[1])
+
+        # update the last_time to obtain new traffic the next time
+        if score > last_score:
+            last_score = score + 1  # increment by 1 to avoid getting the last request again
+
+    # update last score of the user
+    r.hset(key, 'last_score', last_score)
+
     r = {
-        "count": len(traffic),
-        "more": False,
-        "requests": traffic
+        "count": len(requests),
+        "requests": requests
         }
     return JsonResponse(r)
 

@@ -3,7 +3,7 @@ if __name__ == "__main__":
     import redis_wrapper
     import json
 
-    r = redis_wrapper.init_redis(0)
+    r = redis_wrapper.init_redis()
 
     # initialized to 0 to obtain all available traffic for the first time
     last_time = 0

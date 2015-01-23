@@ -10,6 +10,7 @@ class RequireLogin(object):
             self.token_string = request.environ['HTTP_X_AUTH_TOKEN']
             if self.valid_token():
                 request.user_id = self.user_id
+                request.token_string = self.token_string
                 return self.f(request)
 
         # 401 Unauthorized if you reach this point
@@ -18,9 +19,9 @@ class RequireLogin(object):
 
     def valid_token(self):
         from api.models import redis_wrapper
-        r = redis_wrapper.init_redis(1)
+        r = redis_wrapper.init_redis()
         r = r.get(self.token_string)
-        if r is None:
+        if not r:
             return False
         else:
             self.user_id = int(r)
