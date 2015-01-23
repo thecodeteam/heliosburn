@@ -1,5 +1,4 @@
 class RequireLogin(object):
-
     def __init__(self, f):
         self.f = f
         self.token_string = "INVALID"  # valid string that will always fail to validate
@@ -15,14 +14,18 @@ class RequireLogin(object):
 
         # 401 Unauthorized if you reach this point
         from django.http import HttpResponse
+
         return HttpResponse(status=401)
 
     def valid_token(self):
         from api.models import redis_wrapper
+
         r = redis_wrapper.init_redis()
-        r = r.get(self.token_string)
-        if not r:
+        user_id = r.get(self.token_string)
+        print self.token_string
+        if not user_id:
             return False
         else:
-            self.user_id = int(r)
+            self.user_id = int(user_id)
+            r.expire(self.token_string, 3600)  # renew the token expiration
             return True
