@@ -23,7 +23,6 @@ class RequireLogin(object):
 
         r = redis_wrapper.init_redis()
         user_id = r.get(self.token_string)
-        print self.token_string
         if not user_id:
             return False
         else:
