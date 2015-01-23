@@ -19,6 +19,7 @@ class RequireLogin(object):
 
     def valid_token(self):
         from api.models import redis_wrapper
+        from django.conf import settings
 
         r = redis_wrapper.init_redis()
         user_id = r.get(self.token_string)
@@ -27,5 +28,5 @@ class RequireLogin(object):
             return False
         else:
             self.user_id = int(user_id)
-            r.expire(self.token_string, 3600)  # renew the token expiration
+            r.expire(self.token_string, settings.TOKEN_TTL)  # renew the token expiration
             return True
