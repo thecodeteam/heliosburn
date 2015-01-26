@@ -48,7 +48,6 @@ The development environment is provided as a Vagrant box.
 - **Username**: vagrant
 - **Password**: vagrant
 
-
 ### Requirements:
 
 1. Vagrant
@@ -67,7 +66,6 @@ Whenever we modify the dependencies you can just run `vagrant provision` to inco
 
 - **Root user**: postgres
 - **Root password**: postgres
-
 - **Database**: heliosburn
 - **User**: heliosburn
 - **Password**: heliosburn
