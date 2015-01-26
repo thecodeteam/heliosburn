@@ -1,9 +1,6 @@
 HeliosBurn
 ==========
 
-### Helios Burn - A REST Fault Injection Platform
-
-
 Helios Burn is a REST fault injection platform that captures HTTP and HTTPS traffic and logs it for users to review. 
 Helios Burn provides the capability to modify HTTP traffic, thus injecting faults, as it is being sent by the client 
 or received from the server. The purpose of Helios Burn is to provide developers with a tool that inject failures and 
@@ -36,4 +33,39 @@ In general terms, the traffic flow is as follows:
     The proxy returns the processed response to the client on behalf of the server.
 
 
+## Development environment
 
+You can get an all-in-one development environment containing all necessary dependencies to start working on Helios Burn coding.
+
+The development environment is provided as a Vagrant box.
+
+### Characteristics
+
+- **Storage**: 40GB
+- **CPU**: 2 x vCPU
+- **Base memory**: 1024 MB
+- **OS**: Ubuntu Trusty (64 bits)
+- **Username**: vagrant
+- **Password**: vagrant
+
+### Requirements:
+
+1. Vagrant
+2. VirtualBox
+
+### Get the development environment
+
+1. ```git clone https://github.com/emccode/HeliosBurn.git```
+2. ```vagrant up```
+
+### Update dependencies
+
+Whenever we modify the dependencies you can just run `vagrant provision` to incorporate the new packages.
+
+### PostgreSQL credentials
+
+- **Root user**: postgres
+- **Root password**: postgres
+- **Database**: heliosburn
+- **User**: heliosburn
+- **Password**: heliosburn
