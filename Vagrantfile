@@ -10,11 +10,11 @@ Vagrant.configure(2) do |config|
   # For a complete reference, please see the online documentation at
   # https://docs.vagrantup.com.
 
-  #config.vm.provision "puppet"
-
   # Every Vagrant development environment requires a box. You can search for
   # boxes at https://atlas.hashicorp.com/search.
   config.vm.box = "ubuntu/trusty64"
+
+  config.vm.hostname = "heliosburn-vm"
 
   # Disable automatic box update checking. If you disable this, then
   # boxes will only be checked for updates when the user runs
@@ -44,7 +44,7 @@ Vagrant.configure(2) do |config|
   # the path on the host to the actual folder. The second argument is
   # the path on the guest to mount the folder. And the optional third
   # argument is a set of non-required options.
-  config.vm.synced_folder "heliosburn", "/home/vagrant/src"
+  config.vm.synced_folder ".", "/home/vagrant/HeliosBurn"
 
   # Provider-specific configuration so you can fine-tune various
   # backing providers for Vagrant. These expose provider-specific options.
@@ -78,7 +78,6 @@ Vagrant.configure(2) do |config|
   config.vm.provision :puppet do |puppet|
     # puppet.hiera_config_path = "puppet/hiera.yaml"
     puppet.manifests_path = "puppet/manifests"
-    #puppet.manifest_file = 'default.pp'
     puppet.module_path = 'puppet/modules'
     puppet.options = "--verbose --debug"
   end

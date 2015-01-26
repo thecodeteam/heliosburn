@@ -15,11 +15,23 @@ package { ['python-software-properties']:
   require => Exec['apt-get update'],
 }
 
-$sysPackages = [ 'build-essential', 'git', 'curl']
+$sysPackages = [ 'build-essential', 'git', 'curl', 'postgresql-server-dev-9.3']
 package { $sysPackages:
   ensure => "installed",
   require => Exec['apt-get update'],
 }
+
+
+class { 'python' :
+    version    => 'system',
+    pip        => true,
+    dev        => true,
+    gunicorn   => true,
+  }
+
+python::requirements { '/home/vagrant/HeliosBurn/requirements.txt' :
+  }
+
 
 class { 'postgresql::server':
   ip_mask_allow_all_users    => '0.0.0.0/0',

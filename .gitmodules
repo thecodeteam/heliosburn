@@ -13,3 +13,6 @@
 [submodule "puppet/modules/systemupdate"]
 	path = puppet/modules/systemupdate
 	url = https://github.com/franz-josef-kaiser/puppet-system-update.git
+[submodule "puppet/modules/python"]
+	path = puppet/modules/python
+	url = https://github.com/stankevich/puppet-python.git
