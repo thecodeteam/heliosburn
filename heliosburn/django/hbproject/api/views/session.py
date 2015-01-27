@@ -115,7 +115,7 @@ def post(request):
         dbsession.commit()
     except IntegrityError as e:
         return HttpResponseBadRequest("constraint violated", status=409)
-    return HttpResponse("", status=204)
+    return JsonResponse({"id": session.id}, status=204)
 
 
 @RequireLogin
@@ -137,10 +137,10 @@ def put(request, session_id):
             session.name = new['name']
         if "description" in new:
             session.description = new['description']
-        if "user_id" in new['user']:
+        if ("user" in new) and ("user_id" in new['user']):
             session.user_id = new['user_id']
-        if "testplan_id" in new['user']:
-            session.testplan_id = new['user_id']
+        if "testplan_id" in new:
+            session.testplan_id = new['testplan_id']
         try:
             dbsession.commit()
         except IntegrityError as e:
