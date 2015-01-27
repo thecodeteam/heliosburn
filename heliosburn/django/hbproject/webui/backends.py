@@ -34,6 +34,8 @@ class HeliosAuthBackend(object):
                 user.is_superuser = True
                 user.save()
             return user
+        elif r.status_code >= requests.codes.internal_server_error:
+            raise Exception('Server error. ' + str(r.status_code))
         return None
 
     def get_user(self, user_id):

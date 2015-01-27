@@ -1,0 +1,9 @@
+Django
+twisted
+psycopg2
+requests
+django-bootstrap-breadcrumbs
+redis
+PyYAML
+CherryPy
+SQLAlchemy
