@@ -15,7 +15,7 @@ package { ['python-software-properties']:
   require => Exec['apt-get update'],
 }
 
-$sysPackages = [ 'build-essential', 'git', 'curl', 'postgresql-server-dev-9.3']
+$sysPackages = ['git', 'curl', 'postgresql-server-dev-9.3']
 package { $sysPackages:
   ensure => "installed",
   require => Exec['apt-get update'],
@@ -43,3 +43,6 @@ postgresql::server::db { 'heliosburn':
   user     => 'heliosburn',
   password => postgresql_password('heliosburn', 'heliosburn'),
 }
+
+
+include redis
