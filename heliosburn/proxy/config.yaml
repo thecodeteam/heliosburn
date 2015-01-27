@@ -39,4 +39,5 @@ upstream:
   address: '127.0.0.1'
   port: 8000
 log:
-  path: '{}/logs'
+  path: '{}/logs/run.log'
+  stdout: 'yes'
