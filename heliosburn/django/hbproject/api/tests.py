@@ -65,6 +65,7 @@ class SessionViewTestCase(TestCase):
             'description': 'test session',
             })
         response = session.post(request)
+        assert response.status_code == 200
         in_json = json.loads(response.content)
         assert "id" in in_json
         session_id = in_json['id']
@@ -72,12 +73,14 @@ class SessionViewTestCase(TestCase):
         # Update session
         request.body = json.dumps({'name': 'updated name'})
         response = session.put(request, session_id)
+        assert response.status_code == 204
+
 
         # Retrieve session
         request.body = ''
         response = session.get(request, session_id)
+        assert response.status_code == 200
 
         # Delete session
         response = session.delete(request, session_id)
-
-        pass
+        assert response.status_code == 204
