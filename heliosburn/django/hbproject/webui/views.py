@@ -32,7 +32,7 @@ def signin(request):
     try:
         user = auth.authenticate(username=username, password=password)
     except Exception as inst:
-        messages.error(request, 'Something went wrong.')
+        messages.error(request, 'Something went wrong. %s' % (inst,))
         return render(request, 'signin.html')
 
     if not user:
