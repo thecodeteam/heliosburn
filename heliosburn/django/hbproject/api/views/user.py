@@ -33,7 +33,9 @@ def rest(request, *pargs):
 
 @RequireLogin
 def get(request, username=None):
-    """Retrieve a user."""
+    """
+    Retrieve user based on username.
+    """
     if username is None:  # Retrieve all users
         return get_all_users(request)
 
@@ -51,8 +53,10 @@ def get(request, username=None):
         return JsonResponse(user_dict, status=200)
 
 
-def get_all_users(request):
-    """Retrieves all users."""
+def get_all_users(request):  # TODO: this should require admin
+    """
+    Retrieve all users.
+    """
     dbsession = db_model.init_db()
     all_users = dbsession.query(db_model.User).all()
     user_list = list()
@@ -68,7 +72,9 @@ def get_all_users(request):
 
 @RequireLogin
 def post(request):
-    """Create a new user."""
+    """
+    Create a new user.
+    """
     try:
         new = json.loads(request.body)
         assert "username" in new
@@ -94,7 +100,9 @@ def post(request):
 
 @RequireLogin
 def put(request, username):
-    """Update existing user with matching username."""
+    """
+    Update existing user based on username.
+    """
     try:
         in_json = json.loads(request.body)
     except ValueError:
@@ -122,7 +130,9 @@ def put(request, username):
 
 @RequireLogin
 def delete(request, username):
-    """Delete existing user matching username."""
+    """
+    Delete user based on username.
+    """
     dbsession = db_model.init_db()
     user = dbsession.query(db_model.User).filter_by(username=username).first()
     if user is None:

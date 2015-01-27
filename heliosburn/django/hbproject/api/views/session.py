@@ -32,7 +32,9 @@ def rest(request, *pargs):
 
 @RequireLogin
 def get(request, session_id=None):
-    """Retrieve a session."""
+    """
+    Retrieve a session based on session_id.
+    """
     if session_id is None:
         return get_all_sessions(request)
     dbsession = db_model.init_db()
@@ -56,8 +58,10 @@ def get(request, session_id=None):
         return r
 
 
-def get_all_sessions(request):
-    """Retrieves all sessions."""
+def get_all_sessions(request):  # TODO: this should require admin
+    """
+    Retrieve all sessions.
+    """
     dbsession = db_model.init_db()
     all_sessions = dbsession.query(db_model.Session).all()
     session_list = list()
@@ -82,7 +86,9 @@ def get_all_sessions(request):
 
 @RequireLogin
 def post(request):
-    """Create a new session."""
+    """
+    Create a new session.
+    """
     try:
         new = json.loads(request.body)
         assert "name" in new
@@ -114,7 +120,9 @@ def post(request):
 
 @RequireLogin
 def put(request, session_id):
-    """Update existing session."""
+    """
+    Update existing session based on session_id.
+    """
     try:
         new = json.loads(request.body)
     except ValueError:
@@ -142,7 +150,9 @@ def put(request, session_id):
 
 @RequireLogin
 def delete(request, session_id):
-    """Delete existing session."""
+    """
+    Delete session based on session_id.
+    """
     dbsession = db_model.init_db()
     session = dbsession.query(db_model.Session).filter_by(id=session_id).first()
     if session is None:

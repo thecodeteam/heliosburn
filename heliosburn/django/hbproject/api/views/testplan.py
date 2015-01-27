@@ -31,7 +31,9 @@ def rest(request, *pargs):
 
 @RequireLogin
 def get(request, testplan_id=None):
-    """Retrieve a test plan."""
+    """
+    Retrieve test plan based on testplan_id.
+    """
     if testplan_id is None:
         return get_all_testplans()
 
@@ -53,8 +55,10 @@ def get(request, testplan_id=None):
             }, status=200)
 
 
-def get_all_testplans():
-    """Retrieve all test plans."""
+def get_all_testplans():  # TODO: this should require admin
+    """
+    Retrieve all test plans.
+    """
     dbsession = db_model.init_db()
     testplans = dbsession.query(db_model.TestPlan).all()
     all_testplans = list()
@@ -75,7 +79,9 @@ def get_all_testplans():
 
 @RequireLogin
 def post(request):
-    """Create a new test plan."""
+    """
+    Create new test plan.
+    """
     try:
         new = json.loads(request.body)
         assert "name" in new
@@ -102,7 +108,9 @@ def post(request):
 
 @RequireLogin
 def put(request, testplan_id):
-    """Update existing test plan."""
+    """
+    Update existing test plan based on testplan_id.
+    """
     try:
         in_json = json.loads(request.body)
     except ValueError:
@@ -132,7 +140,9 @@ def put(request, testplan_id):
 
 @RequireLogin
 def delete(request, testplan_id):
-    """Delete existing test plan."""
+    """
+    Delete test plan based on testplan_id.
+    """
     dbsession = db_model.init_db()
     testplan = dbsession.query(db_model.TestPlan).filter_by(id=testplan_id).first()
     if testplan is None:
