@@ -75,7 +75,6 @@ class SessionViewTestCase(TestCase):
         response = session.put(request, session_id)
         assert response.status_code == 204
 
-
         # Retrieve session
         request.body = ''
         response = session.get(request, session_id)
