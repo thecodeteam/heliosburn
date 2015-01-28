@@ -205,3 +205,42 @@ class UserViewTestCase(TestCase):
 
         print("Testing DELETE in %s" % self.__class__)
         delete(request, username)
+
+
+class TrafficViewTestCase(TestCase):
+    """
+    Test views/traffic.py CRUD
+    This test requires a valid user "admin" with password "admin".
+    """
+
+    def test_crud(self):
+        """
+        Tests CRUD for traffic model.
+        """
+        from views import traffic
+        from models import snippet_generator
+
+        def create(request):
+            pass
+
+        def read(request):
+            response = traffic.get(request)
+            assert response.status_code == 200
+
+        def update(request, username):
+            pass
+
+        def delete(request, username):
+            pass
+
+
+
+        print("Creating authenticated request for CRUD tests in %s" % self.__class__)
+        request = create_authenticated_request()
+        request.method = "POST"
+
+        print("Generating test traffic in Redis")
+        snippet_generator.generate_traffic()
+
+        print("Testing READ in %s" % self.__class__)
+        read(request)
