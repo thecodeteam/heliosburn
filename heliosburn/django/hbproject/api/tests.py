@@ -233,8 +233,6 @@ class TrafficViewTestCase(TestCase):
         def delete(request, username):
             pass
 
-
-
         print("Creating authenticated request for CRUD tests in %s" % self.__class__)
         request = create_authenticated_request()
         request.method = "POST"
