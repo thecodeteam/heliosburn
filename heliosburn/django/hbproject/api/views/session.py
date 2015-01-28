@@ -111,7 +111,10 @@ def post(request):
         dbsession.commit()
     except IntegrityError as e:
         return HttpResponseServerError("constraint violated")
-    return HttpResponse("", status=201)
+
+    r = HttpResponse(status=201)
+    r['Location'] = session.id
+    return r
 
 
 @RequireLogin
