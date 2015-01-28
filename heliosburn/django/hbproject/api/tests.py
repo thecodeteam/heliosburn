@@ -104,7 +104,7 @@ class SessionViewTestCase(TestCase):
 
 class TestplanViewTestCase(TestCase):
     """
-    Test views/session.py CRUD
+    Test views/testplan.py CRUD
     This test requires a valid user "admin" with password "admin".
     """
 
@@ -151,3 +151,57 @@ class TestplanViewTestCase(TestCase):
 
         print("Testing DELETE in %s" % self.__class__)
         delete(request, testplan_id)
+
+
+class UserViewTestCase(TestCase):
+    """
+    Test views/user.py CRUD
+    This test requires a valid user "admin" with password "admin".
+    """
+
+    def test_crud(self):
+        """
+        Tests CRUD for user model.
+        """
+        from views import user
+        import json
+
+        def create(request):
+            username = "crudtest"
+            request.body = json.dumps({
+                "username": username,
+                "password": "CRUD test",
+                "email": "test@test",
+            })
+            response = user.post(request)
+            assert response.status_code == 200
+            return username
+
+        def read(request, username):
+            response = user.get(request, username)
+            assert response.status_code == 200
+
+        def update(request, username):
+            request.body = json.dumps({"email": "test1@test1"})
+            response = user.put(request, username)
+            assert response.status_code == 200
+
+        def delete(request, username):
+            response = user.delete(request, username)
+            assert response.status_code == 200
+
+        print("Creating authenticated request for CRUD tests in %s" % self.__class__)
+        request = create_authenticated_request()
+        request.method = "POST"
+
+        print("Testing CREATE in %s" % self.__class__)
+        username = create(request)
+
+        print("Testing READ in %s" % self.__class__)
+        read(request, username)
+
+        print("Testing UPDATE in %s" % self.__class__)
+        update(request, username)
+
+        print("Testing DELETE in %s" % self.__class__)
+        delete(request, username)
