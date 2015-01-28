@@ -214,7 +214,9 @@ class RecordingTraffic(Base):
 
 
 def init_db():
-    """Returns dbsession"""
+    """
+    Returns SQLAlchemy dbsession configured for heliosburn
+    """
     from sqlalchemy import create_engine
     from sqlalchemy.orm import scoped_session
     from sqlalchemy.orm.session import sessionmaker

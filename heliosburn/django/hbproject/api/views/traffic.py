@@ -27,6 +27,9 @@ def rest(request, *pargs):
 
 @RequireLogin
 def get(request):
+    """
+    Retrieve traffic from redis backend.
+    """
     r = redis_wrapper.init_redis()
 
     key = 'token:%s' % (request.token_string,)

@@ -1,4 +1,9 @@
 class RequireLogin(object):
+    """
+    This decorator inspects incoming HTTP request dictionaries for a X-AUTH-TOKEN header.
+
+    If the token is found, it is validated. If the token is invalid or missing, http 401 is returned.
+    """
     def __init__(self, f):
         self.f = f
         self.token_string = "INVALID"  # valid string that will always fail to validate
@@ -6,18 +11,21 @@ class RequireLogin(object):
 
     def __call__(self, request, *pargs, **kwargs):
         if 'HTTP_X_AUTH_TOKEN' in request.META:
-            self.token_string = request.environ['HTTP_X_AUTH_TOKEN']
+            self.token_string = request.META['HTTP_X_AUTH_TOKEN'][1]
             if self.valid_token():
                 request.user_id = self.user_id
                 request.token_string = self.token_string
-                return self.f(request)
+                return self.f(request, *pargs, **kwargs)
 
         # 401 Unauthorized if you reach this point
-        from django.http import HttpResponse
+        from django.http import HttpResponseForbidden
 
-        return HttpResponse(status=401)
+        return HttpResponseForbidden("", status=401)
 
     def valid_token(self):
+        """
+        Validate token in self.token_string against redis backend.
+        """
         from api.models import redis_wrapper
         from django.conf import settings
 

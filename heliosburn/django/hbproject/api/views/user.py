@@ -1,5 +1,4 @@
-from django.http import JsonResponse, HttpResponseBadRequest, HttpResponseNotFound, HttpResponse, \
-    HttpResponseServerError
+from django.http import JsonResponse, HttpResponseBadRequest, HttpResponseNotFound, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from sqlalchemy.exc import IntegrityError
 from api.models import db_model
@@ -23,28 +22,27 @@ def rest(request, *pargs):
     elif request.method == 'DELETE':
         rest_function = delete
     else:
-        r = HttpResponse('Invalid method.', status=405)
-        r['Allow'] = 'GET,POST,PUT,DELETE'
-        return r
+        return JsonResponse({"error": "HTTP METHOD UNKNOWN"})
 
     try:
         return rest_function(request, *pargs)
     except TypeError as e:
-        print e
-        return HttpResponseServerError("unknown method")
+            print e
+            return HttpResponseBadRequest("unknown method")
 
 
 @RequireLogin
 def get(request, username=None):
-    """Retrieve a user."""
-    if not username:
-        # Retrieve all users
+    """
+    Retrieve user based on username.
+    """
+    if username is None:  # Retrieve all users
         return get_all_users(request)
 
     dbsession = db_model.init_db()
     user = dbsession.query(db_model.User).filter_by(username=username).first()
-    if not user:
-        return HttpResponseNotFound()
+    if user is None:
+        return HttpResponseNotFound("", status=404)
     else:
         user_dict = {
             'username': user.username,
@@ -52,11 +50,13 @@ def get(request, username=None):
             'created_at': user.created_at,
             'update_at': user.update_at,
             }
-        return JsonResponse(user_dict)
+        return JsonResponse(user_dict, status=200)
 
 
-def get_all_users(request):
-    """Retrieves all users."""
+def get_all_users(request):  # TODO: this should require admin
+    """
+    Retrieve all users.
+    """
     dbsession = db_model.init_db()
     all_users = dbsession.query(db_model.User).all()
     user_list = list()
@@ -67,25 +67,27 @@ def get_all_users(request):
             'created_at': user.created_at,
             'update_at': user.update_at,
             })
-    return JsonResponse({"users": user_list})
+    return JsonResponse({"users": user_list}, status=200)
 
 
 @RequireLogin
 def post(request):
-    """Create a new user."""
+    """
+    Create a new user.
+    """
     try:
         new = json.loads(request.body)
         assert "username" in new
         assert "password" in new
         assert "email" in new
     except AssertionError:
-        return HttpResponseBadRequest("argument mismatch")
+        return HttpResponseBadRequest("argument mismatch", status=400)
     except ValueError:
-        return HttpResponseBadRequest("invalid JSON")
+        return HttpResponseBadRequest("invalid JSON", status=400)
 
     dbsession = db_model.init_db()
     user = dbsession.query(db_model.User).filter_by(username=new['username']).first()
-    if user:
+    if user is not None:
         return HttpResponseBadRequest("user already exists")
     else:
         m = hashlib.sha512()
@@ -93,21 +95,23 @@ def post(request):
         user = db_model.User(username=new['username'], email=new['email'], password=m.hexdigest())
         dbsession.add(user)
         dbsession.commit()
-        return HttpResponse("", status=201)
+        return HttpResponse("", status=204)
 
 
 @RequireLogin
 def put(request, username):
-    """Update existing user with matching username."""
+    """
+    Update existing user based on username.
+    """
     try:
         in_json = json.loads(request.body)
     except ValueError:
-        return HttpResponseBadRequest("invalid JSON")
+        return HttpResponseBadRequest("invalid JSON", status=400)
 
     dbsession = db_model.init_db()
     user = dbsession.query(db_model.User).filter_by(username=username).first()
-    if not user:
-        return HttpResponseNotFound()
+    if user is None:
+        return HttpResponseNotFound("")
     else:
         if "username" in in_json:
             user.username = in_json['username']
@@ -120,19 +124,21 @@ def put(request, username):
         try:
             dbsession.commit()
         except IntegrityError:
-            return HttpResponseServerError("user already exists")
-        return HttpResponse()
+            return HttpResponseBadRequest("user already exists", status=409)
+        return HttpResponse("", status=204)
         
 
 @RequireLogin
 def delete(request, username):
-    """Delete existing user matching username."""
+    """
+    Delete user based on username.
+    """
     dbsession = db_model.init_db()
     user = dbsession.query(db_model.User).filter_by(username=username).first()
-    if not user:
-        return HttpResponseNotFound("user not found")
+    if user is None:
+        return HttpResponseNotFound("user not found", status=404)
     else:
         dbsession.delete(user)
         dbsession.commit()
-        return HttpResponse()
+        return HttpResponse("", status=204)
 

@@ -1,3 +1,6 @@
+# TEMPORARY snippet of code to document retrieving traffic from redis
+# This will be removed in the future
+
 if __name__ == "__main__":
 
     import redis_wrapper

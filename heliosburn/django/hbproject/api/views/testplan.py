@@ -1,5 +1,4 @@
-from django.http import JsonResponse, HttpResponseNotFound, HttpResponseBadRequest, HttpResponse, \
-    HttpResponseServerError
+from django.http import JsonResponse, HttpResponseNotFound, HttpResponseBadRequest, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from api.models import db_model
 from api.models.auth import RequireLogin
@@ -22,26 +21,26 @@ def rest(request, *pargs):
     elif request.method == 'DELETE':
         rest_function = delete
     else:
-        r = HttpResponse('Invalid method.', status=405)
-        r['Allow'] = 'GET,POST,PUT,DELETE'
-        return r
+        return JsonResponse({"error": "HTTP METHOD UNKNOWN"})
 
     try:
         return rest_function(request, *pargs)
     except TypeError:
-        return HttpResponseBadRequest("argument mismatch")
+            return HttpResponseBadRequest("argument mismatch")
 
 
 @RequireLogin
 def get(request, testplan_id=None):
-    """Retrieve a test plan."""
-    if not testplan_id:
+    """
+    Retrieve test plan based on testplan_id.
+    """
+    if testplan_id is None:
         return get_all_testplans()
 
     dbsession = db_model.init_db()
     testplan = dbsession.query(db_model.TestPlan).filter_by(id=testplan_id).first()
-    if not testplan:
-        return HttpResponseNotFound()
+    if testplan is None:
+        return HttpResponseNotFound("")
     else:
         return JsonResponse({
             'id': testplan.id,
@@ -53,11 +52,13 @@ def get(request, testplan_id=None):
             'client_latency': testplan.client_latency,
             'server_latency': testplan.server_latency,
             'rules': testplan.rules,
-            })
+            }, status=200)
 
 
-def get_all_testplans():
-    """Retrieve all test plans."""
+def get_all_testplans():  # TODO: this should require admin
+    """
+    Retrieve all test plans.
+    """
     dbsession = db_model.init_db()
     testplans = dbsession.query(db_model.TestPlan).all()
     all_testplans = list()
@@ -73,12 +74,14 @@ def get_all_testplans():
             'server_latency': testplan.server_latency,
             'rules': testplan.rules,
             })
-    return JsonResponse({"testplans": all_testplans})
+    return JsonResponse({"testplans": all_testplans}, status=200)
 
 
 @RequireLogin
 def post(request):
-    """Create a new test plan."""
+    """
+    Create new test plan.
+    """
     try:
         new = json.loads(request.body)
         assert "name" in new
@@ -99,16 +102,15 @@ def post(request):
         testplan.server_latency = new['server_latency']
 
     dbsession.add(testplan)
-    try:
-        dbsession.commit()
-    except IntegrityError:
-        return HttpResponseServerError("constraint violated")
-    return HttpResponse("", status=201)
+    dbsession.commit()
+    return HttpResponse("", status=204)
 
 
 @RequireLogin
 def put(request, testplan_id):
-    """Update existing test plan."""
+    """
+    Update existing test plan based on testplan_id.
+    """
     try:
         in_json = json.loads(request.body)
     except ValueError:
@@ -116,8 +118,8 @@ def put(request, testplan_id):
 
     dbsession = db_model.init_db()
     testplan = dbsession.query(db_model.TestPlan).filter_by(id=testplan_id).first()
-    if not testplan:
-        return HttpResponseNotFound()
+    if testplan is None:
+        return HttpResponseNotFound("")
     else:
         if "name" in in_json:
             testplan.name = in_json['name']
@@ -132,13 +134,15 @@ def put(request, testplan_id):
         try:
             dbsession.commit()
         except IntegrityError:
-            return HttpResponseServerError("constraint violated")
-        return HttpResponse()
+            return HttpResponseBadRequest("constraint violated")
+        return HttpResponse("", status=204)
 
 
 @RequireLogin
 def delete(request, testplan_id):
-    """Delete existing test plan."""
+    """
+    Delete test plan based on testplan_id.
+    """
     dbsession = db_model.init_db()
     testplan = dbsession.query(db_model.TestPlan).filter_by(id=testplan_id).first()
     if testplan is None:
@@ -148,8 +152,8 @@ def delete(request, testplan_id):
         try:
             dbsession.commit()
         except IntegrityError:
-            return HttpResponseServerError("constraint violated")
-        return HttpResponse()
+            return HttpResponseBadRequest("constraint violated")
+        return HttpResponse("", status=204)
 
 
 
