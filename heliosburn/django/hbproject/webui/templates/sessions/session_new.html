@@ -14,24 +14,25 @@
 
 {% block styles %}
     <!-- Bootstrap Timepicker -->
-    <link href="{% static 'webui/css/timepicker/bootstrap-timepicker.min.css' %}" rel="stylesheet" type="text/css" />
+    <link href="{% static 'webui/css/timepicker/bootstrap-timepicker.min.css' %}" rel="stylesheet" type="text/css"/>
 {% endblock %}
 
 {% block scripts %}
     <!-- Bootstrap Timepicker -->
-    <script src="{% static 'webui/js/plugins/timepicker/bootstrap-timepicker.min.js' %}" type="text/javascript"></script>
+    <script src="{% static 'webui/js/plugins/timepicker/bootstrap-timepicker.min.js' %}"
+            type="text/javascript"></script>
 
     <script type="text/javascript">
         $(document).ready(function () {
             $('#optionsRadios1').click(function () {
 
-                    alert("Allot Thai Gayo Bhai");
+                alert("Allot Thai Gayo Bhai");
 
             });
 
             $('#optionsRadios2').click(function () {
 
-                    alert("Transfer Thai Gayo");
+                alert("Transfer Thai Gayo");
 
             });
         });
@@ -39,10 +40,10 @@
     <script type="text/javascript">
 
         $('#timepicker1').timepicker({
-                showSeconds: true,
-                showMeridian: false,
-                defaultTime: '00:00:00'
-            });
+            showSeconds: true,
+            showMeridian: false,
+            defaultTime: '00:00:00'
+        });
 
     </script>
 
@@ -55,21 +56,37 @@
 
             <nav class="navbar navbar-inverse navbar-wizard">
                 <div class="container-fluid">
-                  <div id="navbar" class="navbar-collapse collapse">
-                    <ul class="nav navbar-nav">
-                      <li {% if step == '1' %}class="active"{% endif %}><a href="#">Step 1: Session details</a></li>
-                      <li {% if step == '2' %}class="active"{% endif %}><a href="#">Step 2: Select a Test Plan</a></li>
-                      <li {% if step == '3' %}class="active"{% endif %}><a href="#">Step 3: Review Session</a></li>
-                    </ul>
-                  </div><!--/.nav-collapse -->
-                </div><!--/.container-fluid -->
+                    <div id="navbar" class="navbar-collapse collapse">
+                        <ul class="nav navbar-nav">
+                            <li {% if step == '1' %}class="active"{% endif %}><a href="#">Step 1: Session details</a>
+                            </li>
+                            <li {% if step == '2' %}class="active"{% endif %}><a href="#">Step 2: Select a Test Plan</a>
+                            </li>
+                            <li {% if step == '3' %}class="active"{% endif %}><a href="#">Step 3: Review Session</a>
+                            </li>
+                        </ul>
+                    </div>
+                    <!--/.nav-collapse -->
+                </div>
+                <!--/.container-fluid -->
             </nav>
 
             <div class="progress xs progress-striped active">
-                <div class="progress-bar progress-bar-warning" role="progressbar" aria-valuenow="{{ progress }}" aria-valuemin="0" aria-valuemax="100" style="width: {{ progress }}%">
+                <div class="progress-bar progress-bar-warning" role="progressbar" aria-valuenow="{{ progress }}"
+                     aria-valuemin="0" aria-valuemax="100" style="width: {{ progress }}%">
                     <span class="sr-only">{{ progress }}% Complete (warning)</span>
                 </div>
             </div>
+
+            {% if messages %}
+                <div class="alert alert-danger alert-dismissable top30">
+                    <i class="fa fa-ban"></i>
+                    <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+                    {% for message in messages %}
+                        <p>{{ message|safe }}</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
         </div>
     </div>
 

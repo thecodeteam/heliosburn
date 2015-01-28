@@ -1,4 +1,5 @@
-from django.http import JsonResponse, HttpResponseNotFound, HttpResponseBadRequest, HttpResponse
+from django.http import JsonResponse, HttpResponseNotFound, HttpResponseBadRequest, HttpResponse, \
+    HttpResponseServerError
 from django.views.decorators.csrf import csrf_exempt
 from api.models import db_model
 from api.models.auth import RequireLogin
@@ -21,24 +22,26 @@ def rest(request, *pargs):
     elif request.method == 'DELETE':
         rest_function = delete
     else:
-        return JsonResponse({"error": "HTTP METHOD UNKNOWN"})
+        r = HttpResponse('Invalid method.', status=405)
+        r['Allow'] = 'GET,POST,PUT,DELETE'
+        return r
 
     try:
         return rest_function(request, *pargs)
     except TypeError:
-            return HttpResponseBadRequest("argument mismatch")
+        return HttpResponseBadRequest("argument mismatch")
 
 
 @RequireLogin
 def get(request, testplan_id=None):
     """Retrieve a test plan."""
-    if testplan_id is None:
+    if not testplan_id:
         return get_all_testplans()
 
     dbsession = db_model.init_db()
     testplan = dbsession.query(db_model.TestPlan).filter_by(id=testplan_id).first()
-    if testplan is None:
-        return HttpResponseNotFound("")
+    if not testplan:
+        return HttpResponseNotFound()
     else:
         return JsonResponse({
             'id': testplan.id,
@@ -50,7 +53,7 @@ def get(request, testplan_id=None):
             'client_latency': testplan.client_latency,
             'server_latency': testplan.server_latency,
             'rules': testplan.rules,
-            }, status=200)
+            })
 
 
 def get_all_testplans():
@@ -70,7 +73,7 @@ def get_all_testplans():
             'server_latency': testplan.server_latency,
             'rules': testplan.rules,
             })
-    return JsonResponse({"testplans": all_testplans}, status=200)
+    return JsonResponse({"testplans": all_testplans})
 
 
 @RequireLogin
@@ -96,8 +99,11 @@ def post(request):
         testplan.server_latency = new['server_latency']
 
     dbsession.add(testplan)
-    dbsession.commit()
-    return HttpResponse("", status=204)
+    try:
+        dbsession.commit()
+    except IntegrityError:
+        return HttpResponseServerError("constraint violated")
+    return HttpResponse("", status=201)
 
 
 @RequireLogin
@@ -110,8 +116,8 @@ def put(request, testplan_id):
 
     dbsession = db_model.init_db()
     testplan = dbsession.query(db_model.TestPlan).filter_by(id=testplan_id).first()
-    if testplan is None:
-        return HttpResponseNotFound("")
+    if not testplan:
+        return HttpResponseNotFound()
     else:
         if "name" in in_json:
             testplan.name = in_json['name']
@@ -126,8 +132,8 @@ def put(request, testplan_id):
         try:
             dbsession.commit()
         except IntegrityError:
-            return HttpResponseBadRequest("constraint violated")
-        return HttpResponse("", status=204)
+            return HttpResponseServerError("constraint violated")
+        return HttpResponse()
 
 
 @RequireLogin
@@ -142,8 +148,8 @@ def delete(request, testplan_id):
         try:
             dbsession.commit()
         except IntegrityError:
-            return HttpResponseBadRequest("constraint violated")
-        return HttpResponse("", status=204)
+            return HttpResponseServerError("constraint violated")
+        return HttpResponse()
 
 
 

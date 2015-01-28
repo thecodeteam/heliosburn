@@ -1,4 +1,5 @@
-from django.http import JsonResponse, HttpResponseBadRequest, HttpResponseNotFound, HttpResponse
+from django.http import JsonResponse, HttpResponseBadRequest, HttpResponseNotFound, HttpResponse, \
+    HttpResponseServerError
 from django.views.decorators.csrf import csrf_exempt
 from sqlalchemy.exc import IntegrityError
 from api.models import db_model
@@ -22,25 +23,28 @@ def rest(request, *pargs):
     elif request.method == 'DELETE':
         rest_function = delete
     else:
-        return JsonResponse({"error": "HTTP METHOD UNKNOWN"})
+        r = HttpResponse('Invalid method.', status=405)
+        r['Allow'] = 'GET,POST,PUT,DELETE'
+        return r
 
     try:
         return rest_function(request, *pargs)
     except TypeError as e:
-            print e
-            return HttpResponseBadRequest("unknown method")
+        print e
+        return HttpResponseServerError("unknown method")
 
 
 @RequireLogin
 def get(request, username=None):
     """Retrieve a user."""
-    if username is None:  # Retrieve all users
+    if not username:
+        # Retrieve all users
         return get_all_users(request)
 
     dbsession = db_model.init_db()
     user = dbsession.query(db_model.User).filter_by(username=username).first()
-    if user is None:
-        return HttpResponseNotFound("", status=404)
+    if not user:
+        return HttpResponseNotFound()
     else:
         user_dict = {
             'username': user.username,
@@ -48,7 +52,7 @@ def get(request, username=None):
             'created_at': user.created_at,
             'update_at': user.update_at,
             }
-        return JsonResponse(user_dict, status=200)
+        return JsonResponse(user_dict)
 
 
 def get_all_users(request):
@@ -63,7 +67,7 @@ def get_all_users(request):
             'created_at': user.created_at,
             'update_at': user.update_at,
             })
-    return JsonResponse({"users": user_list}, status=200)
+    return JsonResponse({"users": user_list})
 
 
 @RequireLogin
@@ -75,13 +79,13 @@ def post(request):
         assert "password" in new
         assert "email" in new
     except AssertionError:
-        return HttpResponseBadRequest("argument mismatch", status=400)
+        return HttpResponseBadRequest("argument mismatch")
     except ValueError:
-        return HttpResponseBadRequest("invalid JSON", status=400)
+        return HttpResponseBadRequest("invalid JSON")
 
     dbsession = db_model.init_db()
     user = dbsession.query(db_model.User).filter_by(username=new['username']).first()
-    if user is not None:
+    if user:
         return HttpResponseBadRequest("user already exists")
     else:
         m = hashlib.sha512()
@@ -89,7 +93,7 @@ def post(request):
         user = db_model.User(username=new['username'], email=new['email'], password=m.hexdigest())
         dbsession.add(user)
         dbsession.commit()
-        return HttpResponse("", status=204)
+        return HttpResponse("", status=201)
 
 
 @RequireLogin
@@ -98,12 +102,12 @@ def put(request, username):
     try:
         in_json = json.loads(request.body)
     except ValueError:
-        return HttpResponseBadRequest("invalid JSON", status=400)
+        return HttpResponseBadRequest("invalid JSON")
 
     dbsession = db_model.init_db()
     user = dbsession.query(db_model.User).filter_by(username=username).first()
-    if user is None:
-        return HttpResponseNotFound("")
+    if not user:
+        return HttpResponseNotFound()
     else:
         if "username" in in_json:
             user.username = in_json['username']
@@ -116,8 +120,8 @@ def put(request, username):
         try:
             dbsession.commit()
         except IntegrityError:
-            return HttpResponseBadRequest("user already exists", status=409)
-        return HttpResponse("", status=204)
+            return HttpResponseServerError("user already exists")
+        return HttpResponse()
         
 
 @RequireLogin
@@ -125,10 +129,10 @@ def delete(request, username):
     """Delete existing user matching username."""
     dbsession = db_model.init_db()
     user = dbsession.query(db_model.User).filter_by(username=username).first()
-    if user is None:
-        return HttpResponseNotFound("user not found", status=404)
+    if not user:
+        return HttpResponseNotFound("user not found")
     else:
         dbsession.delete(user)
         dbsession.commit()
-        return HttpResponse("", status=204)
+        return HttpResponse()
 
