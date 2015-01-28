@@ -14,13 +14,25 @@ from twisted.web.proxy import ProxyClient
 from modules import *
 
 
+# Set a marker for our code path
+base_path = dirname(abspath(getsourcefile(lambda _: None)))
 
-print dir()
-print globals()
+# Let's grab our config parameters
 with open('./config.yaml', 'r+') as config_file:
     config = yaml.load(config_file.read())
 
-log.startLogging(sys.stdout)
+# Set up logging
+log_file = config['log']['path'].format(base_path)
+
+try: 
+    if config['log']['standard_out'].lower() == 'yes':
+        setStdout = True
+    else:
+        setStdout = False
+except KeyError:
+    log.err()
+
+log.startLogging( open(logfile,'w'), setStdout = setStdout)
 
 site = server.Site(proxy.ReverseProxyResource(config['upstream']['address'], 
                                                 config['upstream']['port'],
@@ -33,12 +45,14 @@ upstream_host = config['upstream']['address']
 upstream_port = config['upstream']['port']
 request_object = None
 response_object = None
-
- 
-print config
+log.msg(config)
 
 def get_class(mod_dict):
-    print "mod_dict: %s" % mod_dict
+    """
+    Simple function which returns a class dynamically when passed a dictionary
+    containing the appropriate information about a proxy module
+    """
+    log.msg("mod_dict: %s" % mod_dict)
     module_path = mod_dict['path']
     class_name = mod_dict['name']
     try:
@@ -53,6 +67,9 @@ def get_class(mod_dict):
     return class_
 
 def run_modules(context, request_object = None, response_object = None):
+    """
+    Runs all proxy modules in the order specified in config.yaml
+    """
     for  module_dict in config['proxy']['modules']:
         class_ = get_class(module_dict)
         instance_ = class_( context=context,
@@ -62,19 +79,24 @@ def run_modules(context, request_object = None, response_object = None):
         instance_.run(**module_dict['kwargs'])
 
 class MyProxyClient(ProxyClient):
+    """
+    ProxyClient extension used to customize handling of proxy responses.
+    See Twisted's ProxyClient API documentation for details.
+    """
  
     def handleStatus(self, version, code, message):
+        """
+        Invoked after a status code and message are received
+        """
         # Here we can modify the status code
-        #code = 404
-        #code = 220
-        #message = "Not found"
         # End of modifications
-        print "UPSTREAM CODE:"
-        print code
                
         ProxyClient.handleStatus(self, version, code, message)
  
     def handleHeader(self, key, value):
+        """
+        Invoked once for every Header received in a response
+        """
         # Here we can modify the headers
         if key == "Server":
             value = "My custom server"
@@ -83,13 +105,10 @@ class MyProxyClient(ProxyClient):
         ProxyClient.handleHeader(self, key, value)
                
     def handleResponseEnd(self):
+        """
+        Invoked at the end of every completed response
+        """
         if self._finished:
-            print "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
-            print "UPSTREAM CODE :  %s" % (self.father.code)
-            print "UPSTREAM MSG :  %s" % (self.father.code_message)
-            print "UPSTREAM HEADERS : %s" % (self.father.responseHeaders)
-            print "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
-
             run_modules(context = 'response', response_object=self,
                         request_object=request_object)
 
@@ -102,21 +121,26 @@ class MyProxyClientFactory(ProxyClientFactory):
        
 
 class MyReverseProxyRequest(ReverseProxyRequest):
+    """
+    ReverseProxyRequest extension used to customize handling of proxy requests.
+    See Twisted's ReverseProxyRequest API documentation for details.
+    """
+
     proxyClientFactoryClass = MyProxyClientFactory
        
     def process(self):
+        """
+        Implementation of Twisted's ReverseProxyReqeust.process() which
+        processes request objects. Please see ReverseProxyRequest API
+        documentation.
+        """
         global request_object
         request_object = self
+
         run_modules(context = 'request',
                     request_object=self,
                     response_object=None)
-
-        print ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-        print "VERB : %s" % (self.method)
-        print "URI : %s" % (self.uri)
-        print "HEADERS : %s" % (self.requestHeaders)
-        print ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-
+        log.msg("VERB: {}.method, URI: {}.uri, HEADERS: {}.requestHeaders".format(self))
         
         self.requestHeaders.setRawHeaders(b"host", [upstream_host])
         clientFactory = self.proxyClientFactoryClass( self.method, self.uri,
@@ -128,10 +152,17 @@ class MyReverseProxyRequest(ReverseProxyRequest):
        
  
 class MyReverseProxyResource(ReverseProxyResource):
- 
+    """
+    ReverseProxyResource extension used to customize handling of proxy
+    requests.  See Twisted's ReverseProxyResource API documentation for
+    details.
+    """
     proxyClientFactoryClass = MyProxyClientFactory
        
     def getChild(self, path, request):
+        """
+        return host, port, URI, and reactor instance
+        """
         return MyReverseProxyResource(
                                         self.host, self.port,
                                         self.path + '/' + urlquote(path, safe=""),

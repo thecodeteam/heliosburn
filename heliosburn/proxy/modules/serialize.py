@@ -4,6 +4,9 @@ from modules.base import ProxyModuleBase
 current_milli_time = lambda: int(round(time.time() * 1000))
 
 class redisDump(ProxyModuleBase):
+    """
+    Extension of ProxyModuleBase interface used to serialize items to Redis.
+    """
 
 
 
@@ -11,6 +14,12 @@ class redisDump(ProxyModuleBase):
         pass
 
     def onResponse(self, **kwargs):
+        """
+        Default redis serializer. 
+
+        Processes both proxy request and client response objects after
+        response is received
+        """
         import json
         import redis
         import datetime
@@ -40,16 +49,22 @@ class redisDump(ProxyModuleBase):
 
         # Remove traffic older than 10 seconds
         result = r.zremrangebyscore('heliosburn.traffic', '-inf', score - 10*1000)
-        print '* Cleaned %d messages' % (result,)
+        log.msg('* Cleaned %d messages' % (result,))
 
         # Add request to set
         result = r.zadd('heliosburn.traffic', score, response_json)
-        print '* Message with score %d sent successfully' % (score, ) if result else 'Could not sent message (%d)' % (score,)
+        if result:
+            log.msg('* Message with score %d sent successfully' % (score, ) )
+        else:
+            log.msg('Could not send message (%d)' % (score,))
 
 
 
 
 class serialize(ProxyModuleBase):
+    """
+    Extension of ProxyModuleBase interface used to serialize response and request objects to json
+    """
 
     def onRequest(self, **kwargs):
         import json
@@ -60,8 +75,8 @@ class serialize(ProxyModuleBase):
         request_info['METHOD'] = self.request_object.method
         request_info['URI'] = self.request_object.uri
         request_json = json.dumps(request_info)
-        print "serializing request META-DATA for MQ"
-        print request_json
+        log.msg("serializing request META-DATA for MQ")
+        log.msg(request_json)
 
     def onResponse(self, **kwargs):
         import json
@@ -72,5 +87,5 @@ class serialize(ProxyModuleBase):
         response_info['CODE'] = self.response_object.father.code
         response_info['MESSAGE'] = self.response_object.father.code_message
         response_json = json.dumps(response_info)
-        print "serializing response META-DATA for MQ"
-        print response_json
+        log.msg("serializing response META-DATA for MQ")
+        log.msg(response_json)

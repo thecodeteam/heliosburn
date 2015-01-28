@@ -1,5 +1,22 @@
+"""
+Simple Interface to handling proxy requests and responses via class instances.
+To use, make a new class that inherits ProxyModuleBase. Each context
+represents a step in the proxy request or client response process. 
+
+"""
+
+
+
 class ProxyModuleBase(object):
-    """ Doc """
+    """
+    Base class used to implement ProxyModule interface.
+
+    .run() is called in every (defined) context.
+
+    Currently implemented contexts:
+        'request'
+        'response'
+    """
 
     proxy_object = None
     proxy_request_object = None
@@ -8,30 +25,42 @@ class ProxyModuleBase(object):
 
     def __init__(self, run_contexts=[], context=None,
                     request_object=None, response_object=None):
-        """ Doc """
+        """
+        Initialization of ProxyModuleBase instance
+        """
         self.run_contexts = run_contexts
         self.context = context
         self.request_object = request_object
         self.response_object = response_object
 
     def onRequest(self, **keywords):
-        """ Doc """
-        print "Request: %s" % keywords
+        """
+        Called by .run() when instantiated with a run_context that includes
+        'request'. 
+        """
+        log.msg("Request: %s" % keywords)
 
     def onResponse(self, **keywords):
-        """ Doc """
-        print "Response: %s" % keywords
+        """
+        Called by .run() when instantiated with a run_context that includes
+        'response'. 
+        """
+        log.msg("Response: %s" % keywords)
 
     def run(self, **keywords):
-        """ Doc """
+        """
+        Called by run_modules() after a module has been loaded (instantiated).
+        if a given (predefined) context is listed in 'run_contexts', the
+        respective method is called.
+        """
         options =   {
                     'request' : self.onRequest,
+                    'status' : self.onStatus,
                     'response' : self.onResponse,
                     }
         if self.context in self.run_contexts:
             options[self.context](**keywords)
         else:
-            print "not my turn yet"
-
+            log.msg("not my turn yet")
 
 
