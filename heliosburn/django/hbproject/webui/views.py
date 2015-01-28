@@ -72,10 +72,19 @@ def ajax_traffic(request):
 
 
 @login_required
-def session_new(request):
-    step = request.GET.get('step')
-    if step not in WIZARD_STEPS:
-        step = '1'
+def session_new(request, step):
+
+    if step == '1' and request.POST:
+        session_name = request.POST.get('name')
+        session_description = request.POST.get('description')
+        url = '%s/session/' % (settings.API_BASE_URL,)
+        headers = {'X-Auth-Token': request.user.password}
+        payload = {'name': session_name, 'description': session_description}
+        r = requests.post(url, headers=headers, data=json.dumps(payload))
+        if r.status_code == requests.codes.created:
+            #TODO: save session in the session (wtf? -- I know what I mean...)
+            return HttpResponseRedirect(reverse('session_new', args='2'))
+        messages.error(request, 'Could not save the Session. Server returned: %d %s' % (r.status_code, r.text))
 
     progress = int(step) * 100 / len(WIZARD_STEPS)
 
