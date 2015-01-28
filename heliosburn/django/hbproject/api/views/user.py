@@ -42,7 +42,7 @@ def get(request, username=None):
     dbsession = db_model.init_db()
     user = dbsession.query(db_model.User).filter_by(username=username).first()
     if user is None:
-        return HttpResponseNotFound("", status=404)
+        return HttpResponseNotFound(status=404)
     else:
         user_dict = {
             'username': user.username,
@@ -95,7 +95,7 @@ def post(request):
         user = db_model.User(username=new['username'], email=new['email'], password=m.hexdigest())
         dbsession.add(user)
         dbsession.commit()
-        return HttpResponse("", status=204)
+        return HttpResponse(status=200)
 
 
 @RequireLogin
@@ -125,7 +125,7 @@ def put(request, username):
             dbsession.commit()
         except IntegrityError:
             return HttpResponseBadRequest("user already exists", status=409)
-        return HttpResponse("", status=204)
+        return HttpResponse(status=200)
         
 
 @RequireLogin
@@ -140,5 +140,5 @@ def delete(request, username):
     else:
         dbsession.delete(user)
         dbsession.commit()
-        return HttpResponse("", status=204)
+        return HttpResponse(status=200)
 

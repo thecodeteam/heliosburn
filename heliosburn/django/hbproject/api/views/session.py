@@ -131,7 +131,7 @@ def put(request, session_id):
     dbsession = db_model.init_db()
     session = dbsession.query(db_model.Session).filter_by(id=session_id).first()
     if session is None:
-        return HttpResponseNotFound("", status=404)
+        return HttpResponseNotFound(status=404)
     else:
         if "name" in new:
             session.name = new['name']
@@ -145,7 +145,7 @@ def put(request, session_id):
             dbsession.commit()
         except IntegrityError as e:
             return HttpResponseBadRequest("constraint violated", status=409)
-        return HttpResponse("", status=204)
+        return HttpResponse(status=200)
 
 
 @RequireLogin
@@ -162,5 +162,5 @@ def delete(request, session_id):
     else:
         dbsession.delete(session)
         dbsession.commit()
-        return HttpResponse("", status=204)
+        return HttpResponse(status=200)
 
