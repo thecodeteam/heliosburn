@@ -1,4 +1,5 @@
 import json
+import re
 
 from django.http import HttpResponseRedirect, HttpResponse, HttpResponseBadRequest, JsonResponse
 from django.shortcuts import render, redirect
@@ -13,6 +14,8 @@ import requests
 MOCK_PROTOCOL = "http"
 MOCK_HOST = "127.0.0.1"
 MOCK_PORT = "8000"
+
+WIZARD_SESSION_KEY = 'session_id'
 
 WIZARD_STEPS = ['1', '2', '3', '4']
 
@@ -72,10 +75,28 @@ def ajax_traffic(request):
 
 
 @login_required
-def session_new(request):
-    step = request.GET.get('step')
-    if step not in WIZARD_STEPS:
-        step = '1'
+def session_new(request, step):
+
+    if step == '1' and request.POST:
+        session_name = request.POST.get('name')
+        session_description = request.POST.get('description')
+        url = '%s/session/' % (settings.API_BASE_URL,)
+        headers = {'X-Auth-Token': request.user.password}
+        payload = {'name': session_name, 'description': session_description}
+        r = requests.post(url, headers=headers, data=json.dumps(payload))
+        if r.status_code == requests.codes.created:
+            location = r.headers.get('location')
+            pattern = '.+session\/(?P<id>\d+)'
+            p = re.compile(pattern)
+            m = p.match(location)
+            try:
+                session_id = m.group('id')
+                request.session[WIZARD_SESSION_KEY] = session_id
+                return HttpResponseRedirect(reverse('session_new', args='2'))
+            except:
+                messages.error(request, 'Could not get Session ID.')
+        else:
+            messages.error(request, 'Could not save the Session. Server returned: %d %s' % (r.status_code, r.text))
 
     progress = int(step) * 100 / len(WIZARD_STEPS)
 

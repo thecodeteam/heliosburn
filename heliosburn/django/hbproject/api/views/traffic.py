@@ -1,5 +1,5 @@
 import json
-from django.http import JsonResponse, HttpResponseBadRequest, HttpResponse
+from django.http import JsonResponse, HttpResponseBadRequest, HttpResponse, HttpResponseServerError
 from django.views.decorators.csrf import csrf_exempt
 from api.models.auth import RequireLogin
 from api.models import redis_wrapper
@@ -13,20 +13,16 @@ def rest(request, *pargs):
     """
     if request.method == 'GET':
         rest_function = get
-    elif request.method == 'POST':
-        rest_function = post
-    elif request.method == 'PUT':
-        rest_function = put
-    elif request.method == 'DELETE':
-        rest_function = delete
     else:
-        return JsonResponse({"error": "HTTP METHOD UNKNOWN"})
+        r = HttpResponse('Invalid method.', status=405)
+        r['Allow'] = 'GET'
+        return r
 
     try:
         return rest_function(request, *pargs)
     except TypeError as e:
-            print e
-            return HttpResponseBadRequest("unknown method")
+        print e
+        return HttpResponseServerError("unknown method")
 
 
 @RequireLogin
@@ -67,22 +63,4 @@ def get(request):
         }
     return JsonResponse(r)
 
-@RequireLogin
-def post(request):
-    r = HttpResponse('Invalid method. Only GET method accepted.', status=405)
-    r['Allow'] = 'GET'
-    return r
-
-@RequireLogin
-def put(request):
-    r = HttpResponse('Invalid method. Only GET method accepted.', status=405)
-    r['Allow'] = 'GET'
-    return r
-        
-
-@RequireLogin
-def delete(request):
-    r = HttpResponse('Invalid method. Only GET method accepted.', status=405)
-    r['Allow'] = 'GET'
-    return r
 

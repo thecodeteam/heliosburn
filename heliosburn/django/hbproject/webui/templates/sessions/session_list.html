@@ -62,7 +62,7 @@
 {% block content %}
     <div class="row">
         <div class="col-xs-12">
-            <a class="bold btn btn-primary pull-right" href="{% url "session_new" %}" role="button">Create a new Session</a>
+            <a class="bold btn btn-primary pull-right" href="{% url "session_new" 1 %}" role="button">Create a new Session</a>
         </div>
     </div>
 
@@ -103,8 +103,16 @@
                                             <td>{{ session.id }}</td>
                                             <td>{{ session.name }}</td>
                                             <td><a href="{% url "session_details" session.id %}">{{ session.name }}</a></td>
-                                            <td><a href="{% url "testplan_details" session.testPlan.id %}">{{ session.testPlan.name }}</a></td>
-                                            <td>{{ session.latest_execution_at }}</td>
+                                            {% if session.testPlan %}
+                                                <td><a href="{% url "testplan_details" session.testPlan.id %}">{{ session.testPlan.name }}</a></td>
+                                            {% else %}
+                                                <td>None</td>
+                                            {% endif %}
+                                            {% if session.latest_execution_at %}
+                                                <td>{{ session.latest_execution_at }}</td>
+                                            {% else %}
+                                                <td>Never</td>
+                                            {% endif %}
                                             <td>{{ session.executions }}</td>
                                         </tr>
                                     {% endfor %}
