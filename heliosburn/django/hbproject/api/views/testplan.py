@@ -103,7 +103,7 @@ def post(request):
 
     dbsession.add(testplan)
     dbsession.commit()
-    return HttpResponse("", status=204)
+    return HttpResponse(status=200)
 
 
 @RequireLogin
@@ -135,7 +135,7 @@ def put(request, testplan_id):
             dbsession.commit()
         except IntegrityError:
             return HttpResponseBadRequest("constraint violated")
-        return HttpResponse("", status=204)
+        return HttpResponse(status=200)
 
 
 @RequireLogin
@@ -153,7 +153,7 @@ def delete(request, testplan_id):
             dbsession.commit()
         except IntegrityError:
             return HttpResponseBadRequest("constraint violated")
-        return HttpResponse("", status=204)
+        return HttpResponse(status=200)
 
 
 

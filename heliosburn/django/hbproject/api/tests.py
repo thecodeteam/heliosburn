@@ -79,11 +79,11 @@ class SessionViewTestCase(TestCase):
         def update(request, session_id):
             request.body = json.dumps({'name': 'updated name'})
             response = session.put(request, session_id)
-            assert response.status_code == 204
+            assert response.status_code == 200
 
         def delete(request, session_id):
             response = session.delete(request, session_id)
-            assert response.status_code == 204
+            assert response.status_code == 200
 
         print("Creating authenticated request for CRUD tests in %s" % self.__class__)
         request = create_authenticated_request()
