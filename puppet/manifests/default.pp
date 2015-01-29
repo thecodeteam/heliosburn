@@ -21,7 +21,6 @@ package { $sysPackages:
   require => Exec['apt-get update'],
 }
 
-
 class { 'python' :
     version    => 'system',
     pip        => true,
@@ -29,9 +28,7 @@ class { 'python' :
     gunicorn   => true,
   }
 
-python::requirements { '/home/vagrant/HeliosBurn/requirements.txt' :
-  }
-
+python::requirements { '/tmp/requirements.txt': }
 
 class { 'postgresql::server':
   ip_mask_allow_all_users    => '0.0.0.0/0',
