@@ -1,7 +1,8 @@
-from django.http import JsonResponse, HttpResponseBadRequest, HttpResponseNotFound, HttpResponse
+from django.http import JsonResponse, HttpResponseBadRequest, HttpResponseNotFound, HttpResponse, HttpResponseForbidden
 from django.views.decorators.csrf import csrf_exempt
 from sqlalchemy.exc import IntegrityError
 from api.models import db_model, dbsession
+from api.models import auth
 from api.models.auth import RequireLogin
 import hashlib
 import json
@@ -56,6 +57,8 @@ def get_all_users(request):  # TODO: this should require admin
     """
     Retrieve all users.
     """
+    if auth.is_admin(request.user_id) is not True:
+        return HttpResponseForbidden(status=401)
     all_users = dbsession.query(db_model.User).all()
     user_list = list()
     for user in all_users:

@@ -1,3 +1,18 @@
+# Model to contain authentication and authorization related assets
+
+
+def is_admin(user_id):
+    """
+    Tests for 'admin' on a user_id. Returns True/False.
+    """
+    from api.models import dbsession, db_model
+    user = dbsession.query(db_model.User).filter_by(id=user_id, admin=True).first()
+    if user is None:
+        return False
+    else:
+        return True
+
+
 class RequireLogin(object):
     """
     This decorator inspects incoming HTTP request dictionaries for a X-AUTH-TOKEN header.
@@ -11,7 +26,10 @@ class RequireLogin(object):
 
     def __call__(self, request, *pargs, **kwargs):
         if 'HTTP_X_AUTH_TOKEN' in request.META:
-            self.token_string = request.META['HTTP_X_AUTH_TOKEN'][1]
+            if type(request.META['HTTP_X_AUTH_TOKEN']) is tuple:  # Unit test's "request" module uses a tuple for headers
+                self.token_string = request.META['HTTP_X_AUTH_TOKEN'][1]
+            else:  # Real requests do not use a tuple for headers
+                self.token_string = request.META['HTTP_X_AUTH_TOKEN']
             if self.valid_token():
                 request.user_id = self.user_id
                 request.token_string = self.token_string
@@ -20,7 +38,7 @@ class RequireLogin(object):
         # 401 Unauthorized if you reach this point
         from django.http import HttpResponseForbidden
 
-        return HttpResponseForbidden("", status=401)
+        return HttpResponseForbidden(status=401)
 
     def valid_token(self):
         """
