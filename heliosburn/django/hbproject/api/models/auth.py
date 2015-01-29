@@ -5,6 +5,14 @@ def is_admin(user_id):
     """
     Tests for 'admin' on a user_id. Returns True/False.
     """
+    # Notes to other devs: Do not be tempted to re-write this as a decorator! While a decorator would make
+    # adding @RequireAdmin very convenient, we could no longer use it to decide which action to take when
+    # the result of an API call would be different for an admin VS a regular user.
+    # When written as a True/False returning function, we can use more flexible code such as:
+    #   if is_admin() is True:
+    #       do_something_drastic()
+    #   else:
+    #       do_something_less_drastic()
     from api.models import dbsession, db_model
     user = dbsession.query(db_model.User).filter_by(id=user_id, admin=True).first()
     if user is None:
