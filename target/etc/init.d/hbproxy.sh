@@ -1,15 +1,15 @@
 #!/bin/sh
 # init script for Django components of HeliosBurn
 
-workdir=/opt/HeliosBurn/heliosburn/django/hbproject
+workdir=/opt/HeliosBurn/heliosburn/proxy
  
 start() {
     cd $workdir
-    /usr/bin/python cherrypy_launcher.py &
+    /usr/bin/python proxy_core.py &
 }
  
 stop() {
-    pid=`ps -ef | grep '[p]ython cherrypy_launcher.py' | awk '{ print $2 }'`
+    pid=`ps -ef | grep '[p]ython proxy_core.py' | awk '{ print $2 }'`
     echo $pid
     kill $pid
     sleep 2
@@ -28,7 +28,7 @@ case "$1" in
     start
     ;;
   *)
-    echo "Usage: /etc/init.d/hbdjango.sh {start|stop|restart}"
+    echo "Usage: /etc/init.d/hbproxy.sh {start|stop|restart}"
     exit 1
 esac
 exit 0
