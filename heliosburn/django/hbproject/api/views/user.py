@@ -1,7 +1,7 @@
 from django.http import JsonResponse, HttpResponseBadRequest, HttpResponseNotFound, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from sqlalchemy.exc import IntegrityError
-from api.models import db_model
+from api.models import db_model, dbsession
 from api.models.auth import RequireLogin
 import hashlib
 import json
@@ -39,7 +39,6 @@ def get(request, username=None):
     if username is None:  # Retrieve all users
         return get_all_users(request)
 
-    dbsession = db_model.init_db()
     user = dbsession.query(db_model.User).filter_by(username=username).first()
     if user is None:
         return HttpResponseNotFound(status=404)
@@ -57,7 +56,6 @@ def get_all_users(request):  # TODO: this should require admin
     """
     Retrieve all users.
     """
-    dbsession = db_model.init_db()
     all_users = dbsession.query(db_model.User).all()
     user_list = list()
     for user in all_users:
@@ -85,7 +83,6 @@ def post(request):
     except ValueError:
         return HttpResponseBadRequest("invalid JSON", status=400)
 
-    dbsession = db_model.init_db()
     user = dbsession.query(db_model.User).filter_by(username=new['username']).first()
     if user is not None:
         return HttpResponseBadRequest("user already exists")
@@ -108,7 +105,6 @@ def put(request, username):
     except ValueError:
         return HttpResponseBadRequest("invalid JSON", status=400)
 
-    dbsession = db_model.init_db()
     user = dbsession.query(db_model.User).filter_by(username=username).first()
     if user is None:
         return HttpResponseNotFound("")
@@ -133,7 +129,6 @@ def delete(request, username):
     """
     Delete user based on username.
     """
-    dbsession = db_model.init_db()
     user = dbsession.query(db_model.User).filter_by(username=username).first()
     if user is None:
         return HttpResponseNotFound("user not found", status=404)

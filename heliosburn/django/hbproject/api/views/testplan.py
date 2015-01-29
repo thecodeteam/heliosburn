@@ -1,6 +1,6 @@
 from django.http import JsonResponse, HttpResponseNotFound, HttpResponseBadRequest, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
-from api.models import db_model
+from api.models import db_model, dbsession
 from api.models.auth import RequireLogin
 from sqlalchemy.exc import IntegrityError
 import json
@@ -37,7 +37,6 @@ def get(request, testplan_id=None):
     if testplan_id is None:
         return get_all_testplans()
 
-    dbsession = db_model.init_db()
     testplan = dbsession.query(db_model.TestPlan).filter_by(id=testplan_id).first()
     if testplan is None:
         return HttpResponseNotFound("")
@@ -59,7 +58,6 @@ def get_all_testplans():  # TODO: this should require admin
     """
     Retrieve all test plans.
     """
-    dbsession = db_model.init_db()
     testplans = dbsession.query(db_model.TestPlan).all()
     all_testplans = list()
     for testplan in testplans:
@@ -90,7 +88,6 @@ def post(request):
     except AssertionError:
         return HttpResponseBadRequest("argument mismatch")
 
-    dbsession = db_model.init_db()
     testplan = db_model.TestPlan(name=new['name'])
     if "description" in new:
         testplan.description = new['description']
@@ -116,7 +113,6 @@ def put(request, testplan_id):
     except ValueError:
         return HttpResponseBadRequest("invalid JSON")
 
-    dbsession = db_model.init_db()
     testplan = dbsession.query(db_model.TestPlan).filter_by(id=testplan_id).first()
     if testplan is None:
         return HttpResponseNotFound("")
@@ -143,7 +139,6 @@ def delete(request, testplan_id):
     """
     Delete test plan based on testplan_id.
     """
-    dbsession = db_model.init_db()
     testplan = dbsession.query(db_model.TestPlan).filter_by(id=testplan_id).first()
     if testplan is None:
         return HttpResponseNotFound("")

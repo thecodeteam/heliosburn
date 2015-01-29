@@ -1,7 +1,7 @@
 from django.http import JsonResponse, HttpResponseBadRequest, HttpResponseNotFound, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 import json
-from api.models import db_model
+from api.models import db_model, dbsession
 from api.models.auth import RequireLogin
 from sqlalchemy.exc import IntegrityError
 
@@ -37,7 +37,6 @@ def get(request, session_id=None):
     """
     if session_id is None:
         return get_all_sessions(request)
-    dbsession = db_model.init_db()
     session = dbsession.query(db_model.Session).filter_by(id=session_id).first()
     if session is None:
         return HttpResponseNotFound("", status=404)
@@ -62,7 +61,6 @@ def get_all_sessions(request):  # TODO: this should require admin
     """
     Retrieve all sessions.
     """
-    dbsession = db_model.init_db()
     all_sessions = dbsession.query(db_model.Session).all()
     session_list = list()
     for session in all_sessions:
@@ -102,7 +100,6 @@ def post(request):
     except ValueError:
         return HttpResponseBadRequest("invalid JSON", status=400)
 
-    dbsession = db_model.init_db()
     session = db_model.Session(name=new['name'], description=new['description'], user_id=new['user_id'])
 
     # Add optional column values
@@ -128,7 +125,6 @@ def put(request, session_id):
     except ValueError:
         return HttpResponseBadRequest("invalid JSON", status=400)
 
-    dbsession = db_model.init_db()
     session = dbsession.query(db_model.Session).filter_by(id=session_id).first()
     if session is None:
         return HttpResponseNotFound(status=404)
@@ -153,7 +149,6 @@ def delete(request, session_id):
     """
     Delete session based on session_id.
     """
-    dbsession = db_model.init_db()
     session = dbsession.query(db_model.Session).filter_by(id=session_id).first()
     if session is None:
         r = JsonResponse({"error": "session_id not found"})
