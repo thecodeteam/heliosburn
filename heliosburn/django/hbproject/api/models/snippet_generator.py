@@ -1,8 +1,7 @@
-# TEMPORARY snippet of code to generate traffic to place in Redis
-# This will be removed in the future
+# Snippet to generate traffic and store in Redis. Needed for traffic unit tests to be succesful.
 
 
-if __name__ == "__main__":
+def generate_traffic():
     import redis_wrapper
     import datetime
     import time
@@ -59,3 +58,6 @@ if __name__ == "__main__":
         print '* Message with score %d sent successfully' % (score, ) if result else 'Could not sent message (%d)' % (score,)
 
         print "Traffic piece #%d added" % i
+
+if __name__ == "__main__":
+    generate_traffic()

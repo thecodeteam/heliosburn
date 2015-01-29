@@ -103,7 +103,7 @@ def post(request):
 
     dbsession.add(testplan)
     dbsession.commit()
-    return HttpResponse(status=200)
+    return JsonResponse({"id": testplan.id}, status=200)
 
 
 @RequireLogin
