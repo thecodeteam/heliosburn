@@ -12,6 +12,7 @@ class User(Base):
     __tablename__ = "hbuser"
 
     id = Column(Integer, primary_key=True)
+    admin = Column(Boolean, nullable=False, default=False)
     username = Column(String, nullable=False, unique=True)
     email = Column(String, nullable=False)
     password = Column(String, nullable=False)
@@ -212,16 +213,3 @@ class RecordingTraffic(Base):
     recording_id = Column(Integer, ForeignKey('recording.id', onupdate="CASCADE", ondelete="CASCADE"), nullable=False)
     http_request = Column(Integer, ForeignKey('http_request.id', onupdate="CASCADE", ondelete="CASCADE"), nullable=False)
 
-
-def init_db():
-    """
-    Returns SQLAlchemy dbsession configured for heliosburn
-    """
-    from sqlalchemy import create_engine
-    from sqlalchemy.orm import scoped_session
-    from sqlalchemy.orm.session import sessionmaker
-
-    dbsession = scoped_session(sessionmaker())
-    engine = create_engine("postgresql://postgres:postgres@localhost/heliosburn")
-    dbsession.configure(bind=engine, autoflush=False, expire_on_commit=False)
-    return dbsession
