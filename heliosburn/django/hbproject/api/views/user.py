@@ -40,7 +40,7 @@ def get(request, username=None):
     if username is None:  # Retrieve all users
         return get_all_users(request)
 
-    # Users can only GET their own account, unless admin
+    # Users can only retrieve their own account, unless admin
     if (request.user['username'] != username) and (auth.is_admin(request.user['id']) is False):
         return HttpResponseForbidden(status=401)
 
@@ -74,7 +74,7 @@ def get_all_users(request):  # TODO: this should require admin
     return JsonResponse({"users": user_list}, status=200)
 
 
-@RequireLogin()
+@RequireLogin(role='admin')
 def post(request):
     """
     Create a new user.
@@ -106,6 +106,10 @@ def put(request, username):
     """
     Update existing user based on username.
     """
+    # Users can only update their own account, unless admin
+    if (request.user['username'] != username) and (auth.is_admin(request.user['id']) is False):
+        return HttpResponseForbidden(status=401)
+
     try:
         in_json = json.loads(request.body)
     except ValueError:
@@ -130,7 +134,7 @@ def put(request, username):
         return HttpResponse(status=200)
         
 
-@RequireLogin()
+@RequireLogin(role='admin')
 def delete(request, username):
     """
     Delete user based on username.

@@ -175,6 +175,10 @@ class UserViewTestCase(TestCase):
             })
             response = user.post(request)
             assert response.status_code == 200
+
+            response = user.post(create_authenticated_request("test1", "test1"))
+            assert response.status_code == 401
+
             return username
 
         def read(request, username):
@@ -192,7 +196,14 @@ class UserViewTestCase(TestCase):
             response = user.put(request, username)
             assert response.status_code == 200
 
+            response = user.put(create_authenticated_request("test1", "test1"), username)
+            assert response.status_code == 401
+
         def delete(request, username):
+
+            response = user.delete(create_authenticated_request("test1", "test1"), username)
+            assert response.status_code == 401
+
             response = user.delete(request, username)
             assert response.status_code == 200
 
