@@ -90,8 +90,8 @@ def post(request):
     try:
         new = json.loads(request.body)
         assert "name" in new
-        if hasattr(request, "user_id"):
-            new['user_id'] = request.user_id
+        if hasattr(request, "user"):
+            new['user_id'] = request.user['id']
         else:
             assert "user_id" in new
         assert "description" in new

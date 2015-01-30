@@ -15,7 +15,7 @@ def create_authenticated_request():
     # Acquire valid token to test with
     request.body = json.dumps(dict(username="admin", password="admin"))
     response = auth.login(request)
-    token = response._headers['x-auth-token']
+    token = response._headers['x-auth-token'][1]
     request.META = {'HTTP_X_AUTH_TOKEN': token}
 
     # Unset request attributes other than the auth token, then return it
