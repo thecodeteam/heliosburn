@@ -15,7 +15,7 @@ def is_admin(user_id):
     #       do_something_less_drastic()
     from api.models import dbsession, db_model
     user = dbsession.query(db_model.User).filter_by(id=user_id).first()
-    if user.user_role.name is None:  # no role set?
+    if user.user_role is None:  # no role set?
         return False
     elif user.user_role.name == "admin":  # role set to admin
         return True
