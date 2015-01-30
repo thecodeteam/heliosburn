@@ -1,4 +1,9 @@
+#!/usr/bin/env python
 import sys
+import subprocess
+import os
+from os.path import dirname, abspath, join
+from inspect import getsourcefile
 import yaml
 import json
 from twisted.internet import reactor
@@ -12,6 +17,10 @@ from twisted.web.proxy import ReverseProxyResource
 from twisted.web.proxy import ProxyClientFactory
 from twisted.web.proxy import ProxyClient
 from modules import *
+"""
+This is an example test
+
+"""
 
 
 # Set a marker for our code path
@@ -32,7 +41,8 @@ try:
 except KeyError:
     log.err()
 
-log.startLogging( open(logfile,'w'), setStdout = setStdout)
+#log.startLogging( open(log_file,'w'), setStdout = setStdout)
+log.startLogging( open(log_file,'a') )
 
 site = server.Site(proxy.ReverseProxyResource(config['upstream']['address'], 
                                                 config['upstream']['port'],
@@ -51,6 +61,11 @@ def get_class(mod_dict):
     """
     Simple function which returns a class dynamically when passed a dictionary
     containing the appropriate information about a proxy module
+
+    >>> with open('./config.yaml', 'r+') as config_file:
+    ...     config = yaml.load(config_file.read())
+    >>> run_modules(context = None)
+
     """
     log.msg("mod_dict: %s" % mod_dict)
     module_path = mod_dict['path']
@@ -82,6 +97,10 @@ class MyProxyClient(ProxyClient):
     """
     ProxyClient extension used to customize handling of proxy responses.
     See Twisted's ProxyClient API documentation for details.
+
+
+    >>> test_ProxyClient = MyProxyClient()
+
     """
  
     def handleStatus(self, version, code, message):
@@ -116,6 +135,10 @@ class MyProxyClient(ProxyClient):
                
  
 class MyProxyClientFactory(ProxyClientFactory):
+    """
+
+    >>> test_ProyClientFactory = MyProxyClientFactory()
+    """
     protocol = MyProxyClient
  
        
@@ -124,6 +147,9 @@ class MyReverseProxyRequest(ReverseProxyRequest):
     """
     ReverseProxyRequest extension used to customize handling of proxy requests.
     See Twisted's ReverseProxyRequest API documentation for details.
+
+    >>> test_ReverseProxyRequest = MyReverseProxyRequest()
+
     """
 
     proxyClientFactoryClass = MyProxyClientFactory
@@ -140,7 +166,7 @@ class MyReverseProxyRequest(ReverseProxyRequest):
         run_modules(context = 'request',
                     request_object=self,
                     response_object=None)
-        log.msg("VERB: {}.method, URI: {}.uri, HEADERS: {}.requestHeaders".format(self))
+        log.msg("VERB: {}.method, URI: {}.uri, HEADERS: {}.requestHeaders".format(self, self, self))
         
         self.requestHeaders.setRawHeaders(b"host", [upstream_host])
         clientFactory = self.proxyClientFactoryClass( self.method, self.uri,
@@ -156,12 +182,18 @@ class MyReverseProxyResource(ReverseProxyResource):
     ReverseProxyResource extension used to customize handling of proxy
     requests.  See Twisted's ReverseProxyResource API documentation for
     details.
+
+    >>> test_ReverseProxyResource = MyReverseProxyResource()
+
     """
     proxyClientFactoryClass = MyProxyClientFactory
        
     def getChild(self, path, request):
         """
         return host, port, URI, and reactor instance
+
+        >>> getchile(self, '/', MyReverseProxyRequest())
+
         """
         return MyReverseProxyResource(
                                         self.host, self.port,
@@ -169,8 +201,47 @@ class MyReverseProxyResource(ReverseProxyResource):
                                         self.reactor)
  
                
-resource = MyReverseProxyResource(upstream_host, upstream_port, '')              
-f = server.Site(resource)
-f.requestFactory = MyReverseProxyRequest
-reactor.listenTCP(http_port, f, interface=http_address)
-reactor.run()
+def run_proxy():
+    """
+    Entry point for starting the proxy
+    """
+    run_modules(context='None')
+    resource = MyReverseProxyResource(upstream_host, upstream_port, '')              
+    f = server.Site(resource)
+    f.requestFactory = MyReverseProxyRequest
+    reactor.listenTCP(http_port, f, interface=http_address)
+    reactor.run()
+
+def test_check():
+    if 'test' in sys.argv:
+        return True
+
+def prep_background():
+    """
+    Launch background servers for assistance in testing
+
+    >>> length(prep_background())
+    2
+    """
+    try:
+        ts_pid = os.spawnl(os.P_NOWAIT,['./tests/testserver.py'])
+        redis_pid = os.spawnl(os.P_NOWAIT,['/usr/local/redis/src/redis-server'])
+    except:
+        log.error()
+    return (ts_pid, redis_pid)
+
+def run_tests():
+    import doctest
+    doctest.testmod()
+
+try: 
+    prep_background()
+except:
+    log.error()
+
+if __name__ == "__main__":
+    run_proxy
+    if test_check():
+        run_tests()
+    else:
+        run_proxy()
