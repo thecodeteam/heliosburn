@@ -12,13 +12,20 @@ class User(Base):
     __tablename__ = "hbuser"
 
     id = Column(Integer, primary_key=True)
-    admin = Column(Boolean, nullable=False, default=False)
     username = Column(String, nullable=False, unique=True)
     email = Column(String, nullable=False)
     password = Column(String, nullable=False)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
     update_at = Column(DateTime, default=datetime.datetime.utcnow)
     sessions = relationship("Session", cascade="all", backref="user")
+    user_role_id = Column(Integer, ForeignKey('user_role.id', ondelete="RESTRICT"), nullable=True)
+    user_role = relationship("UserRole", backref="user_role")
+
+
+class UserRole(Base):
+    __tablename__ = "user_role"
+    id = Column(Integer, primary_key=True)
+    name = Column(String, nullable=False, unique=True)
 
 
 class HttpRequest(Base):
