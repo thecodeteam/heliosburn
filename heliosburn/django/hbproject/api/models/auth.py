@@ -32,7 +32,7 @@ class RequireLogin(object):
 
     def __init__(self, role=None):
         self.f = None
-        self.role = role
+        self.required_role = role
         self.token_string = "INVALID"  # valid string that will always fail to validate
         self.user_id = None
         self.username = None
@@ -47,6 +47,8 @@ class RequireLogin(object):
                 if self.valid_token():
                     user = self.fetch_user()
                     if user is None:  # The user matching the token has been deleted
+                        return HttpResponseForbidden(status=401)
+                    if (self.required_role is not None) and (self.user_role != self.required_role):
                         return HttpResponseForbidden(status=401)
                     request.user = {
                         'id': self.user_id,
@@ -70,7 +72,7 @@ class RequireLogin(object):
         if user is None:  # User not in database means they were deleted, but (still) have a valid token
             return False
         self.username = user.username
-        if self.user_role is None:
+        if user.user_role is None:
             self.user_role = ''
         else:
             self.user_role = user.user_role.name

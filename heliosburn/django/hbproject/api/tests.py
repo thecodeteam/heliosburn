@@ -181,8 +181,11 @@ class UserViewTestCase(TestCase):
             response = user.get(request, username)
             assert response.status_code == 200
 
-            response = user.get_all_users(create_authenticated_request("test1", "test1"))
+            response = user.get_all_users(request)
             assert response.status_code == 200
+
+            response = user.get_all_users(create_authenticated_request("test1", "test1"))
+            assert response.status_code == 401
 
         def update(request, username):
             request.body = json.dumps({"email": "test1@test1"})
