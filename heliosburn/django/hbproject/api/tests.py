@@ -72,16 +72,26 @@ class SessionViewTestCase(TestCase):
             return session_id
 
         def read(request, session_id):
-            request.body = ''
             response = session.get(request, session_id)
             assert response.status_code == 200
+
+            response = session.get(create_authenticated_request("test1", "test1"), session_id)
+            assert response.status_code == 401
 
         def update(request, session_id):
             request.body = json.dumps({'name': 'CRUD test updated'})
             response = session.put(request, session_id)
             assert response.status_code == 200
 
+            user1_request = create_authenticated_request("test1", "test1")
+            user1_request.body = json.dumps({'name': 'CRUD test updated'})
+            response = session.put(user1_request, session_id)
+            assert response.status_code == 401
+
         def delete(request, session_id):
+            response = session.delete(create_authenticated_request("test1", "test1"), session_id)
+            assert response.status_code == 401
+
             response = session.delete(request, session_id)
             assert response.status_code == 200
 

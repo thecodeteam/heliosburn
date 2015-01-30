@@ -1,7 +1,8 @@
-from django.http import JsonResponse, HttpResponseBadRequest, HttpResponseNotFound, HttpResponse
+from django.http import JsonResponse, HttpResponseBadRequest, HttpResponseNotFound, HttpResponse, \
+    HttpResponseForbidden
 from django.views.decorators.csrf import csrf_exempt
 import json
-from api.models import db_model, dbsession
+from api.models import db_model, dbsession, auth
 from api.models.auth import RequireLogin
 from sqlalchemy.exc import IntegrityError
 
@@ -37,9 +38,14 @@ def get(request, session_id=None):
     """
     if session_id is None:
         return get_all_sessions(request)
+
     session = dbsession.query(db_model.Session).filter_by(id=session_id).first()
     if session is None:
         return HttpResponseNotFound("", status=404)
+
+    # Users cannot retrieve sessions they do not own, unless admin
+    elif (session.user.id != request.user['id']) and (auth.is_admin(request.user['id']) is False):
+        return HttpResponseForbidden(status=401)
     else:
         session_dict = {
             'id': session.id,
@@ -57,11 +63,15 @@ def get(request, session_id=None):
         return r
 
 
-def get_all_sessions(request):  # TODO: this should require admin
+@RequireLogin()
+def get_all_sessions(request):
     """
     Retrieve all sessions.
     """
-    all_sessions = dbsession.query(db_model.Session).all()
+    if auth.is_admin(request.user['id']) is True:  # Admins retrieve all sessions
+        all_sessions = dbsession.query(db_model.Session).all()
+    else:  # Regular users retrieve only the sessions they own
+        all_sessions = dbsession.query(db_model.Session).filter_by(user_id=request.user['id'])
     session_list = list()
     for session in all_sessions:
         session_dict = {
@@ -128,6 +138,10 @@ def put(request, session_id):
     session = dbsession.query(db_model.Session).filter_by(id=session_id).first()
     if session is None:
         return HttpResponseNotFound(status=404)
+
+    # Users can only update their own sessions, unless admin
+    elif (session.user_id != request.user['id']) and (auth.is_admin(request.user['id']) is False):
+        return HttpResponseForbidden(status=401)
     else:
         if "name" in new:
             session.name = new['name']
@@ -154,6 +168,10 @@ def delete(request, session_id):
         r = JsonResponse({"error": "session_id not found"})
         r.status_code = 404
         return r
+
+    # Users can only delete their own sessions, unless admin
+    elif (session.user_id != request.user['id']) and (auth.is_admin(request.user['id']) is False):
+        return HttpResponseForbidden(status=401)
     else:
         dbsession.delete(session)
         dbsession.commit()
