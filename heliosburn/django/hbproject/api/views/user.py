@@ -40,6 +40,10 @@ def get(request, username=None):
     if username is None:  # Retrieve all users
         return get_all_users(request)
 
+    # Users can only GET their own account, unless admin
+    if (request.user['username'] != username) and (auth.is_admin(request.user['id']) is False):
+        return HttpResponseForbidden(status=401)
+
     user = dbsession.query(db_model.User).filter_by(username=username).first()
     if user is None:
         return HttpResponseNotFound(status=404)
@@ -58,8 +62,6 @@ def get_all_users(request):  # TODO: this should require admin
     """
     Retrieve all users.
     """
-    #if auth.is_admin(request.user_id) is not True:
-    #    return HttpResponseForbidden(status=401)
     all_users = dbsession.query(db_model.User).all()
     user_list = list()
     for user in all_users:
