@@ -75,10 +75,12 @@ Vagrant.configure(2) do |config|
   #   sudo apt-get install apache2
   # SHELL
 
+  config.vm.provision "file", source: "requirements.txt", destination: "/tmp/requirements.txt"
+
   config.vm.provision :puppet do |puppet|
     # puppet.hiera_config_path = "puppet/hiera.yaml"
     puppet.manifests_path = "puppet/manifests"
     puppet.module_path = 'puppet/modules'
-    puppet.options = "--verbose --debug"
+    #puppet.options = "--verbose --debug"
   end
 end
