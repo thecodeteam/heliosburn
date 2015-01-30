@@ -30,33 +30,37 @@ class RequireLogin(object):
     If the token is found, it is validated. If the token is invalid or missing, http 401 is returned.
     """
 
-    def __init__(self, f):
-        self.f = f
+    def __init__(self, role=None):
+        self.f = None
+        self.role = role
         self.token_string = "INVALID"  # valid string that will always fail to validate
         self.user_id = None
         self.username = None
         self.user_role = None
 
-    def __call__(self, request, *pargs, **kwargs):
-        from django.http import HttpResponseForbidden
+    def __call__(self, f):
+        def wrapped_f(request, *pargs, **kwargs):
+            from django.http import HttpResponseForbidden
+            self.f = f
+            if 'HTTP_X_AUTH_TOKEN' in request.META:
+                self.token_string = request.META['HTTP_X_AUTH_TOKEN']
+                if self.valid_token():
+                    user = self.fetch_user()
+                    if user is None:  # The user matching the token has been deleted
+                        return HttpResponseForbidden(status=401)
+                    request.user = {
+                        'id': self.user_id,
+                        'username': self.username,
+                        'user_role': self.user_role,
+                        }
+                    request.token_string = self.token_string
+                    return self.f(request, *pargs, **kwargs)
 
-        if 'HTTP_X_AUTH_TOKEN' in request.META:
-            self.token_string = request.META['HTTP_X_AUTH_TOKEN']
-            if self.valid_token():
-                user = self.fetch_user()
-                if user is None:  # The user matching the token has been deleted
-                    return HttpResponseForbidden(status=401)
-                request.user = {
-                    'id': self.user_id,
-                    'username': self.username,
-                    'user_role': self.user_role,
-                    }
-                request.token_string = self.token_string
-                return self.f(request, *pargs, **kwargs)
+            # 401 Unauthorized if you reach this point
 
-        # 401 Unauthorized if you reach this point
+            return HttpResponseForbidden(status=401)
+        return wrapped_f
 
-        return HttpResponseForbidden(status=401)
 
     def fetch_user(self):
         """

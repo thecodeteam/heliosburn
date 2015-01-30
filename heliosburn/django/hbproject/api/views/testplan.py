@@ -29,7 +29,7 @@ def rest(request, *pargs):
             return HttpResponseBadRequest("argument mismatch")
 
 
-@RequireLogin
+@RequireLogin()
 def get(request, testplan_id=None):
     """
     Retrieve test plan based on testplan_id.
@@ -75,7 +75,7 @@ def get_all_testplans():  # TODO: this should require admin
     return JsonResponse({"testplans": all_testplans}, status=200)
 
 
-@RequireLogin
+@RequireLogin()
 def post(request):
     """
     Create new test plan.
@@ -103,7 +103,7 @@ def post(request):
     return JsonResponse({"id": testplan.id}, status=200)
 
 
-@RequireLogin
+@RequireLogin()
 def put(request, testplan_id):
     """
     Update existing test plan based on testplan_id.
@@ -134,7 +134,7 @@ def put(request, testplan_id):
         return HttpResponse(status=200)
 
 
-@RequireLogin
+@RequireLogin()
 def delete(request, testplan_id):
     """
     Delete test plan based on testplan_id.

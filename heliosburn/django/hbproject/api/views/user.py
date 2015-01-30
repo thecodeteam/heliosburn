@@ -32,7 +32,7 @@ def rest(request, *pargs):
             return HttpResponseBadRequest("unknown method")
 
 
-@RequireLogin
+@RequireLogin()
 def get(request, username=None):
     """
     Retrieve user based on username.
@@ -71,7 +71,7 @@ def get_all_users(request):  # TODO: this should require admin
     return JsonResponse({"users": user_list}, status=200)
 
 
-@RequireLogin
+@RequireLogin()
 def post(request):
     """
     Create a new user.
@@ -98,7 +98,7 @@ def post(request):
         return HttpResponse(status=200)
 
 
-@RequireLogin
+@RequireLogin()
 def put(request, username):
     """
     Update existing user based on username.
@@ -127,7 +127,7 @@ def put(request, username):
         return HttpResponse(status=200)
         
 
-@RequireLogin
+@RequireLogin()
 def delete(request, username):
     """
     Delete user based on username.

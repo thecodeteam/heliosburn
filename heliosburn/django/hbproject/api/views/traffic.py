@@ -25,7 +25,7 @@ def rest(request, *pargs):
         return HttpResponseServerError("unknown method")
 
 
-@RequireLogin
+@RequireLogin()
 def get(request):
     """
     Retrieve traffic from redis backend.

@@ -30,7 +30,7 @@ def rest(request, *pargs):
         return HttpResponseBadRequest("argument mismatch")
 
 
-@RequireLogin
+@RequireLogin()
 def get(request, session_id=None):
     """
     Retrieve a session based on session_id.
@@ -82,7 +82,7 @@ def get_all_sessions(request):  # TODO: this should require admin
     return JsonResponse({"sessions": session_list}, status=200)
 
 
-@RequireLogin
+@RequireLogin()
 def post(request):
     """
     Create a new session.
@@ -115,7 +115,7 @@ def post(request):
     return JsonResponse({"id": session.id}, status=200)
 
 
-@RequireLogin
+@RequireLogin()
 def put(request, session_id):
     """
     Update existing session based on session_id.
@@ -144,7 +144,7 @@ def put(request, session_id):
         return HttpResponse(status=200)
 
 
-@RequireLogin
+@RequireLogin()
 def delete(request, session_id):
     """
     Delete session based on session_id.
