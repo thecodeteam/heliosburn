@@ -1,7 +1,7 @@
 from django.test import TestCase
 
 
-def create_authenticated_request():
+def create_authenticated_request(username, password):
     """
     Return a request object with a valid X-AUTH-TOKEN
     """
@@ -13,7 +13,7 @@ def create_authenticated_request():
     request.method = "POST"
 
     # Acquire valid token to test with
-    request.body = json.dumps(dict(username="admin", password="admin"))
+    request.body = json.dumps(dict(username=username, password=password))
     response = auth.login(request)
     token = response._headers['x-auth-token'][1]
     request.META = {'HTTP_X_AUTH_TOKEN': token}
@@ -86,7 +86,7 @@ class SessionViewTestCase(TestCase):
             assert response.status_code == 200
 
         print("Creating authenticated request for CRUD tests in %s" % self.__class__)
-        request = create_authenticated_request()
+        request = create_authenticated_request("admin", "admin")
         request.method = "POST"
 
         print("Testing CREATE in %s" % self.__class__)
@@ -137,7 +137,7 @@ class TestplanViewTestCase(TestCase):
             assert response.status_code == 200
 
         print("Creating authenticated request for CRUD tests in %s" % self.__class__)
-        request = create_authenticated_request()
+        request = create_authenticated_request("admin", "admin")
         request.method = "POST"
 
         print("Testing CREATE in %s" % self.__class__)
@@ -181,6 +181,9 @@ class UserViewTestCase(TestCase):
             response = user.get(request, username)
             assert response.status_code == 200
 
+            response = user.get_all_users(create_authenticated_request("test1", "test1"))
+            assert response.status_code == 200
+
         def update(request, username):
             request.body = json.dumps({"email": "test1@test1"})
             response = user.put(request, username)
@@ -191,7 +194,7 @@ class UserViewTestCase(TestCase):
             assert response.status_code == 200
 
         print("Creating authenticated request for CRUD tests in %s" % self.__class__)
-        request = create_authenticated_request()
+        request = create_authenticated_request("admin", "admin")
         request.method = "POST"
 
         print("Testing CREATE in %s" % self.__class__)
@@ -234,7 +237,7 @@ class TrafficViewTestCase(TestCase):
             pass
 
         print("Creating authenticated request for CRUD tests in %s" % self.__class__)
-        request = create_authenticated_request()
+        request = create_authenticated_request("admin", "admin")
         request.method = "POST"
 
         print("Generating test traffic in Redis")

@@ -53,12 +53,13 @@ def get(request, username=None):
         return JsonResponse(user_dict, status=200)
 
 
+@RequireLogin(role='admin')
 def get_all_users(request):  # TODO: this should require admin
     """
     Retrieve all users.
     """
-    if auth.is_admin(request.user_id) is not True:
-        return HttpResponseForbidden(status=401)
+    #if auth.is_admin(request.user_id) is not True:
+    #    return HttpResponseForbidden(status=401)
     all_users = dbsession.query(db_model.User).all()
     user_list = list()
     for user in all_users:

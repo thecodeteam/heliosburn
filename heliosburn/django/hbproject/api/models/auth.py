@@ -61,7 +61,6 @@ class RequireLogin(object):
             return HttpResponseForbidden(status=401)
         return wrapped_f
 
-
     def fetch_user(self):
         """
         Populate self.user_id, self.username, self.user_role with user information.
@@ -71,7 +70,10 @@ class RequireLogin(object):
         if user is None:  # User not in database means they were deleted, but (still) have a valid token
             return False
         self.username = user.username
-        self.user_role = user.user_role.name
+        if self.user_role is None:
+            self.user_role = ''
+        else:
+            self.user_role = user.user_role.name
         return True
 
 
