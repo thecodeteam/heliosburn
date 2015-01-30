@@ -52,3 +52,20 @@ Whenever we modify the dependencies you can just run `vagrant reload` to stop an
 - **Database**: heliosburn
 - **User**: heliosburn
 - **Password**: heliosburn
+
+
+### Configure PyCharm to work on the Vagrant VM
+
+Even though you can use the editor you feel more comfortable with, PyCharm is the preferred IDE to work with the project. Next we provide a tutorial about how to configure your local PyCharm to work on the Vagrant VM we have just created.
+
+In PyCharm, make sure that Vagrant plugin is enabled: on the main toolbar, click Preferences, and in the Settings dialog box, open the page Plugins.
+
+![developers-pycharm-vagrant_1](https://github.com/emccode/HeliosBurn/blob/master/docs/figures/developers-pycharm-vagrant_1.png)
+
+Now click on the Project Interpreter section. You would normally have the system Python interpreter. Click on the settings wheel and select Add Remote to configure a remote Python interpreter.
+
+![developers-pycharm-vagrant_2](https://github.com/emccode/HeliosBurn/blob/master/docs/figures/developers-pycharm-vagrant_2.png)
+
+Select the Vagrant option and configure your project root directory in the Vagrant Instance Folder field. It will probably ask you to start the Vagrant box if it not already running. After the VM is running, PyCharm will fill the rest of fields automatically.
+
+![developers-pycharm-vagrant_3](https://github.com/emccode/HeliosBurn/blob/master/docs/figures/developers-pycharm-vagrant_3.png)
