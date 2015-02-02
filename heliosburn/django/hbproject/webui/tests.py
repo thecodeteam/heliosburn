@@ -44,10 +44,29 @@ class WebuiSignedInTest(TestCase):
         self.client.post('/webui/signin/', {'username': 'admin', 'password': 'admin'})
 
 
+class SignoutTest(WebuiSignedInTest):
+    def test_signout(self):
+        # user is logged in
+        response = self.client.get('/webui/')
+        self.assertEqual(response.status_code, 200)
+
+        # user logs out
+        response = self.client.get('/webui/signout/')
+        self.assertRedirects(response, '/webui/signin/')
+
+        # user is logged out
+        response = self.client.get('/webui/')
+        self.assertNotEqual(response.status_code, 200)
+
+
 class DashboardTest(WebuiSignedInTest):
     def test_dashboard_url_fix_redirect(self):
         response = self.client.get('/webui')
         self.assertRedirects(response, '/webui/', status_code=301)
+
+    def test_uses_template(self):
+        response = self.client.get('/webui/')
+        self.assertTemplateUsed(response, 'dashboard.html')
 
 
 class TrafficTest(WebuiSignedInTest):
