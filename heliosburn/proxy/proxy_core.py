@@ -118,7 +118,7 @@ class MyProxyClient(ProxyClient):
         """
         Invoked at the end of every completed response
         """
-        if self._finished:
+        if not self._busyReceiving:
             run_modules(context='response', response_object=self,
                         request_object=request_object)
 
