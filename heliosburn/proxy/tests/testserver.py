@@ -5,7 +5,7 @@ import cherrypy
 
 class DummyReceiver(object):
 
-    def default(*pargs, **kwargs):
+    def default(self, *pargs, **kwargs):
         return "pargs '%s' kwargs '%s'\n" % (pargs, kwargs)
     default.exposed = True
 
