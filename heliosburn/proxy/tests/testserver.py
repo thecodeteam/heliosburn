@@ -1,30 +1,13 @@
-#!/usr/bin/env python
-from inspect import getsourcefile
-from os.path import abspath, dirname, join
-from twisted.application import internet, service
-from twisted.web import static, server, resource
-from twisted.internet import reactor
-import yaml
+# Simple server that receives any traffic and responds with the URL and querystring arguments
+# This is intended to be used for unit tests and verifying the proxy functionality
+import cherrypy
 
 
+class DummyReceiver(object):
 
-base_path = dirname(abspath(getsourcefile(lambda _: None)))
-config_file = join(base_path,"config.yaml")
+    def default(*pargs, **kwargs):
+        return "pargs '%s' kwargs '%s'\n" % (pargs, kwargs)
+    default.exposed = True
 
-with open(config_file, 'r+') as config_lines:
-    config = yaml.load(config_lines.read())
-
-webroot = config['server']['web_root'].format(base_path)
-
-
-
-root=static.File(webroot)
-root.indexNames=['index.asis']
-#root.processors = { '.asis' : static.ASISProcessor}
-#application = service.Application('web')
-#sc = service.IServiceCollection(application)
-site = server.Site(root)
-
-reactor.listenTCP(config['server']['port'], server.Site(root), 
-                    interface=config['server']['bind'])
-reactor.run()
+cherrypy.config.update({'server.socket_port': 8080})
+cherrypy.quickstart(DummyReceiver(), '/')
