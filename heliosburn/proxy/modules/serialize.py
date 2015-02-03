@@ -2,8 +2,7 @@ import time
 
 from base import ProxyModuleBase
 
-
-current_milli_time = lambda: int(round(time.time() * 1000))
+current_milli_time = lambda: int(time.time() * 1000000)
 
 
 class redisDump(ProxyModuleBase):
@@ -52,7 +51,7 @@ class redisDump(ProxyModuleBase):
         score = current_milli_time()
 
         # Remove traffic older than 10 seconds
-        result = r.zremrangebyscore('heliosburn.traffic', '-inf', score - 10 * 1000)
+        result = r.zremrangebyscore('heliosburn.traffic', '-inf', score - 10 * 1000000)
         self.log.msg('* Cleaned %d messages' % (result,))
 
         # Add request to set
