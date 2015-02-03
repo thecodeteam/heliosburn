@@ -23,7 +23,7 @@ class SigninTest(TestCase):
         response = self.client.get('/webui/signin/')
         self.assertTemplateUsed(response, 'signin.html')
 
-    def test_form_fields(self):
+    def test_incorrect_login(self):
         response = self.client.post('/webui/signin/', {'username': 'fake_user', 'password': 'fake_password'})
         self.assertEqual(response.status_code, 200)
         m = list(response.context['messages'])
