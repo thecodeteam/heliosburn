@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 from inspect import getsourcefile
 from os.path import abspath, dirname, join
 from twisted.application import internet, service
