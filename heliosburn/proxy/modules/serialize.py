@@ -1,14 +1,15 @@
 import time
-from modules.base import ProxyModuleBase
+
+from base import ProxyModuleBase
+
 
 current_milli_time = lambda: int(round(time.time() * 1000))
+
 
 class redisDump(ProxyModuleBase):
     """
     Extension of ProxyModuleBase interface used to serialize items to Redis.
     """
-
-
 
     def onRequest(self, **kwargs):
         pass
@@ -23,16 +24,19 @@ class redisDump(ProxyModuleBase):
         import json
         import redis
         import datetime
-        import random
+
         now = datetime.datetime.now()
 
         request = {}
-        request['createdAt'] = now.strftime('%Y-%m-%d %H:%M:%S')
+        request['createdAt'] = now.strftime('%Y-%m-%d %H:%M:%S')  # TODO: get the real request date
         request['httpProtocol'] = "HTTP/1.1"
         request['method'] = self.request_object.method
         request['url'] = self.request_object.uri
+        request['headers'] = {}
+        for key, value in self.request_object.requestHeaders.getAllRawHeaders():
+            request['headers'][key] = value
         request['response'] = {}
-        request['response']['createdAt'] = now.strftime('%Y-%m-%d %H:%M:%S')
+        request['response']['createdAt'] = now.strftime('%Y-%m-%d %H:%M:%S')  # TODO: get the real response date
         request['response']['httpProtocol'] = "HTTP/1.1"
         request['response']['statusCode'] = self.response_object.father.code
         request['response']['statusDescription'] = self.response_object.father.code_message
@@ -41,24 +45,22 @@ class redisDump(ProxyModuleBase):
             request['response']['headers'][key] = value
         response_json = json.dumps(request)
 
-        r = redis.StrictRedis(host = kwargs['redis_host'],
-                                port = kwargs['redis_port'],
-                                db = kwargs['redis_db'] )
+        r = redis.StrictRedis(host=kwargs['redis_host'],
+                              port=kwargs['redis_port'],
+                              db=kwargs['redis_db'])
 
         score = current_milli_time()
 
         # Remove traffic older than 10 seconds
-        result = r.zremrangebyscore('heliosburn.traffic', '-inf', score - 10*1000)
+        result = r.zremrangebyscore('heliosburn.traffic', '-inf', score - 10 * 1000)
         self.log.msg('* Cleaned %d messages' % (result,))
 
         # Add request to set
         result = r.zadd('heliosburn.traffic', score, response_json)
         if result:
-            self.log.msg('* Message with score %d sent successfully' % (score, ) )
+            self.log.msg('* Message with score %d sent successfully' % (score, ))
         else:
             self.log.msg('Could not send message (%d)' % (score,))
-
-
 
 
 class serialize(ProxyModuleBase):
@@ -68,6 +70,7 @@ class serialize(ProxyModuleBase):
 
     def onRequest(self, **kwargs):
         import json
+
         request_info = {}
         request_info['HEADERS'] = {}
         for key, value in self.request_object.requestHeaders.getAllRawHeaders():
@@ -80,6 +83,7 @@ class serialize(ProxyModuleBase):
 
     def onResponse(self, **kwargs):
         import json
+
         response_info = {}
         response_info['HEADERS'] = {}
         for key, value in self.response_object.father.responseHeaders.getAllRawHeaders():

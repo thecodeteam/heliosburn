@@ -6,7 +6,6 @@ represents a step in the proxy request or client response process.
 """
 
 
-
 class ProxyModuleBase(object):
     """
     Base class used to implement ProxyModule interface.
@@ -24,11 +23,12 @@ class ProxyModuleBase(object):
     current_context = None
 
     def __init__(self, run_contexts=[], context=None,
-                    request_object=None, response_object=None):
+                 request_object=None, response_object=None):
         """
         Initialization of ProxyModuleBase instance
         """
         from twisted.python import log
+
         self.log = log
         self.run_contexts = run_contexts
         self.context = context
@@ -48,7 +48,7 @@ class ProxyModuleBase(object):
         'status'. 
         """
         self.log.msg("Status: %s" % keywords)
-    
+
     def onResponse(self, **keywords):
         """
         Called by .run() when instantiated with a run_context that includes
@@ -62,11 +62,11 @@ class ProxyModuleBase(object):
         if a given (predefined) context is listed in 'run_contexts', the
         respective method is called.
         """
-        options =   {
-                    'request' : self.onRequest,
-                    'status' : self.onStatus,
-                    'response' : self.onResponse,
-                    }
+        options = {
+            'request': self.onRequest,
+            'status': self.onStatus,
+            'response': self.onResponse,
+        }
         if self.context in self.run_contexts:
             options[self.context](**keywords)
         else:

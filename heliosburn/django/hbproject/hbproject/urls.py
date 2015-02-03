@@ -9,7 +9,7 @@ urlpatterns = patterns('',
 
     #url(r'^admin/', include(admin.site.urls)),
 
-    url(r'^$', RedirectView.as_view(url='/webui', permanent=False), name='index'),
+    url(r'^$', RedirectView.as_view(url='/webui/', permanent=False), name='index'),
     url(r'^api/', include('api.urls')),
     url(r'^webui/', include('webui.urls')),
 )

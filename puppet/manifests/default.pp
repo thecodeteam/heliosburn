@@ -30,6 +30,10 @@ class { 'python' :
 
 python::requirements { '/tmp/requirements.txt': }
 
+class { 'java':
+  distribution => 'jre',
+}
+
 class { 'postgresql::server':
   ip_mask_allow_all_users    => '0.0.0.0/0',
   listen_addresses           => '*',

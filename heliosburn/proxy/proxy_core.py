@@ -1,22 +1,20 @@
 #!/usr/bin/env python
-import sys
-import subprocess
-import os
-from os.path import dirname, abspath, join
+from os.path import dirname, abspath
 from inspect import getsourcefile
+
+from django.utils.http import urlquote
+import sys
 import yaml
-import json
 from twisted.internet import reactor
-from twisted.web import http
 from twisted.web import proxy
 from twisted.web import server
 from twisted.python import log
-from twisted.web.proxy import ReverseProxy
 from twisted.web.proxy import ReverseProxyRequest
 from twisted.web.proxy import ReverseProxyResource
 from twisted.web.proxy import ProxyClientFactory
 from twisted.web.proxy import ProxyClient
-from modules import *
+
+
 """
 This is an example test
 
@@ -33,7 +31,7 @@ with open('./config.yaml', 'r+') as config_file:
 # Set up logging
 log_file = config['log']['path'].format(base_path)
 
-try: 
+try:
     if config['log']['standard_out'].lower() == 'yes':
         setStdout = True
     else:
@@ -41,13 +39,15 @@ try:
 except KeyError:
     log.err()
 
-#log.startLogging( open(log_file,'w'), setStdout = setStdout)
-log.startLogging( open(log_file,'a') )
+# log.startLogging( open(log_file,'w'), setStdout = setStdout)
+# log.startLogging(open(log_file, 'a'))
+log.startLogging(sys.stdout)
 
-site = server.Site(proxy.ReverseProxyResource(config['upstream']['address'], 
-                                                config['upstream']['port'],
-                                                ''))
-if 'http' in config['proxy']['protocols'] : 
+
+site = server.Site(proxy.ReverseProxyResource(config['upstream']['address'],
+                                              config['upstream']['port'],
+                                              ''))
+if 'http' in config['proxy']['protocols']:
     http_address = config['proxy']['bind']
     http_port = config['proxy']['protocols']['http']
 
@@ -56,6 +56,7 @@ upstream_port = config['upstream']['port']
 request_object = None
 response_object = None
 log.msg(config)
+
 
 def get_class(mod_dict):
     """
@@ -75,20 +76,22 @@ def get_class(mod_dict):
     try:
         class_ = getattr(module, class_name)
     except AttributeError:
-        raise ValueError("Module '%s' has no class '%s'" %(module_path, class_name,))
+        raise ValueError("Module '%s' has no class '%s'" % (module_path, class_name,))
     return class_
 
-def run_modules(context, request_object = None, response_object = None):
+
+def run_modules(context, request_object=None, response_object=None):
     """
     Runs all proxy modules in the order specified in config.yaml
     """
-    for  module_dict in config['proxy']['modules']:
+    for module_dict in config['proxy']['modules']:
         class_ = get_class(module_dict)
-        instance_ = class_( context=context,
-                            request_object=request_object,
-                            response_object=response_object,
-                            run_contexts=module_dict['run_contexts'])
+        instance_ = class_(context=context,
+                           request_object=request_object,
+                           response_object=response_object,
+                           run_contexts=module_dict['run_contexts'])
         instance_.run(**module_dict['kwargs'])
+
 
 class MyProxyClient(ProxyClient):
     """
@@ -98,45 +101,36 @@ class MyProxyClient(ProxyClient):
 
 
     """
- 
+
     def handleStatus(self, version, code, message):
         """
         Invoked after a status code and message are received
         """
-        # Here we can modify the status code
-        # End of modifications
-               
         ProxyClient.handleStatus(self, version, code, message)
- 
+
     def handleHeader(self, key, value):
         """
         Invoked once for every Header received in a response
         """
-        # Here we can modify the headers
-        if key == "Server":
-            value = "My custom server"
-        # End of modifications
-        
         ProxyClient.handleHeader(self, key, value)
-               
+
     def handleResponseEnd(self):
         """
         Invoked at the end of every completed response
         """
         if self._finished:
-            run_modules(context = 'response', response_object=self,
+            run_modules(context='response', response_object=self,
                         request_object=request_object)
 
         ProxyClient.handleResponseEnd(self)
-               
- 
+
+
 class MyProxyClientFactory(ProxyClientFactory):
     """
 
     """
     protocol = MyProxyClient
- 
-       
+
 
 class MyReverseProxyRequest(ReverseProxyRequest):
     """
@@ -146,7 +140,7 @@ class MyReverseProxyRequest(ReverseProxyRequest):
     """
 
     proxyClientFactoryClass = MyProxyClientFactory
-       
+
     def process(self):
         """
         Implementation of Twisted's ReverseProxyReqeust.process() which
@@ -156,20 +150,20 @@ class MyReverseProxyRequest(ReverseProxyRequest):
         global request_object
         request_object = self
 
-        run_modules(context = 'request',
+        run_modules(context='request',
                     request_object=self,
                     response_object=None)
         log.msg("VERB: {}.method, URI: {}.uri, HEADERS: {}.requestHeaders".format(self, self, self))
-        
+
         self.requestHeaders.setRawHeaders(b"host", [upstream_host])
-        clientFactory = self.proxyClientFactoryClass( self.method, self.uri,
-                                                        self.clientproto,
-                                                        self.getAllHeaders(),
-                                                        self.content.read(),
-                                                        self)
+        clientFactory = self.proxyClientFactoryClass(self.method, self.uri,
+                                                     self.clientproto,
+                                                     self.getAllHeaders(),
+                                                     self.content.read(),
+                                                     self)
         self.reactor.connectTCP(upstream_host, upstream_port, clientFactory)
-       
- 
+
+
 class MyReverseProxyResource(ReverseProxyResource):
     """
     ReverseProxyResource extension used to customize handling of proxy
@@ -179,7 +173,7 @@ class MyReverseProxyResource(ReverseProxyResource):
 
     """
     proxyClientFactoryClass = MyProxyClientFactory
-       
+
     def getChild(self, path, request):
         """
         return host, port, URI, and reactor instance
@@ -187,17 +181,17 @@ class MyReverseProxyResource(ReverseProxyResource):
 
         """
         return MyReverseProxyResource(
-                                        self.host, self.port,
-                                        self.path + '/' + urlquote(path, safe=""),
-                                        self.reactor)
- 
-               
+            self.host, self.port,
+            self.path + '/' + urlquote(path, safe=""),
+            self.reactor)
+
+
 def main():
     """
     Entry point for starting the proxy
     """
     run_modules(context='None')
-    resource = MyReverseProxyResource(upstream_host, upstream_port, '')              
+    resource = MyReverseProxyResource(upstream_host, upstream_port, '')
     f = server.Site(resource)
     f.requestFactory = MyReverseProxyRequest
     reactor.listenTCP(http_port, f, interface=http_address)
