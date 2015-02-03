@@ -3,6 +3,7 @@ from os.path import dirname, abspath
 from inspect import getsourcefile
 
 from django.utils.http import urlquote
+import sys
 import yaml
 from twisted.internet import reactor
 from twisted.web import proxy
@@ -39,7 +40,9 @@ except KeyError:
     log.err()
 
 # log.startLogging( open(log_file,'w'), setStdout = setStdout)
-log.startLogging(open(log_file, 'a'))
+# log.startLogging(open(log_file, 'a'))
+log.startLogging(sys.stdout)
+
 
 site = server.Site(proxy.ReverseProxyResource(config['upstream']['address'],
                                               config['upstream']['port'],
