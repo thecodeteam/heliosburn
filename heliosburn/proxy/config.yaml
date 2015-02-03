@@ -40,4 +40,4 @@ upstream:
   port: 8000
 log:
   path: '{}/logs/run.log'
-  stdout: 'yes'
+  standard_out: 'yes'

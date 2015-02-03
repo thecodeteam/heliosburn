@@ -49,14 +49,14 @@ class redisDump(ProxyModuleBase):
 
         # Remove traffic older than 10 seconds
         result = r.zremrangebyscore('heliosburn.traffic', '-inf', score - 10*1000)
-        log.msg('* Cleaned %d messages' % (result,))
+        self.log.msg('* Cleaned %d messages' % (result,))
 
         # Add request to set
         result = r.zadd('heliosburn.traffic', score, response_json)
         if result:
-            log.msg('* Message with score %d sent successfully' % (score, ) )
+            self.log.msg('* Message with score %d sent successfully' % (score, ) )
         else:
-            log.msg('Could not send message (%d)' % (score,))
+            self.log.msg('Could not send message (%d)' % (score,))
 
 
 
@@ -75,8 +75,8 @@ class serialize(ProxyModuleBase):
         request_info['METHOD'] = self.request_object.method
         request_info['URI'] = self.request_object.uri
         request_json = json.dumps(request_info)
-        log.msg("serializing request META-DATA for MQ")
-        log.msg(request_json)
+        self.log.msg("serializing request META-DATA for MQ")
+        self.log.msg(request_json)
 
     def onResponse(self, **kwargs):
         import json
@@ -87,5 +87,5 @@ class serialize(ProxyModuleBase):
         response_info['CODE'] = self.response_object.father.code
         response_info['MESSAGE'] = self.response_object.father.code_message
         response_json = json.dumps(response_info)
-        log.msg("serializing response META-DATA for MQ")
-        log.msg(response_json)
+        self.log.msg("serializing response META-DATA for MQ")
+        self.log.msg(response_json)

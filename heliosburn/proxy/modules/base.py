@@ -28,6 +28,8 @@ class ProxyModuleBase(object):
         """
         Initialization of ProxyModuleBase instance
         """
+        from twisted.python import log
+        self.log = log
         self.run_contexts = run_contexts
         self.context = context
         self.request_object = request_object
@@ -38,14 +40,21 @@ class ProxyModuleBase(object):
         Called by .run() when instantiated with a run_context that includes
         'request'. 
         """
-        log.msg("Request: %s" % keywords)
+        self.log.msg("Request: %s" % keywords)
 
+    def onStatus(self, **keywords):
+        """
+        Called by .run() when instantiated with a run_context that includes
+        'status'. 
+        """
+        self.log.msg("Status: %s" % keywords)
+    
     def onResponse(self, **keywords):
         """
         Called by .run() when instantiated with a run_context that includes
         'response'. 
         """
-        log.msg("Response: %s" % keywords)
+        self.log.msg("Response: %s" % keywords)
 
     def run(self, **keywords):
         """
@@ -61,6 +70,6 @@ class ProxyModuleBase(object):
         if self.context in self.run_contexts:
             options[self.context](**keywords)
         else:
-            log.msg("not my turn yet")
+            self.log.msg("not my turn yet")
 
 
