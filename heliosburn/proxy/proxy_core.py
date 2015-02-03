@@ -106,20 +106,12 @@ class MyProxyClient(ProxyClient):
         """
         Invoked after a status code and message are received
         """
-        # Here we can modify the status code
-        # End of modifications
-
         ProxyClient.handleStatus(self, version, code, message)
 
     def handleHeader(self, key, value):
         """
         Invoked once for every Header received in a response
         """
-        # Here we can modify the headers
-        if key == "Server":
-            value = "My custom server"
-        # End of modifications
-
         ProxyClient.handleHeader(self, key, value)
 
     def handleResponseEnd(self):

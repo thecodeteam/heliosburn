@@ -28,12 +28,15 @@ class redisDump(ProxyModuleBase):
         now = datetime.datetime.now()
 
         request = {}
-        request['createdAt'] = now.strftime('%Y-%m-%d %H:%M:%S')
+        request['createdAt'] = now.strftime('%Y-%m-%d %H:%M:%S')  # TODO: get the real request date
         request['httpProtocol'] = "HTTP/1.1"
         request['method'] = self.request_object.method
         request['url'] = self.request_object.uri
+        request['headers'] = {}
+        for key, value in self.request_object.requestHeaders.getAllRawHeaders():
+            request['headers'][key] = value
         request['response'] = {}
-        request['response']['createdAt'] = now.strftime('%Y-%m-%d %H:%M:%S')
+        request['response']['createdAt'] = now.strftime('%Y-%m-%d %H:%M:%S')  # TODO: get the real response date
         request['response']['httpProtocol'] = "HTTP/1.1"
         request['response']['statusCode'] = self.response_object.father.code
         request['response']['statusDescription'] = self.response_object.father.code_message
