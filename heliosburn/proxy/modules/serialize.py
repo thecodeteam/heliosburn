@@ -29,10 +29,10 @@ class redisDump(ProxyModuleBase):
         request = {}
         request['createdAt'] = now.strftime('%Y-%m-%d %H:%M:%S')  # TODO: get the real request date
         request['httpProtocol'] = "HTTP/1.1"
-        request['method'] = self.request_object.method
-        request['url'] = self.request_object.uri
+        request['method'] = self.response_object.father.method
+        request['url'] = self.response_object.father.uri
         request['headers'] = {}
-        for key, value in self.request_object.requestHeaders.getAllRawHeaders():
+        for key, value in self.response_object.father.requestHeaders.getAllRawHeaders():
             request['headers'][key] = value
         request['response'] = {}
         request['response']['createdAt'] = now.strftime('%Y-%m-%d %H:%M:%S')  # TODO: get the real response date
@@ -57,7 +57,7 @@ class redisDump(ProxyModuleBase):
         # Add request to set
         result = r.zadd('heliosburn.traffic', score, response_json)
         if result:
-            self.log.msg('* Message with score %d sent successfully' % (score, ))
+            self.log.msg('* Message with score %d sent successfully' % (score,))
         else:
             self.log.msg('Could not send message (%d)' % (score,))
 
