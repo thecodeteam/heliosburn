@@ -53,8 +53,7 @@ if 'http' in config['proxy']['protocols']:
 
 upstream_host = config['upstream']['address']
 upstream_port = config['upstream']['port']
-request_object = None
-response_object = None
+
 log.msg(config)
 
 
@@ -120,7 +119,7 @@ class MyProxyClient(ProxyClient):
         """
         if not self._busyReceiving:
             run_modules(context='response', response_object=self,
-                        request_object=request_object)
+                        request_object=None)
 
         ProxyClient.handleResponseEnd(self)
 
@@ -147,8 +146,6 @@ class MyReverseProxyRequest(ReverseProxyRequest):
         processes request objects. Please see ReverseProxyRequest API
         documentation.
         """
-        global request_object
-        request_object = self
 
         run_modules(context='request',
                     request_object=self,
