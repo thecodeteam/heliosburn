@@ -34,8 +34,9 @@ class ProxyCoreTest(unittest.TestCase):
 
         self.proxy_core_process.kill()
 
-    def test_proxy_logs_200(self):
-        logging.warning("Testing logging of HTTP 200")
+    def test_proxy_200(self):
         x = urllib2.urlopen("http://127.0.0.1:8880")
         self.assertEqual(x.msg, "OK")  # TODO: can urllib2 return the status_code(200) instead of "OK"?
+
+    def test_proxy_400(self):
         self.assertRaises(HTTPError, urllib2.urlopen, "http://127.0.0.1:8880/fail/404")
