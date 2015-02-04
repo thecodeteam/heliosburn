@@ -10,11 +10,19 @@ import proxy_core
 
 
 class TestServer(Thread):
+    """
+    Thread interface class to contain the CherryPy testserver.
+    """
     def run(self):
         testserver.main()
 
 
 class ProxyCoreTest(unittest.TestCase):
+    """
+    Unit tests of the proxycore component.
+    These create and destroy temporary instances of both proxycore and testserver.py, if the ports are in use prior to
+    the tests running, the tests will fail.
+    """
 
     def setUp(self):
         logging.warning("Spawning TestServer in a thread")
