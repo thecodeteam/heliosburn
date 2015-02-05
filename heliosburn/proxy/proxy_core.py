@@ -106,22 +106,19 @@ class MyProxyClient(ProxyClient):
         Invoked after a status code and message are received
         """
         ProxyClient.handleStatus(self, version, code, message)
+        run_modules(context='response', response_object=self, request_object=None)
 
-    def handleHeader(self, key, value):
-        """
-        Invoked once for every Header received in a response
-        """
-        ProxyClient.handleHeader(self, key, value)
-
-    def handleResponseEnd(self):
-        """
-        Invoked at the end of every completed response
-        """
-        if not self._busyReceiving:
-            run_modules(context='response', response_object=self,
-                        request_object=None)
-
-        ProxyClient.handleResponseEnd(self)
+    # def handleHeader(self, key, value):
+    #     """
+    #     Invoked once for every Header received in a response
+    #     """
+    #     ProxyClient.handleHeader(self, key, value)
+    #
+    # def handleResponseEnd(self):
+    #     """
+    #     Invoked at the end of every completed response
+    #     """
+    #     ProxyClient.handleResponseEnd(self)
 
 
 class MyProxyClientFactory(ProxyClientFactory):

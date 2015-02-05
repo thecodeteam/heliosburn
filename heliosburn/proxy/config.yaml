@@ -34,6 +34,13 @@ proxy:
                 redis_db: 0,
               }
         },
+        {
+          name: 'SampleModule',
+          path: 'modules.samplemodule',
+          run_contexts: ['request', 'response'],
+          kwargs: {},
+         }
+
     ]
 upstream:
   address: '127.0.0.1'
