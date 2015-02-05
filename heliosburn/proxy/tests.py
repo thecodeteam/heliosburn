@@ -52,6 +52,7 @@ class ProxyCoreTest(unittest.TestCase):
         Test HTTP 200 from client->proxy->testserver
         """
         x = urllib2.urlopen("http://127.0.0.1:8880")
+        self.assertEqual(x.headers['Custom-Header'], 'Proxied by Helios ADDED ON RESPONSE')
         self.assertEqual(x.msg, "OK")  # TODO: can urllib2 return the status_code(200) instead of "OK"?
 
     def test_proxy_400(self):
