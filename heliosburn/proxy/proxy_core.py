@@ -105,17 +105,22 @@ class MyProxyClient(ProxyClient):
         Invoked after a status code and message are received
         """
         ProxyClient.handleStatus(self, version, code, message)
-        run_modules(context='response', request_object=self.father)
+        #run_modules(context='response', request_object=self.father)
 
     def handleResponsePart(self, buffer):
 
+        run_modules(context='response', request_object=self.father)
+        # TODO: discover how binary content in buffer behaves
+        buffer = self.father.content.read()
+        self.father.headers['Content-Length'] = len(buffer)
         ProxyClient.handleResponsePart(self, buffer)
-    # def handleHeader(self, key, value):
-    #     """
-    #     Invoked once for every Header received in a response
-    #     """
-    #     ProxyClient.handleHeader(self, key, value)
-    #
+
+    def handleHeader(self, key, value):
+        """
+        Invoked once for every Header received in a response
+        """
+        ProxyClient.handleHeader(self, key, value)
+
     # def handleResponseEnd(self):
     #     """
     #     Invoked at the end of every completed response

@@ -26,7 +26,7 @@ class SampleModule(ProxyModuleBase):
 
         content = self.getContent()
         print content
-        self.setContent('Content modified by HeliosBurn!')
+        self.setContent('Content modified by HeliosBurn in REQUEST!')
 
     def onResponse(self, **kwargs):
         headers = self.getAllHeaders()
@@ -43,12 +43,12 @@ class SampleModule(ProxyModuleBase):
 
         status_code = self.getStatusCode()
         print status_code
-        self.setStatusCode(500)
+        #self.setStatusCode(500)
 
         status_desc = self.getStatusDescription()
         print status_desc
-        self.setStatusDescription("Internal Server Error")
+        #self.setStatusDescription("Internal Server Error")
 
         content = self.getContent()
         print content
-        self.setContent('Content modified by HeliosBurn!')
+        self.setContent('Content modified by HeliosBurn in RESPONSE!\n')
