@@ -1,14 +1,34 @@
 import json
 from django.test import TestCase
+import subprocess
+import logging
+import time
 
 
-class RootTest(TestCase):
+class BaseTest(TestCase):
+    def setUp(self):
+        """
+        Create temporary testserver.py and proxycore.py instances
+        """
+        logging.warning("Starting CherryPy server")
+        self.django_process = subprocess.Popen(["/usr/bin/python2.7", "cherrypy_launcher.py"])  # TODO: fix this, obviously :)
+        time.sleep(2)  # Let CherryPy begin listening
+
+    def tearDown(self):
+        """
+        Tear down temporary testserver.py and proxycore.py instances
+        """
+        logging.warning("Killing CherryPy server")
+        self.django_process.kill()
+
+
+class RootTest(BaseTest):
     def test_root_redirect(self):
         response = self.client.get('/')
         self.assertRedirects(response, '/webui/', target_status_code=302)
 
 
-class WebuiRootTest(TestCase):
+class WebuiRootTest(BaseTest):
     def test_webui_redirect(self):
         response = self.client.get('/webui/')
         self.assertRedirects(response, '/webui/signin?next=/webui/', target_status_code=301)
@@ -18,7 +38,7 @@ class WebuiRootTest(TestCase):
         self.assertRedirects(response, '/webui/signin/?next=/webui/', status_code=301)
 
 
-class SigninTest(TestCase):
+class SigninTest(BaseTest):
     def test_uses_template(self):
         response = self.client.get('/webui/signin/')
         self.assertTemplateUsed(response, 'signin.html')
@@ -39,9 +59,12 @@ class SigninTest(TestCase):
         self.assertRedirects(response, 'webui/testplans/')
 
 
-class WebuiSignedInTest(TestCase):
+class WebuiSignedInTest(BaseTest):
     def setUp(self):
-        self.client.post('/webui/signin/', {'username': 'admin', 'password': 'admin'})
+        BaseTest.setUp(self)
+
+        response = self.client.post('/webui/signin/', {'username': 'admin', 'password': 'admin'})
+        self.assertRedirects(response, 'webui/')
 
 
 class SignoutTest(WebuiSignedInTest):
