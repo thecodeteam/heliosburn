@@ -3,17 +3,52 @@ from base import ProxyModuleBase
 
 class SampleModule(ProxyModuleBase):
     def onRequest(self, **kwargs):
-        print self.request_object.clientproto
-        self.request_object.clientproto = 'HTTP/1.1'
-        #self.request_object.uri = '/modified/url/'
-        self.request_object.requestHeaders.removeHeader('user-agent')
-        self.request_object.requestHeaders.setRawHeaders('user-agent', ['HeliosBurn proxy ADDED ON REQUEST'])
-        self.request_object.requestHeaders.addRawHeader('My-Header', '312')
-        self.request_object.method = 'GET'
+
+        headers = self.getAllHeaders()
+        print headers
+        self.setHeader('user-agent', 'Proxied by Helios')
+        print self.getHeader('user-agent')
+        self.setHeader('My-Super-Header', 'Mini moni mu')
+        if self.hasHeader('Nice-Header'):
+            self.removeHeader('Nice-Header')
+
+        protocol = self.getProtocol()
+        print protocol
+        self.setProtocol('HTTP/1.1')
+
+        method = self.getMethod()
+        print method
+        self.setMethod('PUT')
+
+        uri = self.getURI()
+        print uri
+        self.setURI('/modified/url')
+
+        content = self.getContent()
+        print content
+        self.setContent('Content modified by HeliosBurn!')
 
     def onResponse(self, **kwargs):
-        print self.response_object.father.code
-        print self.response_object.father.code_message
-        print self.response_object.father.responseHeaders
-        print self.response_object.father.clientproto
-        self.response_object.father.responseHeaders.addRawHeader("Custom-Header", "Proxied by Helios ADDED ON RESPONSE")
+        headers = self.getAllHeaders()
+        print headers
+        self.setHeader('Server', 'Proxied by Helios (Response)')
+        print self.getHeader('Server')
+        self.setHeader('My-Super-Header', 'Mini moni mu')
+        if self.hasHeader('Nice-Header'):
+            self.removeHeader('Nice-Header')
+
+        protocol = self.getProtocol()
+        print protocol
+        self.setProtocol('HTTP/1.1')
+
+        status_code = self.getStatusCode()
+        print status_code
+        self.setStatusCode(500)
+
+        status_desc = self.getStatusDescription()
+        print status_desc
+        self.setStatusDescription("Internal Server Error")
+
+        content = self.getContent()
+        print content
+        self.setContent('Content modified by HeliosBurn!')

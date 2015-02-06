@@ -79,7 +79,7 @@ def get_class(mod_dict):
     return class_
 
 
-def run_modules(context, request_object=None, response_object=None):
+def run_modules(context, request_object=None):
     """
     Runs all proxy modules in the order specified in config.yaml
     """
@@ -87,7 +87,6 @@ def run_modules(context, request_object=None, response_object=None):
         class_ = get_class(module_dict)
         instance_ = class_(context=context,
                            request_object=request_object,
-                           response_object=response_object,
                            run_contexts=module_dict['run_contexts'])
         instance_.run(**module_dict['kwargs'])
 
@@ -106,8 +105,11 @@ class MyProxyClient(ProxyClient):
         Invoked after a status code and message are received
         """
         ProxyClient.handleStatus(self, version, code, message)
-        run_modules(context='response', response_object=self, request_object=None)
+        run_modules(context='response', request_object=self.father)
 
+    def handleResponsePart(self, buffer):
+
+        ProxyClient.handleResponsePart(self, buffer)
     # def handleHeader(self, key, value):
     #     """
     #     Invoked once for every Header received in a response
@@ -145,8 +147,7 @@ class MyReverseProxyRequest(ReverseProxyRequest):
         """
 
         run_modules(context='request',
-                    request_object=self,
-                    response_object=None)
+                    request_object=self)
         log.msg("VERB: {}.method, URI: {}.uri, HEADERS: {}.requestHeaders".format(self, self, self))
 
         self.requestHeaders.setRawHeaders(b"host", [upstream_host])
