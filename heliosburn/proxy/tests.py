@@ -59,5 +59,4 @@ class ProxyCoreTest(unittest.TestCase):
         """
         Test HTTP 404 from client->proxy->testserver
         """
-        pass
-        #self.assertRaises(HTTPError, urllib2.urlopen, "http://127.0.0.1:8880/fail/404")
+        self.assertRaises(HTTPError, urllib2.urlopen, "http://127.0.0.1:8880/fail/404")

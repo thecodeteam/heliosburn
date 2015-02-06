@@ -22,7 +22,7 @@ class SampleModule(ProxyModuleBase):
 
         uri = self.getURI()
         print uri
-        self.setURI('/modified/url')
+        #self.setURI('/modified/url')
 
         content = self.getContent()
         print content
