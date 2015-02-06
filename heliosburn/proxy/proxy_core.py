@@ -1,4 +1,10 @@
 #!/usr/bin/env python
+
+# proxy_core provides ReverseProxy functionality to HeliosBurn
+# If invoked with the single command line parameter 'unittests', it discards all modules from config.yaml, and loads
+# only the 'unittest_module.py' module, necessary for unit tests.
+# To run unit tests against proxy_core.py, execute `python -m unittest tests`
+
 from os.path import dirname, abspath
 from inspect import getsourcefile
 
@@ -14,13 +20,6 @@ from twisted.web.proxy import ReverseProxyResource
 from twisted.web.proxy import ProxyClientFactory
 from twisted.web.proxy import ProxyClient
 from io import BytesIO
-
-
-"""
-This is an example test
-
-"""
-
 
 # Set a marker for our code path
 base_path = dirname(abspath(getsourcefile(lambda _: None)))
