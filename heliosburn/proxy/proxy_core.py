@@ -13,6 +13,7 @@ from twisted.web.proxy import ReverseProxyRequest
 from twisted.web.proxy import ReverseProxyResource
 from twisted.web.proxy import ProxyClientFactory
 from twisted.web.proxy import ProxyClient
+from io import BytesIO
 
 
 """
@@ -109,12 +110,10 @@ class MyProxyClient(ProxyClient):
 
     def handleResponsePart(self, buffer):
 
-        self.father.response_content = buffer
+        self.father.response_content = BytesIO(buffer)
         run_modules(context='response', request_object=self.father)
-        # TODO: discover how binary content in buffer behaves
-        buffer = self.father.content.read()
-        self.father.headers['Content-Length'] = len(buffer)
-        ProxyClient.handleResponsePart(self, buffer)
+        self.father.headers['Content-Length'] = len(self.father.content.getvalue())
+        ProxyClient.handleResponsePart(self, self.father.content.getvalue())
 
     def handleHeader(self, key, value):
         """
