@@ -109,6 +109,7 @@ class MyProxyClient(ProxyClient):
 
     def handleResponsePart(self, buffer):
 
+        self.father.response_content = buffer
         run_modules(context='response', request_object=self.father)
         # TODO: discover how binary content in buffer behaves
         buffer = self.father.content.read()

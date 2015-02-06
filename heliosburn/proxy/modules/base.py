@@ -170,7 +170,10 @@ class ProxyModuleBase(object):
 
     def getContent(self):
         if self.context in ['request', 'response']:
-            return self.request_object.content.getvalue()
+            if self.context == 'request':
+                return self.request_object.content.getvalue()
+            elif self.context == 'response':
+                return self.request_object.response_content
         else:
             raise Exception('Invalid context')
 
