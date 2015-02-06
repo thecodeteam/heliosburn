@@ -33,7 +33,7 @@ class ProxyCoreTest(unittest.TestCase):
         time.sleep(1)  # Let cherrypy engine thread start and begin listening
 
         logging.warning("Starting proxy_core")
-        self.proxy_core_process = subprocess.Popen(["/usr/bin/python2.7", "proxy_core.py"])  # TODO: fix this, obviously :)
+        self.proxy_core_process = subprocess.Popen(["/usr/bin/python2.7", "proxy_core.py", "unittests"])  # TODO: fix this, obviously :)
         time.sleep(1)  # Let twisted factory begin listening
 
     def tearDown(self):
@@ -59,3 +59,34 @@ class ProxyCoreTest(unittest.TestCase):
         Test HTTP 404 from client->proxy->testserver
         """
         self.assertRaises(HTTPError, urllib2.urlopen, "http://127.0.0.1:8880/fail/404")
+
+    def test_proxy_request_header(self):
+        """
+        Test for header injected into request, echo'd back by testserver.py
+        """
+        x = urllib2.urlopen("http://127.0.0.1:8880")
+        body = x.fp.read()
+        self.assertNotEquals(body.find('Unit-Test-Request'), -1)
+
+    def test_proxy_response_header(self):
+        """
+        Test for header injected into response
+        """
+        x = urllib2.urlopen("http://127.0.0.1:8880")
+        self.assertIn('Unit-Test-Response', x.headers)
+
+    def test_proxy_request_body(self):
+        """
+        Test for string injected into request body, echo'd back by testserver.py
+        """
+        x = urllib2.urlopen("http://127.0.0.1:8880")
+        body = x.fp.read()
+        self.assertNotEquals(body.find('unit testing body request'), -1)
+
+    def test_proxy_response_body(self):
+        """
+        Test for string injected into response body
+        """
+        x = urllib2.urlopen("http://127.0.0.1:8880")
+        body = x.fp.read()
+        self.assertNotEquals(body.find('unit testing body response'), -1)
