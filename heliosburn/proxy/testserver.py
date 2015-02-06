@@ -10,10 +10,12 @@ class DummyReceiver(object):
         """
         Return the URL as list, querystring args as dict, and headers as dict.
         """
+        import cherrypy
         pp = pprint.PrettyPrinter()
         headers = pp.pformat(cherrypy.request.headers)
         cherrypy.log(headers)
-        return """pargs: '%s'\nkwargs: '%s'\nheaders:\n%s\n""" % (pargs, kwargs, headers)
+        body = cherrypy.request.body.fp.read()
+        return """pargs: '%s'\nkwargs: '%s'\nheaders:\n%s\nbody:\n%s\n""" % (pargs, kwargs, headers, body)
     default.exposed = True
 
     def fail(self, failure_type):

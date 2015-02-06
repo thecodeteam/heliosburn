@@ -29,6 +29,17 @@ base_path = dirname(abspath(getsourcefile(lambda _: None)))
 with open('./config.yaml', 'r+') as config_file:
     config = yaml.load(config_file.read())
 
+# Check if we are running unit tests and re-write modules inside config
+if (len(sys.argv) == 2) and (sys.argv[1] == 'unittests'):
+    config['proxy']['modules'] = [
+        {
+            'name': 'UnitTestModule',
+            'path': 'modules.unittest_module',
+            'run_contexts': ['request', 'response'],
+            'kwargs': {},
+        },
+    ]
+
 # Set up logging
 log_file = config['log']['path'].format(base_path)
 
@@ -120,12 +131,6 @@ class MyProxyClient(ProxyClient):
         Invoked once for every Header received in a response
         """
         ProxyClient.handleHeader(self, key, value)
-
-    # def handleResponseEnd(self):
-    #     """
-    #     Invoked at the end of every completed response
-    #     """
-    #     ProxyClient.handleResponseEnd(self)
 
 
 class MyProxyClientFactory(ProxyClientFactory):
