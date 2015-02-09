@@ -1,7 +1,8 @@
 from django.http import JsonResponse, HttpResponseNotFound, HttpResponseBadRequest, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
-from api.models import db_model, dbsession
+from api.models import db_model
 from api.models.auth import RequireLogin
+from api.decorators import RequireDB
 from sqlalchemy.exc import IntegrityError
 import json
 
@@ -26,16 +27,17 @@ def rest(request, *pargs):
     try:
         return rest_function(request, *pargs)
     except TypeError:
-            return HttpResponseBadRequest("argument mismatch")
+        return HttpResponseBadRequest("argument mismatch")
 
 
 @RequireLogin()
-def get(request, testplan_id=None):
+@RequireDB()
+def get(request, testplan_id=None, dbsession=None):
     """
     Retrieve test plan based on testplan_id.
     """
     if testplan_id is None:
-        return get_all_testplans()
+        return get_all_testplans(dbsession=dbsession)
 
     testplan = dbsession.query(db_model.TestPlan).filter_by(id=testplan_id).first()
     if testplan is None:
@@ -54,7 +56,7 @@ def get(request, testplan_id=None):
             }, status=200)
 
 
-def get_all_testplans():  # TODO: this should require admin
+def get_all_testplans(dbsession=None):  # TODO: this should require admin
     """
     Retrieve all test plans.
     """
@@ -76,7 +78,8 @@ def get_all_testplans():  # TODO: this should require admin
 
 
 @RequireLogin()
-def post(request):
+@RequireDB()
+def post(request, dbsession=None):
     """
     Create new test plan.
     """
@@ -104,7 +107,8 @@ def post(request):
 
 
 @RequireLogin()
-def put(request, testplan_id):
+@RequireDB()
+def put(request, testplan_id, dbsession=None):
     """
     Update existing test plan based on testplan_id.
     """
@@ -135,7 +139,8 @@ def put(request, testplan_id):
 
 
 @RequireLogin()
-def delete(request, testplan_id):
+@RequireDB()
+def delete(request, testplan_id, dbsession=None):
     """
     Delete test plan based on testplan_id.
     """
