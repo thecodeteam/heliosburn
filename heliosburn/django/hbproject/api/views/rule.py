@@ -49,11 +49,11 @@ def get(request, rule_id, dbsession=None):
 @csrf_exempt
 @RequireLogin()
 @RequireDB()
-def get_all_rules(testplan_id, dbsession=None):  # TODO: fix HTTP 500 error
+def get_all_rules(request, testplan_id, dbsession=None):  # TODO: fix HTTP 500 error
     """
     Retrieve all rules for a test plan.
     """
-    rules = dbsession.query(db_model.Rule).filter_by(testplan_id=testplan_id).all()
+    rules = dbsession.query(db_model.Rule).filter_by(testplan_id=int(testplan_id)).all()
     rule_list = list()
     for rule in rules:
         rule_list.append({
