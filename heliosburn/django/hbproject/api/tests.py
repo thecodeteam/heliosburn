@@ -269,3 +269,69 @@ class TrafficViewTestCase(TestCase):
 
         print("Testing READ in %s" % self.__class__)
         read(request)
+
+
+class RuleViewTestCase(TestCase):
+    """
+    Test views/rule.py CRUD
+    This test requires a valid user "admin" with password "admin".
+    """
+
+    def test_crud(self):
+        """
+        Tests CRUD for rule model.
+        """
+        from views import testplan, rule
+        import json
+
+        def create(request):
+            request.body = json.dumps({"name": "CRUD test"})
+
+            # First create a test plan to hold our rules
+            response = testplan.post(request)
+            assert response.status_code == 200
+            in_json = json.loads(response.content)
+            assert "id" in in_json
+            testplan_id = in_json['id']
+
+            # Create rule within the test plan
+            request.body = json.dumps({"ruleType": "request"})
+            response = rule.post(request, testplan_id=testplan_id)
+            assert response.status_code == 200
+            in_json = json.loads(response.content)
+            rule_id = in_json['id']
+
+            return testplan_id, rule_id
+
+        def read(request, rule_id, testplan_id):
+            response = rule.get(request, rule_id)
+            assert response.status_code == 200
+            response_json = json.loads(response.content)
+            assert "ruleType" in response_json
+            assert response_json['ruleType'] == 'request'
+            assert int(response_json['testPlanId'] == testplan_id)
+
+        def update(request, rule_id):
+            request.body = json.dumps({"ruleType": "response"})
+            response = rule.put(request, rule_id)
+            assert response.status_code == 200
+
+        def delete(request, rule_id):
+            response = rule.delete(request, rule_id)
+            assert response.status_code == 200
+
+        print("Creating authenticated request for CRUD tests in %s" % self.__class__)
+        request = create_authenticated_request("admin", "admin")
+        request.method = "POST"
+
+        print("Testing CREATE in %s" % self.__class__)
+        testplan_id, rule_id = create(request)
+
+        print("Testing READ in %s" % self.__class__)
+        read(request, rule_id, testplan_id)
+
+        print("Testing UPDATE in %s" % self.__class__)
+        update(request, rule_id)
+
+        print("Testing DELETE in %s" % self.__class__)
+        delete(request, rule_id)

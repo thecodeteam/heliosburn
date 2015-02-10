@@ -37,7 +37,7 @@ def get(request, testplan_id=None, dbsession=None):
     Retrieve test plan based on testplan_id.
     """
     if testplan_id is None:
-        return get_all_testplans(dbsession=dbsession)
+        return get_all_testplans(request, dbsession=dbsession)
 
     testplan = dbsession.query(db_model.TestPlan).filter_by(id=testplan_id).first()
     if testplan is None:
@@ -56,7 +56,8 @@ def get(request, testplan_id=None, dbsession=None):
             }, status=200)
 
 
-def get_all_testplans(dbsession=None):  # TODO: this should require admin
+@RequireLogin(role='admin')
+def get_all_testplans(request, dbsession=None):
     """
     Retrieve all test plans.
     """
