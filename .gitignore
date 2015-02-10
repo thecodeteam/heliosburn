@@ -64,3 +64,6 @@ docs/_build/
 
 # VIM swap files
 *.swp
+
+# Python-mode
+.ropeproject/
