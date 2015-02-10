@@ -1,4 +1,5 @@
 import os
+import sys
 import cherrypy
 from cherrypy import wsgiserver
 from cherrypy.wsgiserver import ssl_builtin
@@ -36,7 +37,12 @@ if __name__ == "__main__":
 
     server = wsgiserver.CherryPyWSGIServer(
         (host, port), application,
-        server_name=None, numthreads=2, timeout=30, max=500)
+        server_name=None, numthreads=10, timeout=5, max=100)
     print("WSGI-hosting Server started on %s:%s" % (host, port))
-    server.start()
+    try:
+        server.start()
+    except KeyboardInterrupt:
+        cherrypy.engine.exit()
+        print("Trapped exit, shutting down...")
+        os._exit(1)
 
