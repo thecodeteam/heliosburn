@@ -49,7 +49,7 @@ def get(request, rule_id, dbsession=None):
 @csrf_exempt
 @RequireLogin()
 @RequireDB()
-def get_all_rules(request, testplan_id, dbsession=None):  # TODO: fix HTTP 500 error
+def get_all_rules(request, testplan_id, dbsession=None):
     """
     Retrieve all rules for a test plan.
     """
