@@ -11,7 +11,10 @@ fi
 curl -LSso /home/vagrant/.vim/autoload/pathogen.vim https://tpo.pe/pathogen.vim
 
 # Install Python-mode
-git clone git://github.com/klen/python-mode.git /home/vagrant/.vim/bundle/python-mode
+if [ ! -d "/home/vagrant/.vim/bundle/python-mode" ]; then
+  git clone git://github.com/klen/python-mode.git /home/vagrant/.vim/bundle/python-mode
+fi
+
 
 # Enable Pathogen
 echo "\" Pathogen load" > /home/vagrant/.vimrc
