@@ -1,9 +1,10 @@
 from django.http import JsonResponse, HttpResponseBadRequest, HttpResponseNotFound, HttpResponse, HttpResponseForbidden
 from django.views.decorators.csrf import csrf_exempt
 from sqlalchemy.exc import IntegrityError
-from api.models import db_model, dbsession
+from api.models import db_model
 from api.models import auth
 from api.models.auth import RequireLogin
+from api.decorators import RequireDB
 import hashlib
 import json
 
@@ -33,12 +34,13 @@ def rest(request, *pargs):
 
 
 @RequireLogin()
-def get(request, username=None):
+@RequireDB()
+def get(request, username=None, dbsession=None):
     """
     Retrieve user based on username.
     """
     if username is None:  # Retrieve all users
-        return get_all_users(request)
+        return get_all_users(request, dbsession=dbsession)
 
     # Users can only retrieve their own account, unless admin
     if (request.user['username'] != username) and (auth.is_admin(request.user['id']) is False):
@@ -58,7 +60,8 @@ def get(request, username=None):
 
 
 @RequireLogin(role='admin')
-def get_all_users(request):  # TODO: this should require admin
+@RequireDB()
+def get_all_users(request, dbsession=None):  # TODO: this should require admin
     """
     Retrieve all users.
     """
@@ -75,7 +78,8 @@ def get_all_users(request):  # TODO: this should require admin
 
 
 @RequireLogin(role='admin')
-def post(request):
+@RequireDB()
+def post(request, dbsession=None):
     """
     Create a new user.
     """
@@ -102,7 +106,8 @@ def post(request):
 
 
 @RequireLogin()
-def put(request, username):
+@RequireDB()
+def put(request, username, dbsession=None):
     """
     Update existing user based on username.
     """
@@ -135,7 +140,8 @@ def put(request, username):
         
 
 @RequireLogin(role='admin')
-def delete(request, username):
+@RequireDB()
+def delete(request, username, dbsession=None):
     """
     Delete user based on username.
     """
