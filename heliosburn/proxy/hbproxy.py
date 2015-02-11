@@ -23,6 +23,7 @@ from twisted.web.proxy import ReverseProxyResource
 from twisted.web.proxy import ProxyClientFactory
 from twisted.web.proxy import ProxyClient
 from io import BytesIO
+from txredis.client import RedisClient, RedisSubscriber
 
 
 class HBProxyModuleRegistry(object):
@@ -204,6 +205,36 @@ class HBReverseProxyResource(ReverseProxyResource):
             self.path + '/' + urlquote(path, safe=""),
             self.module_registry,
             self.reactor)
+
+
+class HBProxyMgmtRedisSubscriber(RedisSubscriber):
+
+    def messageReceived(self, channel, message):
+        args = message.split()
+
+        if "stop" in args:
+            self.hb_proxy.stop_proxy()
+
+        if "start" in args:
+            self.hb_proxy.start_proxy()
+
+        if "reload" in args:
+            self.hb_proxy.reload_modules()
+
+        if "reset" in args:
+            self.hb_proxy.reset_modules()
+
+        if "upstream_port" in args:
+            self.hb_proxy.set_upstream_port(args[1])
+
+        if "upstream_host" in args:
+            self.hb_proxy.set_upstream_host(args[1])
+
+        if "listen_address" in args:
+            self.hb_proxy.set_listen_address(args[1])
+
+        if "listen_port" in args:
+            self.hb_proxy.set_listen_port(args[1])
 
 
 class HBProxyMgmtProtocol(protocol.Protocol):
