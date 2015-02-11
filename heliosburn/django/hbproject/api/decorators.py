@@ -1,5 +1,6 @@
 from django.http import HttpResponseServerError
 from models import dbsession
+from sqlalchemy.exc import SQLAlchemyError
 
 
 class RequireDB(object):
@@ -15,9 +16,9 @@ class RequireDB(object):
             kwargs['dbsession'] = dbsession
             try:
                 return self.f(request, *pargs, **kwargs)
-            except:
+            except SQLAlchemyError as e:
                 session.rollback()
-                return HttpResponseServerError()
+                return HttpResponseServerError("database error: %s" % e)
             finally:
                 session.close()
         return wrapped_f
