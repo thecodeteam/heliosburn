@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 
 # proxy_core provides ReverseProxy functionality to HeliosBurn
-# If invoked with the single command line parameter 'unittests', it discards all modules from config.yaml, and loads
+# If invoked with the single command line parameter 'unittests',
+# it discards all modules from config.yaml, and loads
 # only the 'unittest_module.py' module, necessary for unit tests.
 # To run unit tests against proxy_core.py, execute `python -m unittest tests`
 
@@ -86,7 +87,8 @@ def get_class(mod_dict):
     try:
         class_ = getattr(module, class_name)
     except AttributeError:
-        raise ValueError("Module '%s' has no class '%s'" % (module_path, class_name,))
+        raise ValueError("Module '%s' has no class '%s'"
+                         % (module_path, class_name,))
     return class_
 
 
@@ -116,13 +118,14 @@ class MyProxyClient(ProxyClient):
         Invoked after a status code and message are received
         """
         ProxyClient.handleStatus(self, version, code, message)
-        #run_modules(context='response', request_object=self.father)
+#        run_modules(context='response', request_object=self.father)
 
     def handleResponsePart(self, buffer):
 
         self.father.response_content = BytesIO(buffer)
         run_modules(context='response', request_object=self.father)
-        self.father.headers['Content-Length'] = len(self.father.content.getvalue())
+        self.father.headers['Content-Length'] = len(self.father.
+                                                    content.getvalue())
         ProxyClient.handleResponsePart(self, self.father.content.getvalue())
 
     def handleHeader(self, key, value):
@@ -157,7 +160,8 @@ class MyReverseProxyRequest(ReverseProxyRequest):
 
         run_modules(context='request',
                     request_object=self)
-        log.msg("VERB: {}.method, URI: {}.uri, HEADERS: {}.requestHeaders".format(self, self, self))
+        log.msg("VERB: {}.method, URI: {}.uri, HEADERS: {}.requestHeaders".
+                format(self, self, self))
 
         self.requestHeaders.setRawHeaders(b"host", [upstream_host])
         clientFactory = self.proxyClientFactoryClass(self.method, self.uri,

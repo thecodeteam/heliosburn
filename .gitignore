@@ -64,3 +64,6 @@ docs/_build/
 
 # VIM swap files
 *.swp
+
+# rope files
+*.ropeproject

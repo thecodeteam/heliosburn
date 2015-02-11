@@ -45,6 +45,9 @@ proxy:
 upstream:
   address: '127.0.0.1'
   port: 8080
+mgmt:
+  address: '127.0.0.1'
+  port: 5150
 log:
   path: '{}/logs/run.log'
   standard_out: 'yes'
