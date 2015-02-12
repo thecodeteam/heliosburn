@@ -20,7 +20,6 @@ urlpatterns = patterns(
     url(r'^testplans/(?P<id>[\w-]+)$', 'testplan_details', name='testplan_details'),
     url(r'^testplans/update/$', 'testplan_update', name='testplan_update'),
     url(r'^testplans/new/$', 'testplan_new', name='testplan_new'),
-    url(r'^testplans/submit/$', 'testplan_submit', name='testplan_submit'),
 
     url(r'^rules/(?P<id>[\w-]+)$', 'rule_details', name='rule_details'),
 
