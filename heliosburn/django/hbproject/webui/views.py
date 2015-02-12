@@ -181,11 +181,14 @@ def testplan_details(request, id):
     headers = {'X-Auth-Token': request.user.password}
     r = requests.get(url, headers=headers)
 
+    if r.status_code == requests.codes.not_found:
+        return render(request, '404.html')
+
     if r.status_code != requests.codes.ok:
+        # TODO: do not sign out always, only if HTTP Unauthorized
         return signout(request)
 
     data = {'testplan': json.loads(r.text)}
-
     return render(request, 'testplan/testplan_details.html', data)
 
 
