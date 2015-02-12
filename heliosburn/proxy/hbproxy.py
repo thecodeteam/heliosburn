@@ -24,6 +24,7 @@ from twisted.web.proxy import ProxyClientFactory
 from twisted.web.proxy import ProxyClient
 from io import BytesIO
 from txredis.client import RedisClient, RedisSubscriber
+from twisted.internet.endpoints import TCP4ClientEndpoint
 
 
 class HBProxyModuleRegistry(object):
@@ -207,9 +208,12 @@ class HBReverseProxyResource(ReverseProxyResource):
             self.reactor)
 
 
-class HBProxyMgmtRedisSubscriber(RedisSubscriber):
+class HBProxyMgmtCommandParser(object):
 
-    def messageReceived(self, channel, message):
+    def __init__(self, hb_proxy):
+        self.hb_proxy = hb_proxy
+
+    def parse(self, message):
         args = message.split()
 
         if "stop" in args:
@@ -237,37 +241,45 @@ class HBProxyMgmtRedisSubscriber(RedisSubscriber):
             self.hb_proxy.set_listen_port(args[1])
 
 
-class HBProxyMgmtProtocol(protocol.Protocol):
+class HBProxyMgmtRedisSubscriber(RedisSubscriber):
+
+    def __init__(self, hb_proxy, *args, **kwargs):
+        RedisSubscriber.__init__(self, *args, **kwargs)
+        self.command_parser = HBProxyMgmtCommandParser(hb_proxy)
+
+    def messageReceived(self, channel, message):
+        self.command_parser.parse(message)
+
+    def channelSubscribed(self, channel, numSubscriptions):
+        log.msg("HBproxy subscribed to channel: "
+                + channel
+                + " it is subscriber 1 of : "
+                + str(numSubscriptions))
+
+    def channelUnSubscribed(self, channel, numSubscriptions):
+        log.msg("HBproxy unsubscribed from channel: "
+                + channel
+                + " there are : "
+                + str(numSubscriptions)
+                + " subscribers remaining ")
+
+
+class HBProxyMgmtRedisSubscriberFactory(protocol.Factory):
 
     def __init__(self, hb_proxy):
         self.hb_proxy = hb_proxy
 
+    def buildProtocol(self, addr):
+        return HBProxyMgmtRedisSubscriber(self.hb_proxy)
+
+
+class HBProxyMgmtProtocol(protocol.Protocol):
+
+    def __init__(self, hb_proxy):
+        self.command_parser = HBProxyMgmtCommandParser(hb_proxy)
+
     def dataReceived(self, data):
-        args = data.split()
-
-        if "stop" in args:
-            self.hb_proxy.stop_proxy()
-
-        if "start" in args:
-            self.hb_proxy.start_proxy()
-
-        if "reload" in args:
-            self.hb_proxy.reload_modules()
-
-        if "reset" in args:
-            self.hb_proxy.reset_modules()
-
-        if "upstream_port" in args:
-            self.hb_proxy.set_upstream_port(args[1])
-
-        if "upstream_host" in args:
-            self.hb_proxy.set_upstream_host(args[1])
-
-        if "listen_address" in args:
-            self.hb_proxy.set_listen_address(args[1])
-
-        if "listen_port" in args:
-            self.hb_proxy.set_listen_port(args[1])
+        self.command_parser.parse(data)
 
 
 class HBProxyMgmtProtocolFactory(protocol.Factory):
@@ -355,6 +367,11 @@ class HBProxy(object):
         self.stop_proxy()
         self.start_proxy()
 
+    def subscribe(self, redis):
+
+        response = redis.subscribe('proxy_core')
+        print(response)
+
     def run(self):
         self.module_registry.run_modules(context='None')
 
@@ -362,8 +379,11 @@ class HBProxy(object):
                           interface=self.mgmt_host)
 
         self.start_proxy()
-
         self._start_logging()
+        redis_endpoint = TCP4ClientEndpoint(reactor, "localhost", 6379)
+        redis_conn = redis_endpoint.connect(
+            HBProxyMgmtRedisSubscriberFactory(self))
+        redis_conn.addCallback(self.subscribe)
         reactor.run()
 
 
@@ -377,6 +397,17 @@ def get_arg_parser():
                         default="./config.yaml",
                         dest='config_path',
                         help='Path to output config file')
+
+    parser.add_argument('--TCP_mgmt',
+                        action="store_true",
+                        help='If set will listen for proxy mgmt commands on'
+                        + ' a TCP port')
+
+    parser.add_argument('--REDIS_mgmt',
+                        action="store_true",
+                        help='If set will subscribe to a given REDIS'
+                        + ' channel for proxy mgmt commands'
+                        + ' Default: true')
 
     return parser
 
