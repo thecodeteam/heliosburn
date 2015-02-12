@@ -47,11 +47,11 @@ def get(request, testplan_id=None, dbsession=None):
             'id': testplan.id,
             'name': testplan.name,
             'description': testplan.description,
-            'created_at': testplan.created_at,
-            'updated_at': testplan.updated_at,
-            'latency_enabled': testplan.latency_enabled,
-            'client_latency': testplan.client_latency,
-            'server_latency': testplan.server_latency,
+            'createdAt': testplan.created_at,
+            'updatedAt': testplan.updated_at,
+            'latencyEnabled': testplan.latency_enabled,
+            'clientLatency': testplan.client_latency,
+            'serverLatency': testplan.server_latency,
             'rules': testplan.rules,
             }, status=200)
 
@@ -68,11 +68,11 @@ def get_all_testplans(request, dbsession=None):
             'id': testplan.id,
             'name': testplan.name,
             'description': testplan.description,
-            'created_at': testplan.created_at,
-            'updated_at': testplan.updated_at,
-            'latency_enabled': testplan.latency_enabled,
-            'client_latency': testplan.client_latency,
-            'server_latency': testplan.server_latency,
+            'createdAt': testplan.created_at,
+            'updatedAt': testplan.updated_at,
+            'latencyEnabled': testplan.latency_enabled,
+            'clientLatency': testplan.client_latency,
+            'serverLatency': testplan.server_latency,
             'rules': testplan.rules,
             })
     return JsonResponse({"testplans": all_testplans}, status=200)
@@ -95,12 +95,12 @@ def post(request, dbsession=None):
     testplan = db_model.TestPlan(name=new['name'])
     if "description" in new:
         testplan.description = new['description']
-    if "latency_enabled" in new:
-        testplan.latency_enabled = new['latency_enabled']
-    if "client_latency" in new:
-        testplan.client_latency = new['client_latency']
-    if "server_latency" in new:
-        testplan.server_latency = new['server_latency']
+    if "latencyEnabled" in new:
+        testplan.latency_enabled = new['latencyEnabled']
+    if "clientLatency" in new:
+        testplan.client_latency = new['clientLatency']
+    if "serverLatency" in new:
+        testplan.server_latency = new['serverLatency']
 
     dbsession.add(testplan)
     dbsession.commit()
@@ -126,12 +126,12 @@ def put(request, testplan_id, dbsession=None):
             testplan.name = in_json['name']
         if "description" in in_json:
             testplan.description = in_json['description']
-        if "latency_enabled" in in_json:
-            testplan.latency_enabled = in_json['latency_enabled']
-        if "client_latency" in in_json:
-            testplan.client_latency = in_json['client_latency']
-        if "server_latency" in in_json:
-            testplan.server_latency = in_json['server_latency']
+        if "latencyEnabled" in in_json:
+            testplan.latency_enabled = in_json['latencyEnabled']
+        if "clientLatency" in in_json:
+            testplan.client_latency = in_json['clientLatency']
+        if "serverLatency" in in_json:
+            testplan.server_latency = in_json['serverLatency']
         try:
             dbsession.commit()
         except IntegrityError:

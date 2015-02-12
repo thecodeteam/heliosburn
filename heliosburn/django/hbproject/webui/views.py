@@ -9,6 +9,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import auth, messages
 from django.conf import settings
 import requests
+from webui.forms import TestPlanForm
 
 
 MOCK_PROTOCOL = "http"
@@ -21,7 +22,6 @@ WIZARD_STEPS = ['1', '2', '3', '4']
 
 
 def signin(request):
-
     if not request.POST:
         return render(request, 'signin.html')
 
@@ -76,7 +76,6 @@ def ajax_traffic(request):
 
 @login_required
 def session_new(request, step):
-
     if step == '1' and request.POST:
         session_name = request.POST.get('name')
         session_description = request.POST.get('description')
@@ -84,7 +83,7 @@ def session_new(request, step):
         headers = {'X-Auth-Token': request.user.password}
         payload = {'name': session_name, 'description': session_description}
         r = requests.post(url, headers=headers, data=json.dumps(payload))
-        if r.status_code == requests.codes.created:
+        if 200 >= r.status_code < 300:
             location = r.headers.get('location')
             pattern = '.+session\/(?P<id>\d+)'
             p = re.compile(pattern)
@@ -92,7 +91,7 @@ def session_new(request, step):
             try:
                 session_id = m.group('id')
                 request.session[WIZARD_SESSION_KEY] = session_id
-                return HttpResponseRedirect(reverse('session_new', args='2'))
+                return HttpResponseRedirect(reverse('session_new', args=('2',)))
             except:
                 messages.error(request, 'Could not get Session ID.')
         else:
@@ -109,7 +108,6 @@ def session_new(request, step):
 
 @login_required
 def session_list(request):
-
     url = '%s/session/' % (settings.API_BASE_URL,)
     headers = {'X-Auth-Token': request.user.password}
     r = requests.get(url, headers=headers)
@@ -165,37 +163,56 @@ def session_update(request):
 
 @login_required
 def testplan_list(request):
-    url = get_mock_url('testplan-list.json')
-    r = requests.get(url)
-    data = json.loads(r.text)
+    url = '%s/testplan/' % (settings.API_BASE_URL,)
+    headers = {'X-Auth-Token': request.user.password}
+    r = requests.get(url, headers=headers)
 
-    args = {}
-    args['data'] = data
+    if r.status_code != requests.codes.ok:
+        return signout(request)
 
-    return render(request, 'testplan/testplan_list.html', args)
+    testplans = json.loads(r.text)
+
+    return render(request, 'testplan/testplan_list.html', testplans)
 
 
 @login_required
 def testplan_details(request, id):
-    url = get_mock_url('testplan-details.json')
-    r = requests.get(url)
-    testplan = json.loads(r.text)
+    url = '%s/testplan/%s' % (settings.API_BASE_URL, id)
+    headers = {'X-Auth-Token': request.user.password}
+    r = requests.get(url, headers=headers)
 
-    args = {}
-    args['testplan'] = testplan
+    if r.status_code == requests.codes.not_found:
+        return render(request, '404.html')
 
-    return render(request, 'testplan/testplan_details.html', args)
+    if r.status_code != requests.codes.ok:
+        # TODO: do not sign out always, only if HTTP Unauthorized
+        return signout(request)
+
+    data = {'testplan': json.loads(r.text)}
+    return render(request, 'testplan/testplan_details.html', data)
 
 
 @login_required
 def testplan_new(request):
-    return render(request, 'testplan/testplan_new.html')
 
+    if request.method == 'POST':
+        form = TestPlanForm(request.POST)
+        if form.is_valid():
+            url = '%s/testplan/' % (settings.API_BASE_URL,)
+            headers = {'X-Auth-Token': request.user.password}
+            r = requests.post(url, headers=headers, data=json.dumps(form.cleaned_data))
 
-@login_required
-def testplan_submit(request):
-    # TODO: send APU call to save test plan
-    return redirect(reverse('testplan_details', args='1'))
+            if r.status_code < 200 or r.status_code >= 300:
+                return signout(request)
+
+            # TODO: get the Test Plan ID from the Location header (when enabled in the API)
+            json_body = json.loads(r.text)
+            testplan_id = json_body['id']
+            return HttpResponseRedirect(reverse('testplan_details', args=(str(testplan_id),)))
+    else:
+        form = TestPlanForm()
+
+    return render(request, 'testplan/testplan_new.html', {'form': form})
 
 
 @login_required
@@ -210,9 +227,18 @@ def testplan_update(request):
     if not name or not pk:
         response = 'field cannot be empty!'
         return HttpResponseBadRequest(response)
-    else:
-        # TODO: API call to update value
-        return HttpResponse()
+
+    if name == 'latencyEnabled':
+        value = True if value == '1' else False
+
+    url = '%s/testplan/%s' % (settings.API_BASE_URL, pk)
+    headers = {'X-Auth-Token': request.user.password}
+    data = {name: value}
+    r = requests.put(url, headers=headers, data=json.dumps(data))
+    if r.status_code != requests.codes.ok:
+        return HttpResponse(status=r.status_code, content='Error updating the Test Plan. %s' % (r.text,))
+    return HttpResponse()
+
 
 
 @login_required
