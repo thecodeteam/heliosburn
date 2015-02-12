@@ -82,13 +82,14 @@
 
         $('#testplan-enablelatency').editable({
             url: '{% url 'testplan_update' %}',
-            type: 'checklist',
+            type: 'select',
             pk: {{ testplan.id }},
-            name: 'enable_latency',
+            name: 'latencyEnabled',
             title: 'Latency',
-            value: '1',
-            source: [{value: 1, text: "Enabled"}],
-            emptytext: 'Disabled',
+            mode: 'popup',
+            value: {{ testplan.latencyEnabled|bool_to_int }},
+            source: [{value: 0, text: "Disabled"}, {value: 1, text: "Enabled"}],
+            emptytext: "Disabled",
             params: '{csrfmiddlewaretoken:"{{csrf_token}}"}'
         });
 
@@ -96,7 +97,7 @@
             url: '{% url 'testplan_update' %}',
             type: 'text',
             pk: {{ testplan.id }},
-            name: 'client_latency',
+            name: 'clientLatency',
             title: 'Client latency',
             params: '{csrfmiddlewaretoken:"{{csrf_token}}"}'
         });
@@ -105,7 +106,7 @@
             url: '{% url 'testplan_update' %}',
             type: 'text',
             pk: {{ testplan.id }},
-            name: 'client_latency',
+            name: 'clientLatency',
             title: 'Client latency',
             params: '{csrfmiddlewaretoken:"{{csrf_token}}"}'
         });
@@ -127,9 +128,9 @@
                         <dt>Description</dt>
                         <dd><a href="#" id="testplan-description">{{ testplan.description }}</a></dd>
                         <dt>Created at</dt>
-                        <dd>{{ testplan.created_at }}</dd>
+                        <dd>{{ testplan.createdAt }}</dd>
                         <dt>Last updated</dt>
-                        <dd>{{ testplan.updated_at }}</dd>
+                        <dd>{{ testplan.updatedAt }}</dd>
                     </dl>
                 </div><!-- /.tab-content -->
             </div>
@@ -143,11 +144,11 @@
                 <div class="tab-content">
                     <dl class="dl-horizontal">
                         <dt>Latency enabled</dt>
-                        <dd><a href="#" id="testplan-enablelatency">{{ testplan.latency_enabled|enabler }}</a></dd>
+                        <dd><a href="#" id="testplan-enablelatency">{{ testplan.latencyEnabled|enabler }}</a></dd>
                         <dt>Client latency</dt>
-                        <dd><a href="#" id="testplan-clientlatency">{{ testplan.client_latency }}</a> ms</dd>
+                        <dd><a href="#" id="testplan-clientlatency">{{ testplan.clientLatency }}</a> ms</dd>
                         <dt>Server latency</dt>
-                        <dd><a href="#" id="testplan-serverlatency">{{ testplan.server_latency }}</a> ms</dd>
+                        <dd><a href="#" id="testplan-serverlatency">{{ testplan.serverLatency }}</a> ms</dd>
                     </dl>
                 </div><!-- /.tab-content -->
             </div>
