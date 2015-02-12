@@ -106,8 +106,8 @@
             url: '{% url 'testplan_update' %}',
             type: 'text',
             pk: {{ testplan.id }},
-            name: 'clientLatency',
-            title: 'Client latency',
+            name: 'serverLatency',
+            title: 'Server latency',
             params: '{csrfmiddlewaretoken:"{{csrf_token}}"}'
         });
 
