@@ -1,8 +1,10 @@
 import json
+import re
 from django.test import TestCase
 import subprocess
 import logging
 import time
+from webui.forms import TestPlanForm
 
 
 class BaseTest(TestCase):
@@ -103,3 +105,85 @@ class TrafficTest(WebuiSignedInTest):
 
         self.assertIn('count', traffic_response)
         self.assertIn('requests', traffic_response)
+
+
+class TestPlanTest(WebuiSignedInTest):
+    def test_testplan_url_fix_redirect(self):
+        response = self.client.get('/webui/testplans')
+        self.assertRedirects(response, '/webui/testplans/', status_code=301)
+
+    def test_testplan_list_uses_template(self):
+        response = self.client.get('/webui/testplans/')
+        self.assertTemplateUsed(response, 'testplan/testplan_list.html')
+
+    def test_testplan_list_status_code(self):
+        response = self.client.get('/webui/testplans/')
+        self.assertEqual(response.status_code, 200)
+
+    def test_testplan_new_uses_template(self):
+        response = self.client.get('/webui/testplans/new/')
+        self.assertTemplateUsed(response, 'testplan/testplan_new.html')
+
+    def test_testplan_new_status_code(self):
+        response = self.client.get('/webui/testplans/new/')
+        self.assertEqual(response.status_code, 200)
+
+    def test_testplan_new_form_missing_required_fields(self):
+        form_data = {}
+        form_data['description'] = 'Description...'
+        form_data['latencyEnabled'] = True
+        form_data['clientLatency'] = 0
+        form_data['serverLatency'] = 100
+        form = TestPlanForm(data=form_data)
+        self.assertFalse(form.is_valid())
+
+    def test_testplan_new_form_valid_all_fields(self):
+        form_data = {}
+        form_data['name'] = 'My cool Test Plan'
+        form_data['description'] = 'Description...'
+        form_data['latencyEnabled'] = True
+        form_data['clientLatency'] = 0
+        form_data['serverLatency'] = 100
+        form = TestPlanForm(data=form_data)
+        self.assertTrue(form.is_valid())
+
+    def test_testplan_new_form_valid_minimal_fields(self):
+        form_data = {}
+        form_data['name'] = 'My cool Test Plan'
+        form_data['description'] = 'Description...'
+        form = TestPlanForm(data=form_data)
+        self.assertTrue(form.is_valid())
+
+    def test_testplan_submit_missing_fields(self):
+        form_data = {}
+        form_data['description'] = 'Description...'
+        form_data['latencyEnabled'] = True
+        form_data['clientLatency'] = 0
+        form_data['serverLatency'] = 100
+        response = self.client.post('/webui/testplans/new/', form_data)
+        self.assertFormError(response, 'form', 'name', 'This field is required.')
+
+    def test_testplan_submit_valid_fields(self):
+        form_data = {}
+        form_data['name'] = 'My cool Test Plan'
+        form_data['description'] = 'Description...'
+        form_data['latencyEnabled'] = True
+        form_data['clientLatency'] = 0
+        form_data['serverLatency'] = 100
+
+        response = self.client.post('/webui/testplans/new/', form_data)
+
+        location = response.url
+        pattern = '.+testplans\/(?P<id>\d+)'
+        p = re.compile(pattern)
+        m = p.match(location)
+        testplan_id = m.group('id')
+        self.assertRedirects(response, '/webui/testplans/%s' % (testplan_id,))
+
+    def test_testplan_details_invalid_id(self):
+        response = self.client.get('/webui/testplans/9999999')
+        self.assertTemplateUsed(response, '404.html')
+
+    def test_testplan_details_valid_id(self):
+        response = self.client.get('/webui/testplans/1')
+        self.assertEqual(response.status_code, 200)

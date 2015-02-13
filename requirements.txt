@@ -9,3 +9,4 @@ CherryPy
 SQLAlchemy
 selenium
 txredis
+django-bootstrap3

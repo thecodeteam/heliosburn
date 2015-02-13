@@ -2,8 +2,9 @@ from django.http import JsonResponse, HttpResponseBadRequest, HttpResponseNotFou
     HttpResponseForbidden
 from django.views.decorators.csrf import csrf_exempt
 import json
-from api.models import db_model, dbsession, auth
+from api.models import db_model, auth
 from api.models.auth import RequireLogin
+from api.decorators import RequireDB
 from sqlalchemy.exc import IntegrityError
 
 
@@ -32,12 +33,13 @@ def rest(request, *pargs):
 
 
 @RequireLogin()
-def get(request, session_id=None):
+@RequireDB()
+def get(request, session_id=None, dbsession=None):
     """
     Retrieve a session based on session_id.
     """
     if session_id is None:
-        return get_all_sessions(request)
+        return get_all_sessions(request.user['id'], dbsession=dbsession)
 
     session = dbsession.query(db_model.Session).filter_by(id=session_id).first()
     if session is None:
@@ -63,15 +65,14 @@ def get(request, session_id=None):
         return r
 
 
-@RequireLogin()
-def get_all_sessions(request):
+def get_all_sessions(user_id, dbsession=None):
     """
     Retrieve all sessions.
     """
-    if auth.is_admin(request.user['id']) is True:  # Admins retrieve all sessions
+    if auth.is_admin(user_id) is True:  # Admins retrieve all sessions
         all_sessions = dbsession.query(db_model.Session).all()
     else:  # Regular users retrieve only the sessions they own
-        all_sessions = dbsession.query(db_model.Session).filter_by(user_id=request.user['id'])
+        all_sessions = dbsession.query(db_model.Session).filter_by(user_id=user_id)
     session_list = list()
     for session in all_sessions:
         session_dict = {
@@ -93,7 +94,8 @@ def get_all_sessions(request):
 
 
 @RequireLogin()
-def post(request):
+@RequireDB()
+def post(request, dbsession=None):
     """
     Create a new session.
     """
@@ -126,7 +128,8 @@ def post(request):
 
 
 @RequireLogin()
-def put(request, session_id):
+@RequireDB()
+def put(request, session_id, dbsession=None):
     """
     Update existing session based on session_id.
     """
@@ -159,7 +162,8 @@ def put(request, session_id):
 
 
 @RequireLogin()
-def delete(request, session_id):
+@RequireDB()
+def delete(request, session_id, dbsession=None):
     """
     Delete session based on session_id.
     """

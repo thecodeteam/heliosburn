@@ -83,4 +83,6 @@ Vagrant.configure(2) do |config|
     puppet.module_path = 'puppet/modules'
     #puppet.options = "--verbose --debug"
   end
+
+  config.vm.provision "shell", path: "puppet/python-mode.sh"
 end

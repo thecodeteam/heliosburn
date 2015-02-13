@@ -39,8 +39,9 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
 
     'django_bootstrap_breadcrumbs',
+    'bootstrap3',
 
-    'webui'
+    'webui',
 )
 
 MIDDLEWARE_CLASSES = (

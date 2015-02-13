@@ -2,6 +2,7 @@
 
 {% load staticfiles %}
 {% load django_bootstrap_breadcrumbs %}
+{% load bootstrap3 %}
 {% load tags %}
 
 {% block title %}Test Plan Manager{% endblock %}
@@ -40,57 +41,24 @@
 
     <div class="row">
         <div class="col-md-12">
-
             <div class="box box-primary">
-                <div class="box-header">
-                    <h3 class="box-title">Test Plan details</h3>
-                </div><!-- /.box-header -->
-                <div class="box-body table-responsive">
-                    <form class="form-horizontal" method="post" action="{% url "testplan_submit" %}">
+                <form method="post" action="{% url "testplan_new" %}" class="form-horizontal">
+                    <div class="box-header">
+                        <h3 class="box-title">Test Plan details</h3>
+                    </div><!-- /.box-header -->
+                    <div class="box-body table-responsive">
                         {% csrf_token %}
-                        <div class="form-group">
-                            <label for="inputName" class="col-sm-2 control-label">Name</label>
-
-                            <div class="col-sm-10">
-                                <input type="email" class="form-control" id="inputName" placeholder="Test Plan name">
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label for="inputDescription" class="col-sm-2 control-label">Description</label>
-
-                            <div class="col-sm-10">
-                                <textarea class="form-control" rows="3" id="inputDescription" placeholder="Test Plan description"></textarea>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label for="inputLatency" class="col-sm-2 control-label"></label>
-
-                            <div class="col-sm-10">
-                                <input type="checkbox" id="inputLatency"> Enable custom latency
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label for="inputClientLatency" class="col-sm-2 control-label">Client latency (ms)</label>
-
-                            <div class="col-sm-2">
-                                <input type="number" class="form-control" id="inputClientLatency" placeholder="Client latency">
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label for="inputServerLatency" class="col-sm-2 control-label">Server latency (ms)</label>
-
-                            <div class="col-sm-2">
-                                <input type="number" class="form-control" id="inputServerLatency" placeholder="Server latency">
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <div class="col-sm-offset-2 col-sm-10">
-                                <button type="submit" class="btn btn-primary">Create</button>
-                                <a class="btn btn-default bold" href="{% url "testplan_list" %}" role="button">Cancel</a>
-                            </div>
-                        </div>
-                    </form>
-                </div><!-- /.box-body -->
+                        {% bootstrap_form form layout='horizontal' %}
+                    </div><!-- /.box-body -->
+                    <div class="box-footer">
+                        {% buttons %}
+                            <span class="col-md-2 col-md-offset-1">
+                                <button type="submit" class="btn btn-primary bold">Create</button>
+                                <a class="btn btn-default bold lmargin10" href="{% url "testplan_list" %}" role="button">Cancel</a>
+                            </span>
+                        {% endbuttons %}
+                    </div>
+                </form>
             </div><!-- /.box -->
         </div>
     </div>

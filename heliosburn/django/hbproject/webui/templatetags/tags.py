@@ -33,3 +33,13 @@ def enabler(value):
             return 'Disabled'
     except:
         return 'Disabled'
+
+@register.filter(name='bool_to_int')
+def enabler(value):
+    try:
+        if type(value) is bool:
+            return 1 if value else 0
+        else:
+            return 0
+    except:
+        return 0

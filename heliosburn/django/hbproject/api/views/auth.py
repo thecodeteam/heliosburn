@@ -4,11 +4,13 @@ import os
 from django.http import HttpResponse, HttpResponseBadRequest
 from django.views.decorators.csrf import csrf_exempt
 from django.conf import settings
-from api.models import db_model, dbsession
+from api.models import db_model
+from api.decorators import RequireDB
 
 
 @csrf_exempt
-def login(request):
+@RequireDB()
+def login(request, dbsession=None):
     """
     Authenticates given 'username' and 'password_hash' against user in database.
     """

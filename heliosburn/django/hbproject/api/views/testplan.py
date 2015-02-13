@@ -1,7 +1,8 @@
 from django.http import JsonResponse, HttpResponseNotFound, HttpResponseBadRequest, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
-from api.models import db_model, dbsession
+from api.models import db_model
 from api.models.auth import RequireLogin
+from api.decorators import RequireDB
 from sqlalchemy.exc import IntegrityError
 import json
 
@@ -26,16 +27,17 @@ def rest(request, *pargs):
     try:
         return rest_function(request, *pargs)
     except TypeError:
-            return HttpResponseBadRequest("argument mismatch")
+        return HttpResponseBadRequest("argument mismatch")
 
 
 @RequireLogin()
-def get(request, testplan_id=None):
+@RequireDB()
+def get(request, testplan_id=None, dbsession=None):
     """
     Retrieve test plan based on testplan_id.
     """
     if testplan_id is None:
-        return get_all_testplans()
+        return get_all_testplans(request, dbsession=dbsession)
 
     testplan = dbsession.query(db_model.TestPlan).filter_by(id=testplan_id).first()
     if testplan is None:
@@ -45,16 +47,17 @@ def get(request, testplan_id=None):
             'id': testplan.id,
             'name': testplan.name,
             'description': testplan.description,
-            'created_at': testplan.created_at,
-            'updated_at': testplan.updated_at,
-            'latency_enabled': testplan.latency_enabled,
-            'client_latency': testplan.client_latency,
-            'server_latency': testplan.server_latency,
+            'createdAt': testplan.created_at,
+            'updatedAt': testplan.updated_at,
+            'latencyEnabled': testplan.latency_enabled,
+            'clientLatency': testplan.client_latency,
+            'serverLatency': testplan.server_latency,
             'rules': testplan.rules,
             }, status=200)
 
 
-def get_all_testplans():  # TODO: this should require admin
+@RequireLogin(role='admin')
+def get_all_testplans(request, dbsession=None):
     """
     Retrieve all test plans.
     """
@@ -65,18 +68,19 @@ def get_all_testplans():  # TODO: this should require admin
             'id': testplan.id,
             'name': testplan.name,
             'description': testplan.description,
-            'created_at': testplan.created_at,
-            'updated_at': testplan.updated_at,
-            'latency_enabled': testplan.latency_enabled,
-            'client_latency': testplan.client_latency,
-            'server_latency': testplan.server_latency,
+            'createdAt': testplan.created_at,
+            'updatedAt': testplan.updated_at,
+            'latencyEnabled': testplan.latency_enabled,
+            'clientLatency': testplan.client_latency,
+            'serverLatency': testplan.server_latency,
             'rules': testplan.rules,
             })
     return JsonResponse({"testplans": all_testplans}, status=200)
 
 
 @RequireLogin()
-def post(request):
+@RequireDB()
+def post(request, dbsession=None):
     """
     Create new test plan.
     """
@@ -91,12 +95,12 @@ def post(request):
     testplan = db_model.TestPlan(name=new['name'])
     if "description" in new:
         testplan.description = new['description']
-    if "latency_enabled" in new:
-        testplan.latency_enabled = new['latency_enabled']
-    if "client_latency" in new:
-        testplan.client_latency = new['client_latency']
-    if "server_latency" in new:
-        testplan.server_latency = new['server_latency']
+    if "latencyEnabled" in new:
+        testplan.latency_enabled = new['latencyEnabled']
+    if "clientLatency" in new:
+        testplan.client_latency = new['clientLatency']
+    if "serverLatency" in new:
+        testplan.server_latency = new['serverLatency']
 
     dbsession.add(testplan)
     dbsession.commit()
@@ -104,7 +108,8 @@ def post(request):
 
 
 @RequireLogin()
-def put(request, testplan_id):
+@RequireDB()
+def put(request, testplan_id, dbsession=None):
     """
     Update existing test plan based on testplan_id.
     """
@@ -121,12 +126,12 @@ def put(request, testplan_id):
             testplan.name = in_json['name']
         if "description" in in_json:
             testplan.description = in_json['description']
-        if "latency_enabled" in in_json:
-            testplan.latency_enabled = in_json['latency_enabled']
-        if "client_latency" in in_json:
-            testplan.client_latency = in_json['client_latency']
-        if "server_latency" in in_json:
-            testplan.server_latency = in_json['server_latency']
+        if "latencyEnabled" in in_json:
+            testplan.latency_enabled = in_json['latencyEnabled']
+        if "clientLatency" in in_json:
+            testplan.client_latency = in_json['clientLatency']
+        if "serverLatency" in in_json:
+            testplan.server_latency = in_json['serverLatency']
         try:
             dbsession.commit()
         except IntegrityError:
@@ -135,7 +140,8 @@ def put(request, testplan_id):
 
 
 @RequireLogin()
-def delete(request, testplan_id):
+@RequireDB()
+def delete(request, testplan_id, dbsession=None):
     """
     Delete test plan based on testplan_id.
     """
