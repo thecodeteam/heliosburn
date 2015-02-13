@@ -13,6 +13,7 @@ from django.utils.http import urlquote
 import yaml
 import sys
 import argparse
+import json
 from twisted.internet import reactor
 from twisted.internet import protocol
 from twisted.web import proxy
@@ -264,31 +265,32 @@ class HBProxyMgmtCommandParser(object):
         self.hb_proxy = hb_proxy
 
     def parse(self, message):
-        args = message.split()
+        log.msg(message)
+        command_string = json.loads(message)
 
-        if "stop" in args:
+        if "stop" == command_string['command']:
             self.hb_proxy.stop_proxy()
 
-        if "start" in args:
+        if "start" == command_string['command']:
             self.hb_proxy.start_proxy()
 
-        if "reload" in args:
+        if "reload" == command_string['command']:
             self.hb_proxy.reload_modules()
 
-        if "reset" in args:
+        if "reset" == command_string['command']:
             self.hb_proxy.reset_modules()
 
-        if "upstream_port" in args:
-            self.hb_proxy.set_upstream_port(args[1])
+        if "upstream_port" == command_string['command']:
+            self.hb_proxy.set_upstream_port(command_string['param'])
 
-        if "upstream_host" in args:
-            self.hb_proxy.set_upstream_host(args[1])
+        if "upstream_host" == command_string['command']:
+            self.hb_proxy.set_upstream_host(command_string['param'])
 
-        if "listen_address" in args:
-            self.hb_proxy.set_listen_address(args[1])
+        if "listen_address" == command_string['command']:
+            self.hb_proxy.set_listen_address(command_string['param'])
 
-        if "listen_port" in args:
-            self.hb_proxy.set_listen_port(args[1])
+        if "listen_port" == command_string['command']:
+            self.hb_proxy.set_listen_port(command_string['command']['param'])
 
 
 class HBProxy(object):
@@ -348,13 +350,13 @@ class HBProxy(object):
         self.module_registry.run_modules(context='None')
 
     def set_upstream_port(self, port):
-        self.upstream_port = port
         self.stop_proxy()
+        self.upstream_port = port
         self.start_proxy()
 
     def set_upstream_host(self, host):
-        self.upstream_host = host
         self.stop_proxy()
+        self.upstream_host = host
         self.start_proxy()
 
     def set_listen_port(self, port):
