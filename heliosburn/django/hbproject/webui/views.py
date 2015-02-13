@@ -258,6 +258,11 @@ def testplan_delete(request):
 
     headers = {'X-Auth-Token': request.user.password}
     testplans = request.POST.getlist('testplans[]')
+
+    # Workaround to support different kinds of form submission
+    if testplans is None or len(testplans) == 0:
+        testplans = request.POST.getlist('testplans')
+        
     for testplan_id in testplans:
         url = '%s/testplan/%s' % (settings.API_BASE_URL, testplan_id)
         r = requests.delete(url, headers=headers)
