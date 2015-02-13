@@ -251,6 +251,20 @@ def testplan_update(request):
     return HttpResponse()
 
 
+@login_required
+def testplan_delete(request):
+    if not request.POST:
+        return HttpResponseRedirect(reverse('testplan_list'))
+
+    headers = {'X-Auth-Token': request.user.password}
+    testplans = request.POST.getlist('testplans[]')
+    for testplan_id in testplans:
+        url = '%s/testplan/%s' % (settings.API_BASE_URL, testplan_id)
+        r = requests.delete(url, headers=headers)
+        if r.status_code != requests.codes.ok:
+            return HttpResponse(status=r.status_code, content='Error deleting the Test Plan. %s' % (r.text,))
+    return HttpResponse()
+
 
 @login_required
 def execution_details(request, id):

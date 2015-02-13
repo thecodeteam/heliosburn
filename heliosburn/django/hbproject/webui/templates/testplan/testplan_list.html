@@ -45,21 +45,61 @@
                     return;
                 }
 
-                var message = 'You are about to delete the following entries:\n\n'
-                for(i = 0; i < entries.length; i++){
+                var testplanIds = [];
+                var message = 'You are about to delete the following entries:\n\n';
+
+                for(var i = 0; i < entries.length; i++){
+                    testplanIds.push(entries[i][0]);
                     message += '- ' + entries[i][1] + '\n';
                 }
-                message += '\nAre you sure?'
+                message += '\nAre you sure?';
 
                 if (confirm(message)){
                     //Delete entries
+                    var data = { 'testplans' : testplanIds, 'csrfmiddlewaretoken': '{{ csrf_token }}'};
+                    $.ajax({
+                      type: "POST",
+                      url: "{% url "testplan_delete" %}",
+                      data: data,
+                      success: onDeleteSuccess,
+                      error: onDeleteError
+                    });
+
+{#                    table.row('.active').remove().draw( false );#}
                 }
             } );
+
+            function onDeleteSuccess() {
+                table.rows('.active').remove().draw()
+                $('#successMessage').removeClass('hidden');
+            };
+
+            function onDeleteError() {
+                $('#errorMessage').removeClass('hidden');
+            };
+
+            $( ".alert" ).click(function() {
+              $( this ).addClass('hidden');
+            });
+
         } );
     </script>
 {% endblock %}
 
 {% block content %}
+
+    <div id="successMessage" class="alert alert-success alert-dismissable hidden">
+        <i class="fa fa-check"></i>
+        <button type="button" class="asdfg close">×</button>
+        The selected Test Plans were successfully deleted
+    </div>
+
+    <div id="errorMessage" class="alert alert-danger alert-dismissable hidden">
+        <i class="fa fa-ban"></i>
+        <button type="button" class="asdfg close">×</button>
+        There was an error deleting the selected Test Plans
+    </div>
+
     <div class="row">
         <div class="col-xs-12">
             <a class="btn btn-primary pull-right bold" href="{% url "testplan_new" %}" role="button">Create a new Test Plan</a>
