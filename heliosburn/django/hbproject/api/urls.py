@@ -12,6 +12,6 @@ urlpatterns = patterns('',
     url(r'^testplan/(\d+?)/{0,1}$', testplan.rest),
     url(r'^auth/login/{0,1}$', auth.login),
     url(r'^traffic/{0,1}$', traffic.rest),
-    url(r'^rule/testplan/(\d+?)/{0,1}$', rule.get_all_rules),
-    url(r'^rule/(\d+?)/{0,1}$', rule.rest),
+    url(r'^testplan/(?P<testplan_id>\d+?)/rule/{0,1}$', rule.rest),
+    url(r'^testplan/(?P<testplan_id>\d+?)/rule/(?P<rule_id>\d+?)/{0,1}$', rule.rest),
 )

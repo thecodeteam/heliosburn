@@ -52,11 +52,10 @@ def get(request, testplan_id=None, dbsession=None):
             'latencyEnabled': testplan.latency_enabled,
             'clientLatency': testplan.client_latency,
             'serverLatency': testplan.server_latency,
-            'rules': testplan.rules,
+            'rules': len(testplan.rules),
             }, status=200)
 
 
-@RequireLogin(role='admin')
 def get_all_testplans(request, dbsession=None):
     """
     Retrieve all test plans.
@@ -73,7 +72,7 @@ def get_all_testplans(request, dbsession=None):
             'latencyEnabled': testplan.latency_enabled,
             'clientLatency': testplan.client_latency,
             'serverLatency': testplan.server_latency,
-            'rules': testplan.rules,
+            'rules': len(testplan.rules),
             })
     return JsonResponse({"testplans": all_testplans}, status=200)
 
