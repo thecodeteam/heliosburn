@@ -67,3 +67,6 @@ docs/_build/
 
 # Python-mode
 .ropeproject/
+
+# Twisted Trial Scratch
+_trial_temp

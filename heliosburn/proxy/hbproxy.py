@@ -60,12 +60,12 @@ class HBProxyModuleRegistry(object):
         Runs all proxy modules in the order specified in config.yaml
 
         """
-        for module_dict in self.modules:
-            class_ = self._get_class(module_dict)
-            instance_ = class_(context=context,
-                               request_object=request_object,
-                               run_contexts=module_dict['run_contexts'])
-            instance_.run(**module_dict['kwargs'])
+#       for module_dict in self.modules:
+#           class_ = self._get_class(module_dict)
+#           instance_ = class_(context=context,
+#                              request_object=request_object,
+#                              run_contexts=module_dict['run_contexts'])
+#           instance_.run(**module_dict['kwargs'])
 
 
 class HBProxyClient(ProxyClient):
@@ -208,39 +208,6 @@ class HBReverseProxyResource(ReverseProxyResource):
             self.reactor)
 
 
-class HBProxyMgmtCommandParser(object):
-
-    def __init__(self, hb_proxy):
-        self.hb_proxy = hb_proxy
-
-    def parse(self, message):
-        args = message.split()
-
-        if "stop" in args:
-            self.hb_proxy.stop_proxy()
-
-        if "start" in args:
-            self.hb_proxy.start_proxy()
-
-        if "reload" in args:
-            self.hb_proxy.reload_modules()
-
-        if "reset" in args:
-            self.hb_proxy.reset_modules()
-
-        if "upstream_port" in args:
-            self.hb_proxy.set_upstream_port(args[1])
-
-        if "upstream_host" in args:
-            self.hb_proxy.set_upstream_host(args[1])
-
-        if "listen_address" in args:
-            self.hb_proxy.set_listen_address(args[1])
-
-        if "listen_port" in args:
-            self.hb_proxy.set_listen_port(args[1])
-
-
 class HBProxyMgmtRedisSubscriber(RedisSubscriber):
 
     def __init__(self, hb_proxy, *args, **kwargs):
@@ -289,6 +256,39 @@ class HBProxyMgmtProtocolFactory(protocol.Factory):
 
     def buildProtocol(self, addr):
         return HBProxyMgmtProtocol(self.hb_proxy)
+
+
+class HBProxyMgmtCommandParser(object):
+
+    def __init__(self, hb_proxy):
+        self.hb_proxy = hb_proxy
+
+    def parse(self, message):
+        args = message.split()
+
+        if "stop" in args:
+            self.hb_proxy.stop_proxy()
+
+        if "start" in args:
+            self.hb_proxy.start_proxy()
+
+        if "reload" in args:
+            self.hb_proxy.reload_modules()
+
+        if "reset" in args:
+            self.hb_proxy.reset_modules()
+
+        if "upstream_port" in args:
+            self.hb_proxy.set_upstream_port(args[1])
+
+        if "upstream_host" in args:
+            self.hb_proxy.set_upstream_host(args[1])
+
+        if "listen_address" in args:
+            self.hb_proxy.set_listen_address(args[1])
+
+        if "listen_port" in args:
+            self.hb_proxy.set_listen_port(args[1])
 
 
 class HBProxy(object):
