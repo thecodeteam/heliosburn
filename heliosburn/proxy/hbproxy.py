@@ -268,28 +268,28 @@ class HBProxyMgmtCommandParser(object):
         log.msg(message)
         command_string = json.loads(message)
 
-        if "stop" == command_string['command']:
+        if "stop" == command_string['operation']:
             self.hb_proxy.stop_proxy()
 
-        if "start" == command_string['command']:
+        if "start" == command_string['operation']:
             self.hb_proxy.start_proxy()
 
-        if "reload" == command_string['command']:
+        if "reload" == command_string['operation']:
             self.hb_proxy.reload_modules()
 
-        if "reset" == command_string['command']:
+        if "reset" == command_string['operation']:
             self.hb_proxy.reset_modules()
 
-        if "upstream_port" == command_string['command']:
+        if "upstream_port" == command_string['operation']:
             self.hb_proxy.set_upstream_port(command_string['param'])
 
-        if "upstream_host" == command_string['command']:
+        if "upstream_host" == command_string['operation']:
             self.hb_proxy.set_upstream_host(command_string['param'])
 
-        if "listen_address" == command_string['command']:
+        if "listen_address" == command_string['operation']:
             self.hb_proxy.set_listen_address(command_string['param'])
 
-        if "listen_port" == command_string['command']:
+        if "listen_port" == command_string['operation']:
             self.hb_proxy.set_listen_port(command_string['command']['param'])
 
 
