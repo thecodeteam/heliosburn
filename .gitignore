@@ -67,3 +67,6 @@ docs/_build/
 
 # Python-mode
 .ropeproject/
+
+# iPython notebooks
+*.ipynb
