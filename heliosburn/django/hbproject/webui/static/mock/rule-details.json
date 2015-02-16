@@ -1,7 +1,52 @@
 {
   "id": 1,
-  "filter": "GET, http://asdas.com/safg",
-  "action": "New response",
+  "name": "Rule to modify whatever",
+  "description": "bla bla bla bla bla blaaaa...",
+  "updatedAt": "2014-02-10 03:34:51",
+  "createdAt": "2014-02-12 03:34:51",
+  "enabled": true,
+  "filter": {
+    "httpProtocol": "HTTP/1.1",
+    "method": "GET",
+    "url": null,
+    "queryParameters": [
+      {
+        "key": "page",
+        "value": null
+      },
+      {
+        "key": "limit",
+        "value": "10"
+      }
+    ],
+    "headers": [
+      {
+        "key": "User-Agent",
+        "value": "Mozilla"
+      }
+    ],
+    "cookies": [
+      {
+        "key": "User-Agent",
+        "value": "Mozilla"
+      }
+    ]
+  },
+  "action": {
+    "type": "modify",
+    "method": "POST",
+    "setHeaders": [
+      {
+        "key": "X-Proxy",
+        "value": "HeliosBurn v0.1"
+      }
+    ],
+    "removeHeaders": [
+      {
+        "key": "X-Auth-Token"
+      }
+    ]
+  },
   "enabled": true,
   "type": "request"
 }
