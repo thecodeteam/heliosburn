@@ -13,7 +13,7 @@
 {% block breadcrumbs %}
     {{ block.super }}
     {% breadcrumb "Test plans" "testplan_list" %}
-    {% breadcrumb testplan.name "testplan_details" %}
+    {% breadcrumb testplan.name "testplan_details" testplan.id %}
 {% endblock %}
 
 {% block styles %}
@@ -196,7 +196,7 @@
                                     {% for rule in rules.rules %}
                                         <tr>
                                             <td>{{ rule.id }}</td>
-                                            <td><a href="{% url 'rule_details' rule.id %}">view</a></td>
+                                            <td><a href="{% url 'rule_details' testplan.id rule.id %}">view</a></td>
                                             <td>{{ rule.type }}</td>
                                             <td>{{ rule.filter }}</td>
                                             <td>{{ rule.action }}</td>

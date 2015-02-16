@@ -200,6 +200,15 @@ def testplan_details(request, id):
 
     data['rules'] = json.loads(r.text)
 
+    sample_rule = {}
+    sample_rule['id'] = 1
+    sample_rule['type'] = "request"
+    sample_rule['filter'] = "GET /cool-url/?param=wow"
+    sample_rule['action'] = "GET -> POST"
+    sample_rule['enabled'] = True
+
+    data['rules']['rules'].append(sample_rule)
+
     return render(request, 'testplan/testplan_details.html', data)
 
 
@@ -278,15 +287,26 @@ def execution_details(request, id):
 
 
 @login_required
-def rule_details(request, id):
+def rule_details(request, testplan_id, rule_id):
+    url = '%s/testplan/%s' % (settings.API_BASE_URL, testplan_id)
+    headers = {'X-Auth-Token': request.user.password}
+    r = requests.get(url, headers=headers)
+
+    if r.status_code == requests.codes.not_found:
+        return render(request, '404.html')
+
+    if r.status_code != requests.codes.ok:
+        # TODO: do not sign out always, only if HTTP Unauthorized
+        return signout(request)
+
+    data = {'testplan': json.loads(r.text)}
+
     url = get_mock_url('rule-details.json')
     r = requests.get(url)
     rule = json.loads(r.text)
+    data['rule'] = rule
 
-    args = {}
-    args['rule'] = rule
-
-    return render(request, 'testplan/rule_details.html', args)
+    return render(request, 'testplan/rule_details.html', data)
 
 
 @login_required

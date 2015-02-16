@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+
+{% load staticfiles %}
+{% load django_bootstrap_breadcrumbs %}
+{% load tags %}
+
+{% block title %}Test Plan Manager{% endblock %}
+{% block content_header %}
+    <a href="#" id="testplan-name">{{ testplan.name }}</a>
+{% endblock %}
+{% block content_subheader %}{% endblock %}
+
+{% block breadcrumbs %}
+    {{ block.super }}
+    {% breadcrumb "Test plans" "testplan_list" %}
+    {% breadcrumb testplan.name "testplan_details" testplan.id %}
+    {% breadcrumb "Rule" "rule_details" %}
+{% endblock %}
+
+{% block styles %}
+    <!-- DATA TABLES -->
+    <link href="{% static 'webui/css/datatables/dataTables.bootstrap.css' %}" rel="stylesheet" type="text/css" />
+{% endblock %}
+
+{% block scripts %}
+
+{% endblock %}
+
+{% block content %}
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="nav-tabs-custom">
+                <ul class="nav nav-tabs">
+                    <li class="header"><i class="fa fa-info-circle"></i>Rule details</li>
+                </ul>
+                <div class="tab-content">
+                    <dl class="dl-horizontal">
+                        <dt>Name</dt>
+                        <dd><a href="#" id="rule-name">{{ rule.name }}</a></dd>
+                        <dt>Description</dt>
+                        <dd><a href="#" id="rule-description">{{ rule.description }}</a></dd>
+                        <dt>Type</dt>
+                        <dd><a href="#" id="rule-type">{{ rule.type }}</a></dd>
+                        <dt>Enabled</dt>
+                        <dd><a href="#" id="rule-enabled">{{ rule.enabled }}</a></dd>
+                        <dt>Created at</dt>
+                        <dd>{{ testplan.createdAt }}</dd>
+                        <dt>Last updated</dt>
+                        <dd>{{ testplan.updatedAt }}</dd>
+                    </dl>
+                </div><!-- /.tab-content -->
+            </div>
+        </div>
+    </div>
+
+
+{% endblock %}
