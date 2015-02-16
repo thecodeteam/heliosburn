@@ -9,7 +9,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import auth, messages
 from django.conf import settings
 import requests
-from webui.forms import TestPlanForm
+from webui.forms import TestPlanForm, RuleRequestForm
 
 
 MOCK_PROTOCOL = "http"
@@ -305,6 +305,7 @@ def rule_details(request, testplan_id, rule_id):
     r = requests.get(url)
     rule = json.loads(r.text)
     data['rule'] = rule
+    data['form'] = RuleRequestForm()
 
     return render(request, 'testplan/rule_details.html', data)
 

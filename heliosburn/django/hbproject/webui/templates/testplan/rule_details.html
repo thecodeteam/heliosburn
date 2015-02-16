@@ -2,6 +2,7 @@
 
 {% load staticfiles %}
 {% load django_bootstrap_breadcrumbs %}
+{% load bootstrap3 %}
 {% load tags %}
 
 {% block title %}Test Plan Manager{% endblock %}
@@ -52,6 +53,32 @@
                 </div><!-- /.tab-content -->
             </div>
         </div>
+        <form method="post" action="{% url "testplan_new" %}">
+            <div class="col-md-6">
+                <div class="nav-tabs-custom">
+                    <ul class="nav nav-tabs">
+                        <li class="header"><i class="fa fa-filter"></i>Filter</li>
+                    </ul>
+                    <div class="tab-content">
+
+                        {% bootstrap_field form.filterProtocol %}
+                        {% bootstrap_field form.filterMethod %}
+                        {% bootstrap_field form.filterUrl %}
+
+                    </div><!-- /.tab-content -->
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="nav-tabs-custom">
+                    <ul class="nav nav-tabs">
+                        <li class="header"><i class="fa fa-pencil"></i>Action</li>
+                    </ul>
+                    <div class="tab-content">
+                        asd
+                    </div><!-- /.tab-content -->
+                </div>
+            </div>
+        </form>
     </div>
 
 
