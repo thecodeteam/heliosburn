@@ -15,11 +15,18 @@ class TestPlanForm(forms.Form):
 class RuleRequestForm(forms.Form):
     filterProtocol = forms.CharField(label='HTTP Protocol', max_length=100)
     filterMethod = forms.ChoiceField(label='HTTP Method', choices=(
-        ('', 'Select a method'), ('GET', 'GET'), ('PUT', 'PUT'), ('OPTIONS', 'OPTIONS'), ('HEAD', 'HEAD'), ('POST', 'POST')))
+        ('', 'Select a method'),
+        ('GET', 'GET'),
+        ('POST', 'POST'),
+        ('PUT', 'PUT'),
+        ('DELETE', 'DELETE'),
+        ('OPTIONS', 'OPTIONS'),
+        ('HEAD', 'HEAD'),
+    ))
     filterUrl = forms.CharField(label='URL', max_length=200)
     actionType = forms.CharField(label='Type', max_length=200)
     actionProtocol = forms.CharField(label='HTTP Protocol', max_length=100)
     actionMethod = forms.CharField(label='HTTP Method', max_length=200)
     actionUrl = forms.CharField(label='URL', max_length=200)
     actionStatusCode = forms.CharField(label='Status code', max_length=200)
-    actionStatusMessage = forms.CharField(label='Status code', max_length=200)
+    actionStatusDescription = forms.CharField(label='Status description', max_length=200)

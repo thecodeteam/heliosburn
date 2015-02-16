@@ -74,7 +74,21 @@
                         <li class="header"><i class="fa fa-pencil"></i>Action</li>
                     </ul>
                     <div class="tab-content">
-                        asd
+                        {% bootstrap_field form.actionType %}
+                        {% bootstrap_field form.actionProtocol %}
+                        {% bootstrap_field form.actionUrl %}
+                        {% bootstrap_field form.actionStatusCode %}
+                        {% bootstrap_field form.actionStatusDescription %}
+                    </div><!-- /.tab-content -->
+                </div>
+            </div>
+            <div class="col-md-12">
+                <div class="nav-tabs-custom">
+                    <div class="tab-content">
+                        {% buttons %}
+                            <button type="submit" class="btn btn-primary bold">Save</button>
+                            <a class="btn btn-default bold lmargin10" href="{% url "testplan_details" testplan.id %}" role="button">Cancel</a>
+                        {% endbuttons %}
                     </div><!-- /.tab-content -->
                 </div>
             </div>
