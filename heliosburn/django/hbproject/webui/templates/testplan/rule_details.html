@@ -21,10 +21,103 @@
 {% block styles %}
     <!-- DATA TABLES -->
     <link href="{% static 'webui/css/datatables/dataTables.bootstrap.css' %}" rel="stylesheet" type="text/css" />
+    <!-- X-editable -->
+    <link href="//cdnjs.cloudflare.com/ajax/libs/x-editable/1.5.0/bootstrap3-editable/css/bootstrap-editable.css" rel="stylesheet"/>
 {% endblock %}
 
 {% block scripts %}
+    <!-- X-Editable -->
+    <script src="//cdnjs.cloudflare.com/ajax/libs/x-editable/1.5.0/bootstrap3-editable/js/bootstrap-editable.min.js"></script>
 
+    <script type="text/javascript">
+        $(document).ready(function() {
+
+            $.fn.editable.defaults.mode = 'inline';
+
+            //editables
+            $('#id_ruleName').editable({
+                url: '{% url 'rule_update' testplan.id rule.id %}',
+                type: 'text',
+                pk: {{ rule.id }},
+                name: 'ruleName',
+                title: 'Rule name',
+                inputclass: 'title-input',
+                params: '{csrfmiddlewaretoken:"{{csrf_token}}"}'
+            });
+
+            //editables
+            $('#id_ruleDescription').editable({
+                url: '{% url 'rule_update' testplan.id rule.id %}',
+                type: 'textarea',
+                pk: {{ rule.id }},
+                name: 'ruleDescription',
+                title: 'Rule description',
+                inputclass: 'description-input',
+                params: '{csrfmiddlewaretoken:"{{csrf_token}}"}'
+            });
+
+            $('#id_ruleType').editable({
+                url: '{% url 'rule_update' testplan.id rule.id %}',
+                type: 'select',
+                pk: {{ rule.id }},
+                name: 'ruleType',
+                title: 'Rule type',
+                mode: 'popup',
+                value: '{{ rule.type }}',
+                source: [{value: 'request', text: "Request"}, {value: 'response', text: "Response"}],
+                emptytext: "Empty",
+                params: '{csrfmiddlewaretoken:"{{csrf_token}}"}'
+            });
+
+            $('#id_ruleEnabled').editable({
+                url: '{% url 'rule_update' testplan.id rule.id %}',
+                type: 'select',
+                pk: {{ rule.id }},
+                name: 'ruleEnabled',
+                title: 'Enabled',
+                mode: 'popup',
+                value: {{ rule.enabled|bool_to_int }},
+                source: [{value: 0, text: "False"}, {value: 1, text: "True"}],
+                emptytext: "Empty",
+                params: '{csrfmiddlewaretoken:"{{csrf_token}}"}'
+            });
+
+
+            $('#{{ form.actionType.id_for_label }}').on('change', function() {
+                enableFields(this.value);
+            });
+
+            function enableFields(action_type_id) {
+                //alert( this.value ); // or $(this).val()
+                if (action_type_id == 'modify_request') {
+                    // show method
+                    $('#{{ form.actionMethod.id_for_label }}').parent().show();
+                    // show URL
+                    $('#{{ form.actionUrl.id_for_label }}').parent().show();
+                    // hide Status Code
+                    $('#{{ form.actionStatusCode.id_for_label }}').parent().hide();
+                    // hide Status Description
+                    $('#{{ form.actionStatusDescription.id_for_label }}').parent().hide();
+                    // hide Payload
+                    $('#{{ form.actionPayload.id_for_label }}').parent().hide();
+                }
+                else if (action_type_id == 'new_response') {
+                    // hide method
+                    $('#{{ form.actionMethod.id_for_label }}').parent().hide();
+                    // hide URL
+                    $('#{{ form.actionUrl.id_for_label }}').parent().hide();
+                    // show Status Code
+                    $('#{{ form.actionStatusCode.id_for_label }}').parent().show();
+                    // show Status Description
+                    $('#{{ form.actionStatusDescription.id_for_label }}').parent().show();
+                    // show Payload
+                    $('#{{ form.actionPayload.id_for_label }}').parent().show();
+                }
+            }
+
+            enableFields($('#{{ form.actionType.id_for_label }}').val() );
+        });
+    </script>
 {% endblock %}
 
 {% block content %}
@@ -38,13 +131,13 @@
                 <div class="tab-content">
                     <dl class="dl-horizontal">
                         <dt>Name</dt>
-                        <dd><a href="#" id="rule-name">{{ rule.name }}</a></dd>
+                        <dd><a href="#" id="id_ruleName">{{ rule.name }}</a></dd>
                         <dt>Description</dt>
-                        <dd><a href="#" id="rule-description">{{ rule.description }}</a></dd>
+                        <dd><a href="#" id="id_ruleDescription">{{ rule.description }}</a></dd>
                         <dt>Type</dt>
-                        <dd><a href="#" id="rule-type">{{ rule.type }}</a></dd>
+                        <dd><a href="#" id="id_ruleType">{{ rule.type }}</a></dd>
                         <dt>Enabled</dt>
-                        <dd><a href="#" id="rule-enabled">{{ rule.enabled }}</a></dd>
+                        <dd><a href="#" id="id_ruleEnabled">{{ rule.enabled }}</a></dd>
                         <dt>Created at</dt>
                         <dd>{{ testplan.createdAt }}</dd>
                         <dt>Last updated</dt>
@@ -76,9 +169,11 @@
                     <div class="tab-content">
                         {% bootstrap_field form.actionType %}
                         {% bootstrap_field form.actionProtocol %}
+                        {% bootstrap_field form.actionMethod %}
                         {% bootstrap_field form.actionUrl %}
                         {% bootstrap_field form.actionStatusCode %}
                         {% bootstrap_field form.actionStatusDescription %}
+                        {% bootstrap_field form.actionPayload %}
                     </div><!-- /.tab-content -->
                 </div>
             </div>

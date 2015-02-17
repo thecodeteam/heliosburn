@@ -53,12 +53,6 @@
     <script type="text/javascript">
         $.fn.editable.defaults.mode = 'inline';
 
-        //enable / disable
-        $('#details-edit').click(function() {
-            $('#testplan-description').editable('toggleDisabled');
-        });
-
-
         //editables
         $('#testplan-name').editable({
             url: '{% url 'testplan_update' %}',

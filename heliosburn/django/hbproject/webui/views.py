@@ -215,22 +215,19 @@ def testplan_details(request, id):
 @login_required
 def testplan_new(request):
 
-    if request.method == 'POST':
-        form = TestPlanForm(request.POST)
-        if form.is_valid():
-            url = '%s/testplan/' % (settings.API_BASE_URL,)
-            headers = {'X-Auth-Token': request.user.password}
-            r = requests.post(url, headers=headers, data=json.dumps(form.cleaned_data))
+    form = TestPlanForm(request.POST or None)
+    if form.is_valid():
+        url = '%s/testplan/' % (settings.API_BASE_URL,)
+        headers = {'X-Auth-Token': request.user.password}
+        r = requests.post(url, headers=headers, data=json.dumps(form.cleaned_data))
 
-            if r.status_code < 200 or r.status_code >= 300:
-                return signout(request)
+        if r.status_code < 200 or r.status_code >= 300:
+            return signout(request)
 
-            # TODO: get the Test Plan ID from the Location header (when enabled in the API)
-            json_body = json.loads(r.text)
-            testplan_id = json_body['id']
-            return HttpResponseRedirect(reverse('testplan_details', args=(str(testplan_id),)))
-    else:
-        form = TestPlanForm()
+        # TODO: get the Test Plan ID from the Location header (when enabled in the API)
+        json_body = json.loads(r.text)
+        testplan_id = json_body['id']
+        return HttpResponseRedirect(reverse('testplan_details', args=(str(testplan_id),)))
 
     return render(request, 'testplan/testplan_new.html', {'form': form})
 
@@ -308,6 +305,11 @@ def rule_details(request, testplan_id, rule_id):
     data['form'] = RuleRequestForm()
 
     return render(request, 'testplan/rule_details.html', data)
+
+
+@login_required
+def rule_update(request, testplan_id, rule_id):
+    return HttpResponse()
 
 
 @login_required
