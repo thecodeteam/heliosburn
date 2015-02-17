@@ -295,7 +295,16 @@ class RuleViewTestCase(TestCase):
             testplan_id = in_json['id']
 
             # Create rule within the test plan
-            request.body = json.dumps({"ruleType": "request"})
+            request.body = json.dumps({
+                "ruleType": "request",
+                "action": {"type": "request"},
+                "filter": {
+                    "method": "PUT",
+                    "statusCode": 200,
+                    "url": "http://test.com",
+                    "protocol": "HTTP",
+                },
+            })
             response = rule.post(request, testplan_id=testplan_id)
             assert response.status_code == 200
             in_json = json.loads(response.content)
@@ -312,7 +321,16 @@ class RuleViewTestCase(TestCase):
             assert int(response_json['testPlanId'] == testplan_id)
 
         def update(request, rule_id):
-            request.body = json.dumps({"ruleType": "response"})
+            request.body = json.dumps({
+                "ruleType": "response",
+                "action": {"type": "response"},
+                "filter": {
+                    "method": "GET",
+                    "statusCode": 404,
+                    "url": "http://newtest.com",
+                    "protocol": "HTTPS",
+                },
+            })
             response = rule.put(request, rule_id)
             assert response.status_code == 200
 

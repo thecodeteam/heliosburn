@@ -79,12 +79,27 @@ def post(request, testplan_id, rule_id=None, dbsession=None):
         new = json.loads(request.body)
         assert "ruleType" in new
         assert (new['ruleType'] == "response") or (new['ruleType'] == "request")
+        if "action" in new:
+            assert "type" in new['action']
+        if "filter" in new:
+            assert "method" in new['filter']
+            assert "statusCode" in new['filter']
+            assert "url" in new['filter']
+            assert "protocol" in new['filter']
+
     except ValueError:
         return HttpResponseBadRequest("invalid JSON")
     except AssertionError:
         return HttpResponseBadRequest("argument mismatch")
 
     rule = db_model.Rule(rule_type=new['ruleType'], testplan_id=testplan_id)
+    if 'action' in new:
+        action = db_model.Action(type=new['action']['type'])
+        rule.action = action
+    if 'filter' in new:
+        filter = db_model.Filter(method=new['filter']['method'], status_code=new['filter']['statusCode'],
+                                 url=new['filter']['url'], protocol=new['filter']['protocol'])
+        rule.filter = filter
     dbsession.add(rule)
     try:
         dbsession.commit()
@@ -115,6 +130,18 @@ def put(request, rule_id, testplan_id=None, dbsession=None):
                 return HttpResponseBadRequest("argument mismatch")
         if "testPlanId" in in_json:
             rule.testplan_id = int(in_json['testplan_id'])
+        if "action" in in_json:
+            if "type" in in_json['action']:
+                rule.action.type = in_json['action']['type']
+        if "filter" in in_json:
+            if "method" in in_json['filter']:
+                rule.filter.method = in_json['filter']['method']
+            if "statusCode" in in_json['filter']:
+                rule.filter.status_code = in_json['filter']['statusCode']
+            if "url" in in_json['filter']:
+                rule.filter.url = in_json['filter']['url']
+            if "protocol" in in_json['filter']:
+                rule.filter.protocol = in_json['filter']['protocol']
         try:
             dbsession.commit()
         except IntegrityError:
@@ -136,6 +163,6 @@ def delete(request, rule_id, testplan_id=None, dbsession=None):
         dbsession.delete(rule)
         try:
             dbsession.commit()
-        except IntegrityError:
+        except IntegrityError as e:
             return HttpResponseBadRequest("constraint violated")
         return HttpResponse(status=200)
