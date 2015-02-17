@@ -304,7 +304,7 @@ class RuleViewTestCase(TestCase):
             return testplan_id, rule_id
 
         def read(request, rule_id, testplan_id):
-            response = rule.get(request, rule_id)
+            response = rule.get(request, testplan_id, rule_id)
             assert response.status_code == 200
             response_json = json.loads(response.content)
             assert "ruleType" in response_json

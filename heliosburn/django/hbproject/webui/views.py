@@ -189,6 +189,17 @@ def testplan_details(request, id):
         return signout(request)
 
     data = {'testplan': json.loads(r.text)}
+
+    # Get Rules
+    # TODO: maybe the Test Plan call should return the list of rules
+    url = '%s/testplan/%s/rule' % (settings.API_BASE_URL, id)
+    r = requests.get(url, headers=headers)
+    if r.status_code != requests.codes.ok:
+        # TODO: do not sign out always, only if HTTP Unauthorized
+        return signout(request)
+
+    data['rules'] = json.loads(r.text)
+
     return render(request, 'testplan/testplan_details.html', data)
 
 
@@ -239,6 +250,25 @@ def testplan_update(request):
         return HttpResponse(status=r.status_code, content='Error updating the Test Plan. %s' % (r.text,))
     return HttpResponse()
 
+
+@login_required
+def testplan_delete(request):
+    if not request.POST:
+        return HttpResponseRedirect(reverse('testplan_list'))
+
+    headers = {'X-Auth-Token': request.user.password}
+    testplans = request.POST.getlist('testplans[]')
+
+    # Workaround to support different kinds of form submission
+    if testplans is None or len(testplans) == 0:
+        testplans = request.POST.getlist('testplans')
+        
+    for testplan_id in testplans:
+        url = '%s/testplan/%s' % (settings.API_BASE_URL, testplan_id)
+        r = requests.delete(url, headers=headers)
+        if r.status_code != requests.codes.ok:
+            return HttpResponse(status=r.status_code, content='Error deleting the Test Plan. %s' % (r.text,))
+    return HttpResponse()
 
 
 @login_required

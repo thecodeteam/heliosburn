@@ -10,3 +10,4 @@ SQLAlchemy
 selenium
 txredis
 django-bootstrap3
+ipython

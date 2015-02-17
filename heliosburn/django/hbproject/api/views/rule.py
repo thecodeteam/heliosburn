@@ -8,7 +8,7 @@ import json
 
 
 @csrf_exempt
-def rest(request, *pargs):
+def rest(request, *pargs, **kwargs):
     """
     Calls python function corresponding with HTTP METHOD name.
     Calls with incomplete arguments will return HTTP 400
@@ -25,17 +25,19 @@ def rest(request, *pargs):
         return JsonResponse({"error": "HTTP METHOD UNKNOWN"})
 
     try:
-        return rest_function(request, *pargs)
+        return rest_function(request, *pargs, **kwargs)
     except TypeError:
         return HttpResponseBadRequest("argument mismatch")
 
 
 @RequireLogin()
 @RequireDB()
-def get(request, rule_id, dbsession=None):
+def get(request, testplan_id, rule_id=None, dbsession=None):
     """
     Retrieve rule based on testplan_id and rule_id.
     """
+    if rule_id is None:
+        return get_all_rules(request, testplan_id, dbsession)
     rule = dbsession.query(db_model.Rule).filter_by(id=rule_id).first()
     if rule is None:
         return HttpResponseNotFound()
@@ -46,9 +48,7 @@ def get(request, rule_id, dbsession=None):
             'testPlanId': rule.testplan_id,
             }, status=200)
 
-@csrf_exempt
-@RequireLogin()
-@RequireDB()
+
 def get_all_rules(request, testplan_id, dbsession=None):
     """
     Retrieve all rules for a test plan.
@@ -67,10 +67,14 @@ def get_all_rules(request, testplan_id, dbsession=None):
 
 @RequireLogin()
 @RequireDB()
-def post(request, testplan_id, dbsession=None):
+def post(request, testplan_id, rule_id=None, dbsession=None):
     """
     Create new rule for testplan marked by testplan_id.
     """
+    if request.method != 'POST':
+        r = HttpResponse('Invalid method. Only POST method accepted.', status=405)
+        r['Allow'] = 'POST'
+        return r
     try:
         new = json.loads(request.body)
         assert "ruleType" in new
@@ -91,7 +95,7 @@ def post(request, testplan_id, dbsession=None):
 
 @RequireLogin()
 @RequireDB()
-def put(request, rule_id, dbsession=None):
+def put(request, rule_id, testplan_id=None, dbsession=None):
     """
     Update existing rule based on rule_id.
     """
@@ -121,7 +125,7 @@ def put(request, rule_id, dbsession=None):
 
 @RequireLogin()
 @RequireDB()
-def delete(request, rule_id, dbsession=None):
+def delete(request, rule_id, testplan_id=None, dbsession=None):
     """
     Delete rule based on rule_id.
     """
