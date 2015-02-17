@@ -163,6 +163,6 @@ def delete(request, rule_id, testplan_id=None, dbsession=None):
         dbsession.delete(rule)
         try:
             dbsession.commit()
-        except IntegrityError as e:
+        except IntegrityError:
             return HttpResponseBadRequest("constraint violated")
         return HttpResponse(status=200)
