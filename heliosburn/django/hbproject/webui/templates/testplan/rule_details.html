@@ -7,7 +7,7 @@
 
 {% block title %}Test Plan Manager{% endblock %}
 {% block content_header %}
-    <a href="#" id="testplan-name">{{ testplan.name }}</a>
+    <a href="{% url "testplan_details" testplan.id %}" id="testplan-name">{{ testplan.name }}</a>
 {% endblock %}
 {% block content_subheader %}{% endblock %}
 
@@ -20,9 +20,10 @@
 
 {% block styles %}
     <!-- DATA TABLES -->
-    <link href="{% static 'webui/css/datatables/dataTables.bootstrap.css' %}" rel="stylesheet" type="text/css" />
+    <link href="{% static 'webui/css/datatables/dataTables.bootstrap.css' %}" rel="stylesheet" type="text/css"/>
     <!-- X-editable -->
-    <link href="//cdnjs.cloudflare.com/ajax/libs/x-editable/1.5.0/bootstrap3-editable/css/bootstrap-editable.css" rel="stylesheet"/>
+    <link href="//cdnjs.cloudflare.com/ajax/libs/x-editable/1.5.0/bootstrap3-editable/css/bootstrap-editable.css"
+          rel="stylesheet"/>
 {% endblock %}
 
 {% block scripts %}
@@ -30,7 +31,7 @@
     <script src="//cdnjs.cloudflare.com/ajax/libs/x-editable/1.5.0/bootstrap3-editable/js/bootstrap-editable.min.js"></script>
 
     <script type="text/javascript">
-        $(document).ready(function() {
+        $(document).ready(function () {
 
             $.fn.editable.defaults.mode = 'inline';
 
@@ -83,7 +84,7 @@
             });
 
 
-            $('#{{ form.actionType.id_for_label }}').on('change', function() {
+            $('#{{ form.actionType.id_for_label }}').on('change', function () {
                 enableFields(this.value);
             });
 
@@ -115,7 +116,27 @@
                 }
             }
 
-            enableFields($('#{{ form.actionType.id_for_label }}').val() );
+            enableFields($('#{{ form.actionType.id_for_label }}').val());
+
+
+            $('#filter_addHeaderButton').on('click', function () {
+               $('#filterHeaders tr:last').after('<tr><td>' +
+               '<input type="text" class="form-control input-sm" placeholder="Header name" name="filterHeaderKey_1" />' +
+               '</td><td>' +
+               '<input type="text" class="form-control input-sm" placeholder="Header value" name="filterHeaderValue_1" />' +
+               '</td><td>' +
+               '<a class="btn btn-default btn-sm filter_deleteHeader" role="button"><span class="glyphicon glyphicon-trash" aria-hidden="true"></span></a>' +
+               '</td></tr>');
+            });
+
+            $('.filter_deleteHeader').click(function() {
+                var tr = $(this).closest('tr');
+                //tr.css("background-color","#FF3700");
+                tr.fadeOut(400, 0, function(){
+                    tr.remove();
+                });
+                return false;
+            });
         });
     </script>
 {% endblock %}
@@ -143,7 +164,8 @@
                         <dt>Last updated</dt>
                         <dd>{{ testplan.updatedAt }}</dd>
                     </dl>
-                </div><!-- /.tab-content -->
+                </div>
+                <!-- /.tab-content -->
             </div>
         </div>
         <form method="post" action="{% url "testplan_new" %}">
@@ -158,7 +180,35 @@
                         {% bootstrap_field form.filterMethod %}
                         {% bootstrap_field form.filterUrl %}
 
-                    </div><!-- /.tab-content -->
+                        <div class="form-group">
+                            <label class="control-label">Headers</label>
+                            <table id="filterHeaders" class="table table-bordered">
+                                <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Value</th>
+                                    <th></th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>
+                                            <input type="text" class="form-control input-sm" placeholder="Header name" name="filterHeaderKey_1" />
+                                        </td>
+                                        <td>
+                                            <input type="text" class="form-control input-sm" placeholder="Header value" name="filterHeaderValue_1" />
+                                        </td>
+                                        <td>
+                                            <a class="btn btn-default btn-sm filter_deleteHeader" role="button"><span class="glyphicon glyphicon-trash" aria-hidden="true"></span></a>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <a id="filter_addHeaderButton" class="btn btn-default btn-sm bold"
+                               role="button"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> Add header</a>
+                        </div>
+                    </div>
+                    <!-- /.tab-content -->
                 </div>
             </div>
             <div class="col-md-6">
@@ -174,7 +224,8 @@
                         {% bootstrap_field form.actionStatusCode %}
                         {% bootstrap_field form.actionStatusDescription %}
                         {% bootstrap_field form.actionPayload %}
-                    </div><!-- /.tab-content -->
+                    </div>
+                    <!-- /.tab-content -->
                 </div>
             </div>
             <div class="col-md-12">
@@ -182,9 +233,11 @@
                     <div class="tab-content">
                         {% buttons %}
                             <button type="submit" class="btn btn-primary bold">Save</button>
-                            <a class="btn btn-default bold lmargin10" href="{% url "testplan_details" testplan.id %}" role="button">Cancel</a>
+                            <a class="btn btn-default bold lmargin10" href="{% url "testplan_details" testplan.id %}"
+                               role="button">Cancel</a>
                         {% endbuttons %}
-                    </div><!-- /.tab-content -->
+                    </div>
+                    <!-- /.tab-content -->
                 </div>
             </div>
         </form>
