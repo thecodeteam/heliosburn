@@ -89,8 +89,13 @@
             });
 
             function enableFields(action_type_id) {
+
                 //alert( this.value ); // or $(this).val()
                 if (action_type_id == 'modify_request') {
+                    // hide drop connection alert
+                    $('#drop-connection-alert').hide();
+                    // hide protocol
+                    $('#{{ form.actionProtocol.id_for_label }}').parent().show();
                     // show method
                     $('#{{ form.actionMethod.id_for_label }}').parent().show();
                     // show URL
@@ -99,10 +104,18 @@
                     $('#{{ form.actionStatusCode.id_for_label }}').parent().hide();
                     // hide Status Description
                     $('#{{ form.actionStatusDescription.id_for_label }}').parent().hide();
+                    // hide Cookies
+                    $('#actionCookies').parent().show();
+                    // hide Headers
+                    $('#actionHeaders').parent().show();
                     // hide Payload
                     $('#{{ form.actionPayload.id_for_label }}').parent().hide();
                 }
                 else if (action_type_id == 'new_response') {
+                    // hide drop connection alert
+                    $('#drop-connection-alert').hide();
+                    // hide protocol
+                    $('#{{ form.actionProtocol.id_for_label }}').parent().show();
                     // hide method
                     $('#{{ form.actionMethod.id_for_label }}').parent().hide();
                     // hide URL
@@ -111,8 +124,32 @@
                     $('#{{ form.actionStatusCode.id_for_label }}').parent().show();
                     // show Status Description
                     $('#{{ form.actionStatusDescription.id_for_label }}').parent().show();
+                    // hide Cookies
+                    $('#actionCookies').parent().show();
+                    // hide Headers
+                    $('#actionHeaders').parent().show();
                     // show Payload
                     $('#{{ form.actionPayload.id_for_label }}').parent().show();
+                }
+                else if (action_type_id == 'drop_connection') {
+                    // hide drop connection alert
+                    $('#drop-connection-alert').show();
+                    // hide protocol
+                    $('#{{ form.actionProtocol.id_for_label }}').parent().hide();
+                    // hide method
+                    $('#{{ form.actionMethod.id_for_label }}').parent().hide();
+                    // hide URL
+                    $('#{{ form.actionUrl.id_for_label }}').parent().hide();
+                    // show Status Code
+                    $('#{{ form.actionStatusCode.id_for_label }}').parent().hide();
+                    // show Status Description
+                    $('#{{ form.actionStatusDescription.id_for_label }}').parent().hide();
+                    // hide Cookies
+                    $('#actionCookies').parent().hide();
+                    // hide Headers
+                    $('#actionHeaders').parent().hide();
+                    // show Payload
+                    $('#{{ form.actionPayload.id_for_label }}').parent().hide();
                 }
             }
 
@@ -120,14 +157,68 @@
 
             $('#filter_addHeaderButton').on('click', function () {
                $('#filterHeaders > tbody:last').append('<tr><td>' +
-               '<input type="text" class="form-control input-sm" placeholder="Header name" name="filterHeaderKey_1" />' +
+               '<input type="text" class="form-control input-sm" placeholder="Header name" name="filterHeaderKeys[]" />' +
                '</td><td>' +
-               '<input type="text" class="form-control input-sm" placeholder="Header value" name="filterHeaderValue_1" />' +
+               '<input type="text" class="form-control input-sm" placeholder="Header value" name="filterHeaderValues[]" />' +
                '</td><td>' +
                '<a class="btn btn-default btn-sm filter_deleteHeader" role="button"><span class="glyphicon glyphicon-trash" aria-hidden="true"></span></a>' +
                '</td></tr>');
 
                 $( ".filter_deleteHeader" ).bind( "click", function() {
+                    var tr = $(this).closest('tr');
+                    tr.fadeOut(400, 0, function(){
+                        tr.remove();
+                    });
+                    return false;
+                });
+            });
+
+            $('#filter_addCookieButton').on('click', function () {
+               $('#filterCookies > tbody:last').append('<tr><td>' +
+               '<input type="text" class="form-control input-sm" placeholder="Cookie name" name="filterCookieKeys[]" />' +
+               '</td><td>' +
+               '<input type="text" class="form-control input-sm" placeholder="Cookie value" name="filterCookieValues[]" />' +
+               '</td><td>' +
+               '<a class="btn btn-default btn-sm filter_deleteCookie" role="button"><span class="glyphicon glyphicon-trash" aria-hidden="true"></span></a>' +
+               '</td></tr>');
+
+                $( ".filter_deleteCookie" ).bind( "click", function() {
+                    var tr = $(this).closest('tr');
+                    tr.fadeOut(400, 0, function(){
+                        tr.remove();
+                    });
+                    return false;
+                });
+            });
+
+            $('#action_addHeaderButton').on('click', function () {
+               $('#actionHeaders > tbody:last').append('<tr><td>' +
+               '<input type="text" class="form-control input-sm" placeholder="Header name" name="actionHeaderKeys[]" />' +
+               '</td><td>' +
+               '<input type="text" class="form-control input-sm" placeholder="Header value" name="actionHeaderValues[]" />' +
+               '</td><td>' +
+               '<a class="btn btn-default btn-sm action_deleteHeader" role="button"><span class="glyphicon glyphicon-trash" aria-hidden="true"></span></a>' +
+               '</td></tr>');
+
+                $( ".action_deleteHeader" ).bind( "click", function() {
+                    var tr = $(this).closest('tr');
+                    tr.fadeOut(400, 0, function(){
+                        tr.remove();
+                    });
+                    return false;
+                });
+            });
+
+            $('#action_addCookieButton').on('click', function () {
+               $('#actionCookies > tbody:last').append('<tr><td>' +
+               '<input type="text" class="form-control input-sm" placeholder="Cookie name" name="actionCookieKeys[]" />' +
+               '</td><td>' +
+               '<input type="text" class="form-control input-sm" placeholder="Cookie value" name="actionCookieValues[]" />' +
+               '</td><td>' +
+               '<a class="btn btn-default btn-sm action_deleteCookie" role="button"><span class="glyphicon glyphicon-trash" aria-hidden="true"></span></a>' +
+               '</td></tr>');
+
+                $( ".action_deleteCookie" ).bind( "click", function() {
                     var tr = $(this).closest('tr');
                     tr.fadeOut(400, 0, function(){
                         tr.remove();
@@ -166,7 +257,8 @@
                 <!-- /.tab-content -->
             </div>
         </div>
-        <form method="post" action="{% url "testplan_new" %}">
+        <form method="post" action="{% url 'rule_details' testplan.id rule.id %}">
+            {% csrf_token %}
             <div class="col-md-6">
                 <div class="nav-tabs-custom">
                     <ul class="nav nav-tabs">
@@ -177,6 +269,23 @@
                         {% bootstrap_field form.filterProtocol %}
                         {% bootstrap_field form.filterMethod %}
                         {% bootstrap_field form.filterUrl %}
+
+                        <div class="form-group">
+                            <label class="control-label">Cookies</label>
+                            <table id="filterCookies" class="table table-bordered">
+                                <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Value</th>
+                                    <th></th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                </tbody>
+                            </table>
+                            <a id="filter_addCookieButton" class="btn btn-default btn-sm bold"
+                               role="button"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> Add Cookie</a>
+                        </div>
 
                         <div class="form-group">
                             <label class="control-label">Headers</label>
@@ -204,13 +313,56 @@
                         <li class="header"><i class="fa fa-pencil"></i>Action</li>
                     </ul>
                     <div class="tab-content">
+
                         {% bootstrap_field form.actionType %}
+
+                        <div id="drop-connection-alert" class="alert alert-warning tmargin30">
+                            <i class="fa fa-warning"></i>
+                            <b>Beware!</b> This will forcibly close the connection with the client.
+                        </div>
+
                         {% bootstrap_field form.actionProtocol %}
                         {% bootstrap_field form.actionMethod %}
                         {% bootstrap_field form.actionUrl %}
                         {% bootstrap_field form.actionStatusCode %}
                         {% bootstrap_field form.actionStatusDescription %}
+
+                        <div class="form-group">
+                            <label class="control-label">Cookies</label>
+                            <table id="actionCookies" class="table table-bordered">
+                                <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Value</th>
+                                    <th></th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                </tbody>
+                            </table>
+                            <a id="action_addCookieButton" class="btn btn-default btn-sm bold"
+                               role="button"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> Add Cookie</a>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="control-label">Headers</label>
+                            <table id="actionHeaders" class="table table-bordered">
+                                <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Value</th>
+                                    <th></th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                </tbody>
+                            </table>
+                            <a id="action_addHeaderButton" class="btn btn-default btn-sm bold"
+                               role="button"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> Add header</a>
+                        </div>
+
                         {% bootstrap_field form.actionPayload %}
+
                     </div>
                     <!-- /.tab-content -->
                 </div>
