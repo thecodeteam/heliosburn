@@ -24,7 +24,7 @@ from twisted.web.proxy import ReverseProxyResource
 from twisted.web.proxy import ProxyClientFactory
 from twisted.web.proxy import ProxyClient
 from io import BytesIO
-from txredis.client import RedisClient, RedisSubscriber
+from txredis.client import RedisClient, RedisClientFactory, RedisSubscriber
 from twisted.internet.endpoints import TCP4ClientEndpoint
 
 
@@ -214,13 +214,22 @@ class HBProxyMgmtRedisSubscriber(RedisSubscriber):
     def __init__(self, hb_proxy, channel, *args, **kwargs):
         RedisSubscriber.__init__(self, *args, **kwargs)
         self.channel = channel
+        self.hb_proxy = hb_proxy
         self.command_parser = HBProxyMgmtCommandParser(hb_proxy)
+        redis_endpoint = TCP4ClientEndpoint(reactor, hb_proxy.redis_host,
+                                            hb_proxy.redis_port)
+        redis_conn = redis_endpoint.connect(RedisClientFactory())
+        redis_conn.addCallback(self.set_redis_client)
 
     def subscribe(self):
         super(HBProxyMgmtRedisSubscriber, self).subscribe(self.channel)
 
+    def set_redis_client(self, redis_client):
+        self.redis_client = redis_client
+
     def messageReceived(self, channel, message):
-        self.command_parser.parse(message)
+        response = self.command_parser.parse(message)
+        self.redis_client.publish(self.hb_proxy.response_channel, response)
 
     def channelSubscribed(self, channel, numSubscriptions):
         log.msg("HBproxy subscribed to channel: "
@@ -270,32 +279,42 @@ class HBProxyMgmtCommandParser(object):
         self.hb_proxy = hb_proxy
 
     def parse(self, message):
-        log.msg(message)
         command_string = json.loads(message)
+        response_string = ""
 
         if "stop" == command_string['operation']:
             self.hb_proxy.stop_proxy()
+            response_string = "proxy stopped"
 
         if "start" == command_string['operation']:
             self.hb_proxy.start_proxy()
+            response_string = "proxy started"
 
         if "reload" == command_string['operation']:
             self.hb_proxy.reload_modules()
+            response_string = "modules reloaded"
 
         if "reset" == command_string['operation']:
             self.hb_proxy.reset_modules()
+            response_string = "modules reset"
 
         if "upstream_port" == command_string['operation']:
             self.hb_proxy.set_upstream_port(command_string['param'])
+            response_string = "upstream port changed"
 
         if "upstream_host" == command_string['operation']:
             self.hb_proxy.set_upstream_host(command_string['param'])
+            response_string = "upstream host changed"
 
         if "listen_address" == command_string['operation']:
             self.hb_proxy.set_listen_address(command_string['param'])
+            response_string = "listen address changed"
 
         if "listen_port" == command_string['operation']:
             self.hb_proxy.set_listen_port(command_string['command']['param'])
+            response_string = "listen port changed"
+
+        return response_string
 
 
 class HBProxy(object):
