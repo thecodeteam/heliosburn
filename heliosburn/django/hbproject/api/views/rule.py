@@ -42,10 +42,33 @@ def get(request, testplan_id, rule_id=None, dbsession=None):
     if rule is None:
         return HttpResponseNotFound()
     else:
+        if rule.filter is not None:
+            cur_filter = {
+                'id': rule.filter.id,
+                'method': rule.filter.method,
+                'status_code': rule.filter.status_code,
+                'url': rule.filter.url,
+                'protocol': rule.filter.protocol,
+                'ruleId': rule.filter.rule_id,
+            }
+        else:
+            cur_filter = None
+
+        if rule.action is not None:
+            cur_action = {
+                'id': rule.action.id,
+                'type': rule.action.type,
+                'rule_id': rule.action.rule_id,
+            }
+        else:
+            cur_action = None
+
         return JsonResponse({
             'id': rule.id,
             'ruleType': rule.rule_type,
             'testPlanId': rule.testplan_id,
+            'filter': cur_filter,
+            'action': cur_action,
             }, status=200)
 
 
@@ -56,10 +79,32 @@ def get_all_rules(request, testplan_id, dbsession=None):
     rules = dbsession.query(db_model.Rule).filter_by(testplan_id=int(testplan_id)).all()
     rule_list = list()
     for rule in rules:
+        if rule.filter is not None:
+            cur_filter = {
+                'id': rule.filter.id,
+                'method': rule.filter.method,
+                'status': rule.filter.status,
+                'url': rule.filter.url,
+                'protocol': rule.filter.protocol,
+                'ruleId': rule.filter.rule_id,
+            }
+        else:
+            cur_filter = None
+
+        if rule.action is not None:
+            cur_action = {
+                'id': rule.action.id,
+                'type': rule.action.type,
+                'rule_id': rule.action.rule_id,
+            }
+        else:
+            cur_action = None
         rule_list.append({
             'id': rule.id,
             'ruleType': rule.rule_type,
             'testPlanId': rule.testplan_id,
+            'filter': cur_filter,
+            'action': cur_action,
         })
     return JsonResponse({"rules": rule_list})
 
