@@ -30,8 +30,8 @@ from twisted.internet.endpoints import TCP4ClientEndpoint
 
 class HBProxyModuleRegistry(object):
 
-    def __init__(self, config):
-        self.modules = config['proxy']['modules']
+    def __init__(self, modules):
+        self.modules = modules
 
     def _get_class(self, mod_dict):
         """
@@ -211,9 +211,13 @@ class HBReverseProxyResource(ReverseProxyResource):
 
 class HBProxyMgmtRedisSubscriber(RedisSubscriber):
 
-    def __init__(self, hb_proxy, *args, **kwargs):
+    def __init__(self, hb_proxy, channel, *args, **kwargs):
         RedisSubscriber.__init__(self, *args, **kwargs)
+        self.channel = channel
         self.command_parser = HBProxyMgmtCommandParser(hb_proxy)
+
+    def subscribe(self):
+        super(HBProxyMgmtRedisSubscriber, self).subscribe(self.channel)
 
     def messageReceived(self, channel, message):
         self.command_parser.parse(message)
@@ -234,11 +238,12 @@ class HBProxyMgmtRedisSubscriber(RedisSubscriber):
 
 class HBProxyMgmtRedisSubscriberFactory(protocol.Factory):
 
-    def __init__(self, hb_proxy):
+    def __init__(self, hb_proxy, channel):
         self.hb_proxy = hb_proxy
+        self.channel = channel
 
     def buildProtocol(self, addr):
-        return HBProxyMgmtRedisSubscriber(self.hb_proxy)
+        return HBProxyMgmtRedisSubscriber(self.hb_proxy, self.channel)
 
 
 class HBProxyMgmtProtocol(protocol.Protocol):
@@ -295,37 +300,34 @@ class HBProxyMgmtCommandParser(object):
 
 class HBProxy(object):
 
-    def __init__(self, config_path):
+    def __init__(self, bind_address, protocols, upstream_host, upstream_port,
+                 redis_mgmt, redis_host, redis_port, request_channel,
+                 response_channel, tcp_mgmt, tcp_mgmt_address, tcp_mgmt_port,
+                 modules):
+
         # Set a marker for our code path
         self.base_path = dirname(abspath(getsourcefile(lambda _: None)))
-        self.config_path = config_path
+        self.bind_address = bind_address
+        self.protocols = protocols
+        self.upstream_host = upstream_host
+        self.upstream_port = upstream_port
+        self.redis_host = redis_host
+        self.redis_port = redis_port
+        self.request_channel = request_channel
+        self.response_channel = response_channel
+        self.tcp_mgmt_address = tcp_mgmt_address
+        self.tcp_mgmt_port = tcp_mgmt_port
 
-        self._load_config()
-
-        self.upstream_host = self.config['upstream']['address']
-        self.upstream_port = self.config['upstream']['port']
-
+        self.module_registry = HBProxyModuleRegistry(modules)
         self.site = server.Site(proxy.ReverseProxyResource(self.upstream_host,
                                 self.upstream_port, ''))
 
-        if 'http' in self.config['proxy']['protocols']:
-            self.http_address = self.config['proxy']['bind']
-            self.http_port = self.config['proxy']['protocols']['http']
-
-        self.mgmt_host = self.config['mgmt']['address']
-        self.mgmt_port = self.config['mgmt']['port']
-
-        self.module_registry = HBProxyModuleRegistry(self.config)
         self.mgmt_protocol_factory = HBProxyMgmtProtocolFactory(self)
 
     def _start_logging(self):
 
         setStdout = True
         log.startLogging(sys.stdout)
-
-    def _load_config(self):
-        with open(self.config_path, 'r+') as config_file:
-            self.config = yaml.load(config_file.read())
 
     def stop_proxy(self):
         self.proxy.stopListening()
@@ -336,8 +338,8 @@ class HBProxy(object):
                                           self.module_registry)
         f = server.Site(resource)
         f.requestFactory = HBReverseProxyRequest
-        self.proxy = reactor.listenTCP(self.http_port, f,
-                                       interface=self.http_address)
+        self.proxy = reactor.listenTCP(self.protocols['http'], f,
+                                       interface=self.bind_address)
 
     def reset_modules(self):
         self._load_config()
@@ -360,33 +362,41 @@ class HBProxy(object):
         self.start_proxy()
 
     def set_listen_port(self, port):
-        self.http_port = port
+        self.listen_port = port
         self.stop_proxy()
         self.start_proxy()
 
     def set_listen_address(self, address):
-        self.http_address = address
+        self.listen_address = address
         self.stop_proxy()
         self.start_proxy()
 
     def subscribe(self, redis):
 
-        response = redis.subscribe('proxy_core')
+        response = redis.subscribe()
         print(response)
 
     def run(self):
         self.module_registry.run_modules(context='None')
 
-        reactor.listenTCP(self.mgmt_port, self.mgmt_protocol_factory,
-                          interface=self.mgmt_host)
+        reactor.listenTCP(self.tcp_mgmt_port, self.mgmt_protocol_factory,
+                          interface=self.tcp_mgmt_address)
 
         self.start_proxy()
         self._start_logging()
-        redis_endpoint = TCP4ClientEndpoint(reactor, "localhost", 6379)
+        redis_endpoint = TCP4ClientEndpoint(reactor, self.redis_host,
+                                            self.redis_port)
         redis_conn = redis_endpoint.connect(
-            HBProxyMgmtRedisSubscriberFactory(self))
+            HBProxyMgmtRedisSubscriberFactory(self, self.request_channel))
         redis_conn.addCallback(self.subscribe)
         reactor.run()
+
+
+def get_config(config_path):
+    with open(config_path, 'r+') as config_file:
+        config = yaml.load(config_file.read())
+
+    return config
 
 
 def get_arg_parser():
@@ -398,18 +408,58 @@ def get_arg_parser():
     parser.add_argument('--config_path',
                         default="./config.yaml",
                         dest='config_path',
-                        help='Path to output config file')
+                        help='Path to output config file. Default: '
+                        + ' ./config.yamle')
 
-    parser.add_argument('--TCP_mgmt',
+    parser.add_argument('--tcp_mgmt',
                         action="store_true",
+                        dest='tcp_mgmt',
                         help='If set will listen for proxy mgmt commands on'
-                        + ' a TCP port')
+                        + ' a TCP port as well as subscribe to the request'
+                        + ' channel. Default: false')
 
-    parser.add_argument('--REDIS_mgmt',
+    parser.add_argument('--tcp_address',
+                        dest='tcp_mgmt_address',
+                        help='If the proxy mgmt interface is listening '
+                        + ' on a tcp socket, this option will set the address'
+                        + ' on which to listen.')
+
+    parser.add_argument('--tcp_port',
+                        dest='tcp_mgmt_port',
+                        help='If the proxy mgmt interface is listening '
+                        + ' on a tcp socket, this option will set the port'
+                        + ' on which to listen.')
+
+    parser.add_argument('--redis_mgmt',
                         action="store_true",
+                        dest='redis_mgmt',
                         help='If set will subscribe to a given REDIS'
                         + ' channel for proxy mgmt commands'
                         + ' Default: true')
+
+    parser.add_argument('--redis_address',
+                        dest='redis_address',
+                        help='If the proxy mgmt interface is listening '
+                        + ' on a tcp socket, this option will set the address'
+                        + ' on which to listen.')
+
+    parser.add_argument('--redis_port',
+                        dest='redis_port',
+                        help='If the proxy mgmt interface is listening '
+                        + ' on a tcp socket, this option will set the port'
+                        + ' on which to listen.')
+
+    parser.add_argument('--request_channel',
+                        dest='request_channel',
+                        help='If the proxy mgmt interface is set to use redis'
+                        + ', this option will set the channel to which it '
+                        + ' should subscribe.')
+
+    parser.add_argument('--response_channel',
+                        dest='response_channel',
+                        help='If the proxy mgmt interface is set to use redis'
+                        + ', this option will set the channel to which it '
+                        + ' should publish.')
 
     return parser
 
@@ -421,7 +471,46 @@ def main():
     args = get_arg_parser().parse_args()
     config_path = args.config_path
 
-    hb_proxy = HBProxy(config_path)
+    config = get_config(config_path)
+    proxy_config = config['proxy']
+    mgmt_config = config['mgmt']
+
+    bind_address = proxy_config['bind_address']
+    protocols = proxy_config['protocols']
+    upstream_host = proxy_config['upstream']['address']
+    upstream_port = proxy_config['upstream']['port']
+    tcp_mgmt_address = mgmt_config['tcp']['address']
+    tcp_mgmt_port = mgmt_config['tcp']['port']
+    redis_address = mgmt_config['redis']['address']
+    redis_port = mgmt_config['redis']['port']
+    request_channel = mgmt_config['redis']['request_channel']
+    response_channel = mgmt_config['redis']['response_channel']
+
+    print (redis_port)
+
+    if args.tcp_mgmt:
+        if args.tcp_mgmt_address:
+            tcp_mgmt_address = args.tcp_mgmt_address
+
+        if args.tcp_mgmt_port:
+            tcp_mgmt_port = args.tcp_mgmt_port
+
+    if args.redis_mgmt:
+        if args.redis_address:
+            redis_address = args.redis_address
+        if args.redis_port:
+            redis_port = args.redis_address
+        if args.request_channel:
+            request_channel = args.request_channel
+        if args.response_channel:
+            response_channel = args.response_channel
+
+    modules = get_config("./modules.yaml")
+
+    hb_proxy = HBProxy(bind_address, protocols, upstream_host, upstream_port,
+                       args.redis_mgmt, redis_address, redis_port,
+                       request_channel, response_channel, args.tcp_mgmt,
+                       tcp_mgmt_address, tcp_mgmt_port, modules)
     hb_proxy.run()
 
 if __name__ == "__main__":

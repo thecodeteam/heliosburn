@@ -1,53 +1,22 @@
 proxy:
-  bind: '127.0.0.1'
+  bind_address: '127.0.0.1'
+
   protocols:
     http: 8880
-  modules:
-    [
-        # {
-        #   name: 'allFail',
-        #   path: 'modules.404s',
-        #   run_contexts: [''],
-        #   #run_contexts: ['response'],
-        #   kwargs: {}
-        # },
-        # {
-        #   name: 'serialize',
-        #   path: 'modules.serialize',
-        #   run_contexts: ['request', 'response'],
-        #   kwargs: {}
-        # },
-        # {
-        #   name: 'addLag',
-        #   path: 'modules.addLag',
-        #   run_contexts: ['request'],
-        #   kwargs: { minimum: 1, maximum: 5, }
-        # },
-#        {
-#          name: 'redisDump',
-#          path: 'modules.serialize',
-#          run_contexts: ['response'],
-#          kwargs:
-#              {
-#                redis_host: '127.0.0.1',
-#                redis_port: 6379,
-#                redis_db: 0,
-#              }
-#        },
-        {
-          name: 'SampleModule',
-          path: 'modules.samplemodule',
-          run_contexts: ['request', 'response'],
-          kwargs: {},
-         }
 
-    ]
-upstream:
-  address: '127.0.0.1'
-  port: 8080
+  upstream:
+    address: '127.0.0.1'
+    port: 8080
+
 mgmt:
-  address: '127.0.0.1'
-  port: 5150
-log:
-  path: '{}/logs/run.log'
-  standard_out: 'yes'
+  tcp:
+    address: '127.0.0.1'
+    port: 5150
+  redis:
+    address: '127.0.0.1'
+    port: 6379
+    request_channel: 'proxy_mgmt_request'
+    response_channel: 'proxy_mgmt_response'
+  log:
+    path: '{}/logs/run.log'
+    standard_out: 'yes'
