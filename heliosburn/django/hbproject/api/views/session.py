@@ -124,7 +124,9 @@ def post(request, dbsession=None):
         dbsession.commit()
     except IntegrityError as e:
         return HttpResponseBadRequest("constraint violated", status=409)
-    return JsonResponse({"id": session.id}, status=200)
+    r = JsonResponse({"id": session.id}, status=200)
+    r['location'] = "/api/session/%d" % session.id
+    return r
 
 
 @RequireLogin()

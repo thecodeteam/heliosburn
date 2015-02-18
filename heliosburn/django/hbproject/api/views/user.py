@@ -102,7 +102,9 @@ def post(request, dbsession=None):
         user = db_model.User(username=new['username'], email=new['email'], password=m.hexdigest())
         dbsession.add(user)
         dbsession.commit()
-        return HttpResponse(status=200)
+        r = HttpResponse(status=200)
+        r['location'] = "/api/user/%s" % user.username
+        return r
 
 
 @RequireLogin()

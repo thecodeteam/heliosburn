@@ -151,7 +151,9 @@ def post(request, testplan_id, rule_id=None, dbsession=None):
         dbsession.commit()
     except IntegrityError:
         return HttpResponseBadRequest("constraint violated")
-    return JsonResponse({"id": rule.id})
+    r = JsonResponse({"id": rule.id})
+    r['location'] = "/api/testplan/%d/rule/%d" % (testplan_id, rule.id)
+    return r
 
 
 @RequireLogin()

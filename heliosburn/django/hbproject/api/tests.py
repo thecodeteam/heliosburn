@@ -66,6 +66,7 @@ class SessionViewTestCase(TestCase):
                 })
             response = session.post(request)
             assert response.status_code == 200
+            assert "location" in response._headers
             in_json = json.loads(response.content)
             assert "id" in in_json
             session_id = in_json['id']
@@ -129,6 +130,7 @@ class TestplanViewTestCase(TestCase):
             request.body = json.dumps({"name": "CRUD test"})
             response = testplan.post(request)
             assert response.status_code == 200
+            assert "location" in response._headers
             in_json = json.loads(response.content)
             assert "id" in in_json
             return in_json['id']
@@ -185,6 +187,7 @@ class UserViewTestCase(TestCase):
             })
             response = user.post(request)
             assert response.status_code == 200
+            assert "location" in response._headers
 
             response = user.post(create_authenticated_request("test1", "test1"))
             assert response.status_code == 401
@@ -290,6 +293,7 @@ class RuleViewTestCase(TestCase):
             # First create a test plan to hold our rules
             response = testplan.post(request)
             assert response.status_code == 200
+            assert "location" in response._headers
             in_json = json.loads(response.content)
             assert "id" in in_json
             testplan_id = in_json['id']

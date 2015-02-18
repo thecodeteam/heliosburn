@@ -103,7 +103,9 @@ def post(request, dbsession=None):
 
     dbsession.add(testplan)
     dbsession.commit()
-    return JsonResponse({"id": testplan.id}, status=200)
+    r = JsonResponse({"id": testplan.id}, status=200)
+    r['location'] = "/api/testplan/%d" % testplan.id
+    return r
 
 
 @RequireLogin()
