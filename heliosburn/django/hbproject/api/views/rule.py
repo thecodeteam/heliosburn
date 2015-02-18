@@ -50,6 +50,7 @@ def get(request, testplan_id, rule_id=None, dbsession=None):
                 'url': rule.filter.url,
                 'protocol': rule.filter.protocol,
                 'ruleId': rule.filter.rule_id,
+                'filterHeaders': [],
             }
         else:
             cur_filter = None
@@ -58,7 +59,7 @@ def get(request, testplan_id, rule_id=None, dbsession=None):
             cur_action = {
                 'id': rule.action.id,
                 'type': rule.action.type,
-                'rule_id': rule.action.rule_id,
+                'ruleId': rule.action.rule_id,
             }
         else:
             cur_action = None
