@@ -9,4 +9,3 @@ CherryPy
 SQLAlchemy
 selenium
 django-bootstrap3
-ipython
