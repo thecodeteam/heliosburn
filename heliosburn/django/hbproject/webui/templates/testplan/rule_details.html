@@ -118,24 +118,22 @@
 
             enableFields($('#{{ form.actionType.id_for_label }}').val());
 
-
             $('#filter_addHeaderButton').on('click', function () {
-               $('#filterHeaders tr:last').after('<tr><td>' +
+               $('#filterHeaders > tbody:last').append('<tr><td>' +
                '<input type="text" class="form-control input-sm" placeholder="Header name" name="filterHeaderKey_1" />' +
                '</td><td>' +
                '<input type="text" class="form-control input-sm" placeholder="Header value" name="filterHeaderValue_1" />' +
                '</td><td>' +
                '<a class="btn btn-default btn-sm filter_deleteHeader" role="button"><span class="glyphicon glyphicon-trash" aria-hidden="true"></span></a>' +
                '</td></tr>');
-            });
 
-            $('.filter_deleteHeader').click(function() {
-                var tr = $(this).closest('tr');
-                //tr.css("background-color","#FF3700");
-                tr.fadeOut(400, 0, function(){
-                    tr.remove();
+                $( ".filter_deleteHeader" ).bind( "click", function() {
+                    var tr = $(this).closest('tr');
+                    tr.fadeOut(400, 0, function(){
+                        tr.remove();
+                    });
+                    return false;
                 });
-                return false;
             });
         });
     </script>
@@ -191,17 +189,6 @@
                                 </tr>
                                 </thead>
                                 <tbody>
-                                    <tr>
-                                        <td>
-                                            <input type="text" class="form-control input-sm" placeholder="Header name" name="filterHeaderKey_1" />
-                                        </td>
-                                        <td>
-                                            <input type="text" class="form-control input-sm" placeholder="Header value" name="filterHeaderValue_1" />
-                                        </td>
-                                        <td>
-                                            <a class="btn btn-default btn-sm filter_deleteHeader" role="button"><span class="glyphicon glyphicon-trash" aria-hidden="true"></span></a>
-                                        </td>
-                                    </tr>
                                 </tbody>
                             </table>
                             <a id="filter_addHeaderButton" class="btn btn-default btn-sm bold"
