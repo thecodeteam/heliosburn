@@ -8,20 +8,22 @@ from webui.forms import TestPlanForm
 
 
 class BaseTest(TestCase):
-    def setUp(self):
+    @classmethod
+    def setUpClass(cls):
         """
         Create temporary testserver.py and proxycore.py instances
         """
         logging.warning("Starting CherryPy server")
-        self.django_process = subprocess.Popen(["/usr/bin/python2.7", "cherrypy_launcher.py"])  # TODO: fix this, obviously :)
+        cls.django_process = subprocess.Popen(["/usr/bin/python2.7", "cherrypy_launcher.py"])  # TODO: fix this, obviously :)
         time.sleep(2)  # Let CherryPy begin listening
 
-    def tearDown(self):
+    @classmethod
+    def tearDownClass(cls):
         """
         Tear down temporary testserver.py and proxycore.py instances
         """
         logging.warning("Killing CherryPy server")
-        self.django_process.kill()
+        cls.django_process.kill()
 
 
 class RootTest(BaseTest):
