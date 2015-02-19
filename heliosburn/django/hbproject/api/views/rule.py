@@ -42,10 +42,34 @@ def get(request, testplan_id, rule_id=None, dbsession=None):
     if rule is None:
         return HttpResponseNotFound()
     else:
+        if rule.filter is not None:
+            cur_filter = {
+                'id': rule.filter.id,
+                'method': rule.filter.method,
+                'status_code': rule.filter.status_code,
+                'url': rule.filter.url,
+                'protocol': rule.filter.protocol,
+                'ruleId': rule.filter.rule_id,
+                'filterHeaders': [],
+            }
+        else:
+            cur_filter = None
+
+        if rule.action is not None:
+            cur_action = {
+                'id': rule.action.id,
+                'type': rule.action.type,
+                'ruleId': rule.action.rule_id,
+            }
+        else:
+            cur_action = None
+
         return JsonResponse({
             'id': rule.id,
             'ruleType': rule.rule_type,
             'testPlanId': rule.testplan_id,
+            'filter': cur_filter,
+            'action': cur_action,
             }, status=200)
 
 
@@ -56,10 +80,32 @@ def get_all_rules(request, testplan_id, dbsession=None):
     rules = dbsession.query(db_model.Rule).filter_by(testplan_id=int(testplan_id)).all()
     rule_list = list()
     for rule in rules:
+        if rule.filter is not None:
+            cur_filter = {
+                'id': rule.filter.id,
+                'method': rule.filter.method,
+                'status': rule.filter.status,
+                'url': rule.filter.url,
+                'protocol': rule.filter.protocol,
+                'ruleId': rule.filter.rule_id,
+            }
+        else:
+            cur_filter = None
+
+        if rule.action is not None:
+            cur_action = {
+                'id': rule.action.id,
+                'type': rule.action.type,
+                'rule_id': rule.action.rule_id,
+            }
+        else:
+            cur_action = None
         rule_list.append({
             'id': rule.id,
             'ruleType': rule.rule_type,
             'testPlanId': rule.testplan_id,
+            'filter': cur_filter,
+            'action': cur_action,
         })
     return JsonResponse({"rules": rule_list})
 
@@ -79,18 +125,35 @@ def post(request, testplan_id, rule_id=None, dbsession=None):
         new = json.loads(request.body)
         assert "ruleType" in new
         assert (new['ruleType'] == "response") or (new['ruleType'] == "request")
+        if "action" in new:
+            assert "type" in new['action']
+        if "filter" in new:
+            assert "method" in new['filter']
+            assert "statusCode" in new['filter']
+            assert "url" in new['filter']
+            assert "protocol" in new['filter']
+
     except ValueError:
         return HttpResponseBadRequest("invalid JSON")
     except AssertionError:
         return HttpResponseBadRequest("argument mismatch")
 
     rule = db_model.Rule(rule_type=new['ruleType'], testplan_id=testplan_id)
+    if 'action' in new:
+        action = db_model.Action(type=new['action']['type'])
+        rule.action = action
+    if 'filter' in new:
+        filter = db_model.Filter(method=new['filter']['method'], status_code=new['filter']['statusCode'],
+                                 url=new['filter']['url'], protocol=new['filter']['protocol'])
+        rule.filter = filter
     dbsession.add(rule)
     try:
         dbsession.commit()
     except IntegrityError:
         return HttpResponseBadRequest("constraint violated")
-    return JsonResponse({"id": rule.id})
+    r = JsonResponse({"id": rule.id})
+    r['location'] = "/api/testplan/%d/rule/%d" % (testplan_id, rule.id)
+    return r
 
 
 @RequireLogin()
@@ -115,6 +178,18 @@ def put(request, rule_id, testplan_id=None, dbsession=None):
                 return HttpResponseBadRequest("argument mismatch")
         if "testPlanId" in in_json:
             rule.testplan_id = int(in_json['testplan_id'])
+        if "action" in in_json:
+            if "type" in in_json['action']:
+                rule.action.type = in_json['action']['type']
+        if "filter" in in_json:
+            if "method" in in_json['filter']:
+                rule.filter.method = in_json['filter']['method']
+            if "statusCode" in in_json['filter']:
+                rule.filter.status_code = in_json['filter']['statusCode']
+            if "url" in in_json['filter']:
+                rule.filter.url = in_json['filter']['url']
+            if "protocol" in in_json['filter']:
+                rule.filter.protocol = in_json['filter']['protocol']
         try:
             dbsession.commit()
         except IntegrityError:

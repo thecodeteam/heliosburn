@@ -130,8 +130,8 @@ class Rule(Base):
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.datetime.utcnow)
     rule_type = Column(String, nullable=False)  # "request" or "response"
-    filter = relationship("Filter", uselist=False, backref="rule")
-    action = relationship("Action", uselist=False, backref="rule")
+    filter = relationship("Filter", uselist=False, backref="rule", cascade="all")
+    action = relationship("Action", uselist=False, backref="rule", cascade="all")
     testplan_id = Column(Integer, ForeignKey('testplan.id', onupdate="CASCADE", ondelete="CASCADE"), nullable=False)
 
 
