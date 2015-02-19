@@ -9,233 +9,26 @@
 from os.path import dirname, abspath
 from inspect import getsourcefile
 
-from django.utils.http import urlquote
 import yaml
 import sys
 import argparse
 import json
-from io import BytesIO
 from twisted.internet import reactor
-from twisted.internet import protocol
 from twisted.internet import defer
 from twisted.internet.endpoints import TCP4ClientEndpoint
 from twisted.web import proxy
 from twisted.web import server
 from twisted.python import log
-from twisted.web.proxy import ReverseProxyRequest
-from twisted.web.proxy import ReverseProxyResource
-from twisted.web.proxy import ProxyClientFactory
-from twisted.web.proxy import ProxyClient
-from txredis.client import RedisClient
 from txredis.client import RedisClientFactory
-from txredis.client import RedisSubscriber
 from plugins import Registry
-
-
-class HBProxyClient(ProxyClient):
-    """
-    ProxyClient extension used to customize handling of proxy responses.
-    See Twisted's ProxyClient API documentation for details.
-
-    """
-    def __init__(self, command, rest, version, headers, data, father,
-                 plugin_registry):
-        """
-        Override ProxyClient.__init__ to accept HBModuleRegistry
-        as a parameter
-
-        """
-
-        self.plugin_registry = plugin_registry
-        ProxyClient.__init__(self, command, rest, version, headers, data,
-                             father)
-
-    def handleStatus(self, version, code, message):
-        """
-        Invoked after a status code and message are received
-        """
-        ProxyClient.handleStatus(self, version, code, message)
-#        self.plugin_registry.run_plugins(context='response',
-#                                         request_object=self.father)
-
-    def handleResponsePart(self, buffer):
-
-        self.father.response_content = BytesIO(buffer)
-        self.plugin_registry.run_plugins(context='response',
-                                         request_object=self.father)
-
-        self.father.headers['Content-Length'] = len(self.father.
-                                                    content.getvalue())
-        ProxyClient.handleResponsePart(self, self.father.content.getvalue())
-
-    def handleHeader(self, key, value):
-        """
-        Invoked once for every Header received in a response
-        """
-        ProxyClient.handleHeader(self, key, value)
-
-
-class HBProxyClientFactory(ProxyClientFactory):
-    """
-    Constructs an HBProxyClient and returns it
-
-    """
-
-    def __init__(self, command, rest, version, headers, data, father,
-                 plugin_registry):
-        """
-        Override ProxyClientFactory.__init__ to return HBProxyClient
-
-        """
-
-        self.plugin_registry = plugin_registry
-        ProxyClientFactory.__init__(self, command, rest, version, headers,
-                                    data, father)
-
-    def buildProtocol(self, addr):
-        """
-        Override ProxyClientFactory.buildProtocol to return HBProxyClient
-
-        """
-
-        return HBProxyClient(self.command, self.rest, self.version,
-                             self.headers, self.data, self.father,
-                             self.plugin_registry)
-
-
-class HBReverseProxyRequest(ReverseProxyRequest):
-    """
-    ReverseProxyRequest extension used to customize handling of proxy requests.
-    See Twisted's ReverseProxyRequest API documentation for details.
-
-    """
-
-    proxyClientFactoryClass = HBProxyClientFactory
-
-    def __init__(self, upstream_host, upstream_port, channel,
-                 queued, plugin_registry, reactor=reactor):
-
-        self.plugin_registry = plugin_registry
-        self.upstream_host = upstream_host
-        self.upstream_port = upstream_port
-
-        ReverseProxyRequest.__init__(self, channel, queued, reactor)
-
-    def process(self):
-        """
-        Implementation of Twisted's ReverseProxyReqeust.process() which
-        processes request objects. Please see ReverseProxyRequest API
-        documentation.
-        """
-
-        self.plugin_registry.run_plugins(context='request',
-                                         request_object=self)
-        log.msg("VERB: {}.method, URI: {}.uri, HEADERS: {}.requestHeaders".
-                format(self, self, self))
-
-        self.requestHeaders.setRawHeaders(b"host", [self.upstream_host])
-        clientFactory = self.proxyClientFactoryClass(self.method, self.uri,
-                                                     self.clientproto,
-                                                     self.getAllHeaders(),
-                                                     self.content.read(),
-                                                     self,
-                                                     self.plugin_registry)
-
-        self.reactor.connectTCP(self.upstream_host, self.upstream_port,
-                                clientFactory)
-
-
-class HBReverseProxyResource(ReverseProxyResource):
-    """
-    ReverseProxyResource extension used to customize handling of proxy
-    requests.  See Twisted's ReverseProxyResource API documentation for
-    details.
-
-
-    """
-    proxyClientFactoryClass = HBProxyClientFactory
-
-    def __init__(self, host, port, path, plugin_registry, reactor=reactor):
-        self.plugin_registry = plugin_registry
-        ReverseProxyResource.__init__(self, host, port, path, reactor)
-
-    def getChild(self, path, request):
-        """
-        return host, port, URI, and reactor instance
-
-
-        """
-        return HBReverseProxyResource(
-            self.host, self.port,
-            self.path + '/' + urlquote(path, safe=""),
-            self.plugin_registry,
-            self.reactor)
-
-
-class HBProxyMgmtRedisSubscriber(RedisSubscriber):
-
-    def __init__(self, proxy, redis_endpoint, request, response,
-                 *args, **kwargs):
-        RedisSubscriber.__init__(self, *args, **kwargs)
-        self.channel = request
-        self.proxy = proxy
-        self.op_factory = RedisOperationFactory(proxy, redis_endpoint,
-                                                response)
-
-    def subscribe(self):
-        super(HBProxyMgmtRedisSubscriber, self).subscribe(self.channel)
-
-    def set_redis_client(self, redis_client):
-        self.redis_client = redis_client
-
-    def messageReceived(self, channel, message):
-        operation = self.op_factory.get_operation(message)
-        operation.execute()
-#       self.redis_client.publish(self.hb_proxy.response_channel, response)
-
-    def channelSubscribed(self, channel, numSubscriptions):
-        log.msg("HBproxy subscribed to channel: "
-                + channel
-                + " it is subscriber 1 of : "
-                + str(numSubscriptions))
-
-    def channelUnSubscribed(self, channel, numSubscriptions):
-        log.msg("HBproxy unsubscribed from channel: "
-                + channel
-                + " there are : "
-                + str(numSubscriptions)
-                + " subscribers remaining ")
-
-
-class HBProxyMgmtRedisSubscriberFactory(protocol.Factory):
-
-    def __init__(self, proxy, redis_endpoint, request, response):
-        self.proxy = proxy
-        self.request = request
-        self.response = response
-        self.endpoint = redis_endpoint
-
-    def buildProtocol(self, addr):
-        return HBProxyMgmtRedisSubscriber(self.proxy, self.endpoint,
-                                          self.request, self.response)
-
-
-class HBProxyMgmtProtocol(protocol.Protocol):
-
-    def __init__(self, hb_proxy):
-        self.op_factory = TcpOperationFactory(hb_proxy)
-
-    def dataReceived(self, data):
-        self.op_factory.get_operation(data)
-
-
-class HBProxyMgmtProtocolFactory(protocol.Factory):
-
-    def __init__(self, hb_proxy):
-        self.hb_proxy = hb_proxy
-
-    def buildProtocol(self, addr):
-        return HBProxyMgmtProtocol(self.hb_proxy)
+from protocols import HBProxyClient
+from protocols import HBProxyClientFactory
+from protocols import HBReverseProxyRequest
+from protocols import HBReverseProxyResource
+from protocols import HBProxyMgmtRedisSubscriber
+from protocols import HBProxyMgmtRedisSubscriberFactory
+from protocols import HBProxyMgmtProtocol
+from protocols import HBProxyMgmtProtocolFactory
 
 
 class OperationResponse(object):
@@ -314,43 +107,10 @@ class TcpOperationResponseFactory(OperationResponseFactory):
         pass
 
 
-class ControllerOperation(object):
-
-    def __init__(self, response, key):
-        self.operation = defer.Deferred()
-        self.response = response
-        self.key = key
-
-    def execute(self):
-        return self.operation.callback(self.response)
-
-    def respond(self, result):
-        self.response.send()
-
-    def addCallback(self, callback):
-        self.operation.addCallback(callback)
-
-
-class StopProxy(ControllerOperation):
-
-    def __init__(self, proxy, response_factory, key):
-        ControllerOperation.__init__(self, response_factory, key)
-        self.proxy = proxy
-        self.response = response_factory.get_response(200,
-                                                      "execution successful",
-                                                      self.key)
-        self.addCallback(self.stop)
-        self.addCallback(self.respond)
-
-    def stop(self, result):
-        self.proxy.stopListening()
-        self.response.set_message("stop " + self.response.get_message())
-
-
 class OperationFactory(object):
 
-    def __init__(self, proxy):
-        self.proxy = proxy
+    def __init__(self, controller):
+        self.controller = controller
         self.response_factory = OperationResponseFactory()
 
     def get_operation(self, message):
@@ -358,13 +118,14 @@ class OperationFactory(object):
         operation = None
 
         if "stop" == op_string['operation']:
-            operation = StopProxy(self.proxy,
+            operation = StopProxy(self.controller,
                                   self.response_factory,
                                   op_string['key'])
 
         if "start" == op_string['operation']:
-            #           self.hb_proxy.start_proxy()
-            operation = "proxy started"
+            operation = StartProxy(self.controller,
+                                   self.response_factory,
+                                   op_string['key'])
 
         if "reload" == op_string['operation']:
             #           self.hb_proxy.reload_plugins()
@@ -408,6 +169,67 @@ class TcpOperationFactory(OperationFactory):
         self.repsponse_factory = TcpOperationResponseFactory()
 
 
+class ControllerOperation(object):
+
+    def __init__(self, controller, response_factory, key):
+        self.controller = controller
+        self.operation = defer.Deferred()
+        self.response = response_factory.get_response(200,
+                                                      "execution successful",
+                                                      key)
+        self.key = key
+
+    def execute(self):
+        return self.operation.callback(self.response)
+
+    def respond(self, result):
+        self.response.send()
+
+    def addCallback(self, callback):
+        self.operation.addCallback(callback)
+
+
+class StopProxy(ControllerOperation):
+
+    def __init__(self, controller, response_factory, key):
+        ControllerOperation.__init__(self, controller, response_factory, key)
+
+        self.addCallback(self.stop)
+        self.addCallback(self.respond)
+
+    def stop(self, result):
+        self.controller.proxy.stopListening()
+        self.response.set_message("stop " + self.response.get_message())
+
+
+class StartProxy(ControllerOperation):
+
+    def __init__(self, controller, response_factory, key):
+
+        ControllerOperation.__init__(self, controller, response_factory, key)
+
+        self.addCallback(self.start)
+        self.addCallback(self.respond)
+
+    def start(self, result):
+        resource = HBReverseProxyResource(self.controller.upstream_host,
+                                          self.controller.upstream_port, '',
+                                          self.controller.plugin_registry)
+        f = server.Site(resource)
+        f.requestFactory = HBReverseProxyRequest
+        protocol = self.controller.protocol
+        bind_address = self.controller.bind_address
+        self.controller.proxy = reactor.listenTCP(protocol, f,
+                                                  interface=bind_address)
+        message = "proxy started:\n"
+        message += "-bind port: " + str(self.controller.protocol) + "\n"
+        message += "-bind addr: " + str(self.controller.upstream_host) + "\n"
+        message += "-upstream h: " + str(self.controller.upstream_host) + "\n"
+        message += "-upstream p: " + str(self.controller.upstream_host) + "\n"
+
+        self.response.set_message(message)
+
+
 class HBProxyController(object):
 
     def __init__(self, bind_address, protocols, upstream_host, upstream_port,
@@ -439,16 +261,14 @@ class HBProxyController(object):
         setStdout = True
         log.startLogging(sys.stdout)
 
-    def stop_proxy(self):
-        self.proxy.stopListening()
-
     def start_proxy(self):
         resource = HBReverseProxyResource(self.upstream_host,
                                           self.upstream_port, '',
                                           self.plugin_registry)
         f = server.Site(resource)
         f.requestFactory = HBReverseProxyRequest
-        self.proxy = reactor.listenTCP(self.protocols['http'], f,
+        self.protocol = self.protocols['http']
+        self.proxy = reactor.listenTCP(self.protocol, f,
                                        interface=self.bind_address)
 
     def reset_plugins(self):
@@ -492,10 +312,13 @@ class HBProxyController(object):
         self._start_logging()
         redis_endpoint = TCP4ClientEndpoint(reactor, self.redis_host,
                                             self.redis_port)
+
+        op_factory = RedisOperationFactory(self, redis_endpoint,
+                                           self.response_channel)
         redis_conn = redis_endpoint.connect(
-            HBProxyMgmtRedisSubscriberFactory(self.proxy, redis_endpoint,
-                                              self.request_channel,
-                                              self.response_channel))
+            HBProxyMgmtRedisSubscriberFactory(self.request_channel,
+                                              op_factory))
+
         redis_conn.addCallback(self.subscribe)
         reactor.run()
 
