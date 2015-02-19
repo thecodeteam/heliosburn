@@ -307,6 +307,7 @@ class RuleViewTestCase(TestCase):
                     "statusCode": 200,
                     "url": "http://test.com",
                     "protocol": "HTTP",
+                    #"filterHeader": "custom-header",
                 },
             })
             response = rule.post(request, testplan_id=testplan_id)
