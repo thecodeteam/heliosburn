@@ -12,6 +12,14 @@ class TestPlanForm(forms.Form):
                                        validators=[MinValueValidator(0)])
 
 
+class RuleForm(forms.Form):
+    rule_choices = (('request', 'Request'), ('response', 'Response'))
+
+    name = forms.CharField(label='Name', max_length=100)
+    description = forms.CharField(label='Description', widget=forms.Textarea, required=False)
+    type = forms.ChoiceField(label='Rule type', choices=rule_choices)
+
+
 class RuleRequestForm(forms.Form):
     method_choices = (
         ('', 'Select a method'),

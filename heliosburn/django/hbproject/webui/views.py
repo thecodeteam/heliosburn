@@ -8,7 +8,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import auth, messages
 from django.conf import settings
 import requests
-from webui.forms import TestPlanForm, RuleRequestForm
+from webui.forms import TestPlanForm, RuleRequestForm, RuleForm
 from webui.utils import get_resource_id_from_header
 
 
@@ -222,7 +222,7 @@ def testplan_new(request):
         if testplan_id:
             return HttpResponseRedirect(reverse('testplan_details', args=(str(testplan_id),)))
         else:
-            messages.error(request, 'Could not retrieve the Test Plan ID')
+            messages.error(request, 'Test Plan was created successfully, but we could not retrieve its ID')
             return HttpResponseRedirect(reverse('testplan_list'))
 
     return render(request, 'testplan/testplan_new.html', {'form': form})
@@ -300,7 +300,34 @@ def rule_details(request, testplan_id, rule_id):
     data['rule'] = rule
     data['form'] = RuleRequestForm()
 
-    return render(request, 'testplan/rule_details.html', data)
+    return render(request, 'rules/rule_details.html', data)
+
+
+@login_required
+def rule_new(request, testplan_id):
+
+    form = RuleForm(request.POST or None)
+
+    if form.is_valid():
+        # TODO: submit the form to the API endpoint
+        return HttpResponse()
+
+    url = '%s/testplan/%s' % (settings.API_BASE_URL, testplan_id)
+    headers = {'X-Auth-Token': request.user.password}
+    r = requests.get(url, headers=headers)
+
+    if r.status_code == requests.codes.not_found:
+        return render(request, '404.html')
+
+    if r.status_code != requests.codes.ok:
+        # TODO: do not sign out always, only if HTTP Unauthorized
+        return signout(request)
+
+    data = {}
+    data['testplan'] = json.loads(r.text)
+    data['form'] = form
+
+    return render(request, 'rules/rule_new.html', data)
 
 
 @login_required
