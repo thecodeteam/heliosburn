@@ -242,6 +242,7 @@ class OperationResponse(object):
 
     def __init__(self, code, message, key):
 
+        self.deferred = defer.Deferred()
         self.response = {'code': code,
                          'message': message,
                          'key': key
@@ -262,6 +263,9 @@ class OperationResponse(object):
     def send(self):
         pass
 
+    def getDeferred(self):
+        return self.deferred
+
 
 class RedisOperationResponse(OperationResponse):
 
@@ -271,15 +275,17 @@ class RedisOperationResponse(OperationResponse):
 
         self.response_channel = response_channel
 
-        redis_conn = redis_endpoint.connect(RedisClientFactory())
-        redis_conn.addCallback(self.set_redis_client)
+        self.redis_conn = redis_endpoint.connect(RedisClientFactory())
+        self.redis_conn.addCallback(self.set_redis_client)
 
     def set_redis_client(self, redis_client):
-        print("got redis client")
         self.redis_client = redis_client
 
-    def send(self, result):
+    def _send(self, result):
         self.redis_client.publish(self.response_channel, self.response)
+
+    def send(self):
+        self.redis_conn.addCallback(self._send)
 
 
 class OperationResponseFactory(object):
@@ -318,6 +324,12 @@ class ControllerOperation(object):
     def execute(self):
         return self.operation.callback(self.response)
 
+    def respond(self, result):
+        self.response.send()
+
+    def addCallback(self, callback):
+        self.operation.addCallback(callback)
+
 
 class StopProxy(ControllerOperation):
 
@@ -327,8 +339,8 @@ class StopProxy(ControllerOperation):
         self.response = response_factory.get_response(200,
                                                       "execution successful",
                                                       self.key)
-        self.operation.addCallback(self.stop)
-        self.operation.addCallback(self.response.send)
+        self.addCallback(self.stop)
+        self.addCallback(self.respond)
 
     def stop(self, result):
         self.proxy.stopListening()
