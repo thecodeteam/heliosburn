@@ -40,6 +40,7 @@ INSTALLED_APPS = (
 
     'django_bootstrap_breadcrumbs',
     'bootstrap3',
+    'debug_toolbar',
 
     'webui',
 )
@@ -105,9 +106,19 @@ AUTHENTICATION_BACKENDS = (
 
 API_BASE_URL = 'http://127.0.0.1:8000/api'
 
-
 TOKEN_TTL = 3600  # milliseconds
 
 REDIS_HOST = 'localhost'
 REDIS_PORT = 6379
 REDIS_DB = 0
+
+
+# Django-Debug-Toolbar workaround to make it work with the Vagrant VM
+
+DEBUG_TOOLBAR_CONFIG = {
+    'SHOW_TOOLBAR_CALLBACK': "%s.true" % __name__,
+}
+
+
+def true(request):
+    return True
