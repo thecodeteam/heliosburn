@@ -132,8 +132,9 @@
                 <section class="content">
 
                     {% if messages %}
-                        <div class="callout callout-danger">
-                            <h4>Something unexpected happened!</h4>
+                        <div class="alert alert-danger alert-dismissable">
+                            <i class="fa fa-ban"></i>
+                            <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
                             {% for message in messages %}
                                 <p>{{ message|safe }}</p>
                             {% endfor %}
