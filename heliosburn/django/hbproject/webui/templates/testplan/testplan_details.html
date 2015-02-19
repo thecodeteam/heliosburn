@@ -13,7 +13,7 @@
 {% block breadcrumbs %}
     {{ block.super }}
     {% breadcrumb "Test plans" "testplan_list" %}
-    {% breadcrumb testplan.name "testplan_details" %}
+    {% breadcrumb testplan.name "testplan_details" testplan.id %}
 {% endblock %}
 
 {% block styles %}
@@ -52,12 +52,6 @@
     <script src="//cdnjs.cloudflare.com/ajax/libs/x-editable/1.5.0/bootstrap3-editable/js/bootstrap-editable.min.js"></script>
     <script type="text/javascript">
         $.fn.editable.defaults.mode = 'inline';
-
-        //enable / disable
-        $('#details-edit').click(function() {
-            $('#testplan-description').editable('toggleDisabled');
-        });
-
 
         //editables
         $('#testplan-name').editable({
@@ -193,10 +187,10 @@
                                 </tfoot>
                                 <tbody>
 
-                                    {% for rule in testplan.rules %}
+                                    {% for rule in rules.rules %}
                                         <tr>
                                             <td>{{ rule.id }}</td>
-                                            <td><a href="{% url 'rule_details' rule.id %}">view</a></td>
+                                            <td><a href="{% url 'rule_details' testplan.id rule.id %}">view</a></td>
                                             <td>{{ rule.type }}</td>
                                             <td>{{ rule.filter }}</td>
                                             <td>{{ rule.action }}</td>

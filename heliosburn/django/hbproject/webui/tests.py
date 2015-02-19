@@ -8,20 +8,22 @@ from webui.forms import TestPlanForm
 
 
 class BaseTest(TestCase):
-    def setUp(self):
+    @classmethod
+    def setUpClass(cls):
         """
         Create temporary testserver.py and proxycore.py instances
         """
         logging.warning("Starting CherryPy server")
-        self.django_process = subprocess.Popen(["/usr/bin/python2.7", "cherrypy_launcher.py"])  # TODO: fix this, obviously :)
+        cls.django_process = subprocess.Popen(["/usr/bin/python2.7", "cherrypy_launcher.py"])  # TODO: fix this, obviously :)
         time.sleep(2)  # Let CherryPy begin listening
 
-    def tearDown(self):
+    @classmethod
+    def tearDownClass(cls):
         """
         Tear down temporary testserver.py and proxycore.py instances
         """
         logging.warning("Killing CherryPy server")
-        self.django_process.kill()
+        cls.django_process.kill()
 
 
 class RootTest(BaseTest):
@@ -186,4 +188,37 @@ class TestPlanTest(WebuiSignedInTest):
 
     def test_testplan_details_valid_id(self):
         response = self.client.get('/webui/testplans/1')
+        self.assertEqual(response.status_code, 200)
+
+    def test_testplan_delete_invalid(self):
+        data = {}
+        data['testplans'] = [99999996, 99999997, 99999998, 99999999]
+        response = self.client.post('/webui/testplans/delete/', data)
+        self.assertEqual(response.status_code, 404)
+
+    def test_testplan_delete_invalid(self):
+        data = {}
+        data['testplans'] = [99999996, 99999997, 99999998, 99999999]
+        response = self.client.post('/webui/testplans/delete/', data)
+        self.assertEqual(response.status_code, 404)
+
+    def test_testplan_delete_valid(self):
+        form_data = {}
+        form_data['name'] = 'My cool Test Plan'
+        form_data['description'] = 'Description...'
+        form_data['latencyEnabled'] = True
+        form_data['clientLatency'] = 0
+        form_data['serverLatency'] = 100
+
+        response = self.client.post('/webui/testplans/new/', form_data)
+
+        location = response.url
+        pattern = '.+testplans\/(?P<id>\d+)'
+        p = re.compile(pattern)
+        m = p.match(location)
+        testplan_id = m.group('id')
+
+        data = {}
+        data['testplans'] = [testplan_id]
+        response = self.client.post('/webui/testplans/delete/', data)
         self.assertEqual(response.status_code, 200)
