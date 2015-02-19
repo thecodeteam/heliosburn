@@ -1,5 +1,4 @@
 import json
-import re
 
 from django.http import HttpResponseRedirect, HttpResponse, HttpResponseBadRequest, JsonResponse
 from django.shortcuts import render, redirect
@@ -10,6 +9,7 @@ from django.contrib import auth, messages
 from django.conf import settings
 import requests
 from webui.forms import TestPlanForm, RuleRequestForm
+from webui.utils import get_resource_id_from_header
 
 
 MOCK_PROTOCOL = "http"
@@ -84,16 +84,11 @@ def session_new(request, step):
         payload = {'name': session_name, 'description': session_description}
         r = requests.post(url, headers=headers, data=json.dumps(payload))
         if 200 >= r.status_code < 300:
-            location = r.headers.get('location')
-            pattern = '.+session\/(?P<id>\d+)'
-            p = re.compile(pattern)
-            m = p.match(location)
-            try:
-                session_id = m.group('id')
+            session_id = get_resource_id_from_header('session', r)
+            if session_id:
                 request.session[WIZARD_SESSION_KEY] = session_id
-                return HttpResponseRedirect(reverse('session_new', args=('2',)))
-            except:
-                messages.error(request, 'Could not get Session ID.')
+                return HttpResponseRedirect(reverse('session_new', args=(str(session_id),)))
+            messages.error(request, 'Could not get Session ID.')
         else:
             messages.error(request, 'Could not save the Session. Server returned: %d %s' % (r.status_code, r.text))
 
@@ -214,7 +209,6 @@ def testplan_details(request, id):
 
 @login_required
 def testplan_new(request):
-
     form = TestPlanForm(request.POST or None)
     if form.is_valid():
         url = '%s/testplan/' % (settings.API_BASE_URL,)
@@ -224,10 +218,12 @@ def testplan_new(request):
         if r.status_code < 200 or r.status_code >= 300:
             return signout(request)
 
-        # TODO: get the Test Plan ID from the Location header (when enabled in the API)
-        json_body = json.loads(r.text)
-        testplan_id = json_body['id']
-        return HttpResponseRedirect(reverse('testplan_details', args=(str(testplan_id),)))
+        testplan_id = get_resource_id_from_header('testplan', r)
+        if testplan_id:
+            return HttpResponseRedirect(reverse('testplan_details', args=(str(testplan_id),)))
+        else:
+            messages.error(request, 'Could not retrieve the Test Plan ID')
+            return HttpResponseRedirect(reverse('testplan_list'))
 
     return render(request, 'testplan/testplan_new.html', {'form': form})
 
@@ -268,7 +264,7 @@ def testplan_delete(request):
     # Workaround to support different kinds of form submission
     if testplans is None or len(testplans) == 0:
         testplans = request.POST.getlist('testplans')
-        
+
     for testplan_id in testplans:
         url = '%s/testplan/%s' % (settings.API_BASE_URL, testplan_id)
         r = requests.delete(url, headers=headers)

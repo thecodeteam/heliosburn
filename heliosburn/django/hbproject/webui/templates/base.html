@@ -131,6 +131,15 @@
                 <!-- Main content -->
                 <section class="content">
 
+                    {% if messages %}
+                        <div class="callout callout-danger">
+                            <h4>Something unexpected happened!</h4>
+                            {% for message in messages %}
+                                <p>{{ message|safe }}</p>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+
                     {% block content %}
                     {% endblock %}
 
