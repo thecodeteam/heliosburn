@@ -9,7 +9,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import auth, messages
 from django.conf import settings
 import requests
-from webui.forms import TestPlanForm
+from webui.forms import TestPlanForm, RuleRequestForm
 
 
 MOCK_PROTOCOL = "http"
@@ -200,28 +200,34 @@ def testplan_details(request, id):
 
     data['rules'] = json.loads(r.text)
 
+    sample_rule = {}
+    sample_rule['id'] = 1
+    sample_rule['type'] = "request"
+    sample_rule['filter'] = "GET /cool-url/?param=wow"
+    sample_rule['action'] = "GET -> POST"
+    sample_rule['enabled'] = True
+
+    data['rules']['rules'].append(sample_rule)
+
     return render(request, 'testplan/testplan_details.html', data)
 
 
 @login_required
 def testplan_new(request):
 
-    if request.method == 'POST':
-        form = TestPlanForm(request.POST)
-        if form.is_valid():
-            url = '%s/testplan/' % (settings.API_BASE_URL,)
-            headers = {'X-Auth-Token': request.user.password}
-            r = requests.post(url, headers=headers, data=json.dumps(form.cleaned_data))
+    form = TestPlanForm(request.POST or None)
+    if form.is_valid():
+        url = '%s/testplan/' % (settings.API_BASE_URL,)
+        headers = {'X-Auth-Token': request.user.password}
+        r = requests.post(url, headers=headers, data=json.dumps(form.cleaned_data))
 
-            if r.status_code < 200 or r.status_code >= 300:
-                return signout(request)
+        if r.status_code < 200 or r.status_code >= 300:
+            return signout(request)
 
-            # TODO: get the Test Plan ID from the Location header (when enabled in the API)
-            json_body = json.loads(r.text)
-            testplan_id = json_body['id']
-            return HttpResponseRedirect(reverse('testplan_details', args=(str(testplan_id),)))
-    else:
-        form = TestPlanForm()
+        # TODO: get the Test Plan ID from the Location header (when enabled in the API)
+        json_body = json.loads(r.text)
+        testplan_id = json_body['id']
+        return HttpResponseRedirect(reverse('testplan_details', args=(str(testplan_id),)))
 
     return render(request, 'testplan/testplan_new.html', {'form': form})
 
@@ -278,15 +284,32 @@ def execution_details(request, id):
 
 
 @login_required
-def rule_details(request, id):
+def rule_details(request, testplan_id, rule_id):
+    url = '%s/testplan/%s' % (settings.API_BASE_URL, testplan_id)
+    headers = {'X-Auth-Token': request.user.password}
+    r = requests.get(url, headers=headers)
+
+    if r.status_code == requests.codes.not_found:
+        return render(request, '404.html')
+
+    if r.status_code != requests.codes.ok:
+        # TODO: do not sign out always, only if HTTP Unauthorized
+        return signout(request)
+
+    data = {'testplan': json.loads(r.text)}
+
     url = get_mock_url('rule-details.json')
     r = requests.get(url)
     rule = json.loads(r.text)
+    data['rule'] = rule
+    data['form'] = RuleRequestForm()
 
-    args = {}
-    args['rule'] = rule
+    return render(request, 'testplan/rule_details.html', data)
 
-    return render(request, 'testplan/rule_details.html', args)
+
+@login_required
+def rule_update(request, testplan_id, rule_id):
+    return HttpResponse()
 
 
 @login_required

@@ -70,3 +70,6 @@ docs/_build/
 
 # Twisted Trial Scratch
 _trial_temp
+
+# iPython notebooks
+*.ipynb

@@ -22,7 +22,8 @@ urlpatterns = patterns(
     url(r'^testplans/new/$', 'testplan_new', name='testplan_new'),
     url(r'^testplans/delete/$', 'testplan_delete', name='testplan_delete'),
 
-    url(r'^rules/(?P<id>[\w-]+)$', 'rule_details', name='rule_details'),
+    url(r'^testplans/(?P<testplan_id>[\w-]+)/rules/(?P<rule_id>[\w-]+)$', 'rule_details', name='rule_details'),
+    url(r'^testplans/(?P<testplan_id>[\w-]+)/rules/(?P<rule_id>[\w-]+)/update$', 'rule_update', name='rule_update'),
 
     url(r'^recordings/$', 'recording_list', name='recording_list'),
     url(r'^recordings/(?P<id>[\w-]+)$', 'recording_details', name='recording_details'),
