@@ -306,7 +306,8 @@ class RuleViewTestCase(TestCase):
                     "method": "PUT",
                     "statusCode": 200,
                     "url": "http://test.com",
-                    "protocol": "HTTP",
+                    "protocol": "HTTP/1.1",
+                    "headers": [['header1-name', 'header1-value'], ['header2-name', 'header2-value']],
                 },
             })
             response = rule.post(request, testplan_id=testplan_id)
