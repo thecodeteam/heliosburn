@@ -9,7 +9,7 @@ from django.contrib import auth, messages
 from django.conf import settings
 import requests
 from webui.forms import TestPlanForm, RuleRequestForm, RuleForm
-from webui.models import TestPlan
+from webui.models import TestPlan, Rule
 from webui.exceptions import UnauthorizedException, NotFoundException
 
 
@@ -171,30 +171,20 @@ def testplan_list(request):
 
 
 @login_required
-def testplan_details(request, id):
-    url = '%s/testplan/%s' % (settings.API_BASE_URL, id)
-    headers = {'X-Auth-Token': request.user.password}
-    r = requests.get(url, headers=headers)
-
-    if r.status_code == requests.codes.not_found:
+def testplan_details(request, testplan_id):
+    try:
+        testplan = TestPlan(auth_token=request.user.password).get(testplan_id)
+        # TODO: the Test Plan call should return the list of rules
+        rules = Rule(testplan_id, auth_token=request.user.password).get_all()
+    except UnauthorizedException:
+        return signout(request)
+    except NotFoundException:
         return render(request, '404.html')
+    except Exception as inst:
+        messages.error(request, inst.message if inst.message else 'Unexpected error')
+        return HttpResponseRedirect(reverse('testplan_list'))
 
-    if r.status_code != requests.codes.ok:
-        # TODO: do not sign out always, only if HTTP Unauthorized
-        return signout(request)
-
-    data = {'testplan': json.loads(r.text)}
-
-    # Get Rules
-    # TODO: maybe the Test Plan call should return the list of rules
-    url = '%s/testplan/%s/rule' % (settings.API_BASE_URL, id)
-    r = requests.get(url, headers=headers)
-    if r.status_code != requests.codes.ok:
-        # TODO: do not sign out always, only if HTTP Unauthorized
-        return signout(request)
-
-    data['rules'] = json.loads(r.text)
-
+    data = {'testplan': testplan, 'rules': rules}
     return render(request, 'testplan/testplan_details.html', data)
 
 
@@ -211,7 +201,7 @@ def testplan_new(request):
         except NotFoundException:
             return render(request, '404.html')
         except Exception as inst:
-            messages.error(request, inst.message if inst.message else 'Unexcepted error')
+            messages.error(request, inst.message if inst.message else 'Unexpected error')
             return HttpResponseRedirect(reverse('testplan_list'))
 
     return render(request, 'testplan/testplan_new.html', {'form': form})

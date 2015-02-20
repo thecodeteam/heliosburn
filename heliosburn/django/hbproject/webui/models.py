@@ -23,7 +23,11 @@ def status_code_to_exception(status_code):
     return UnexpectedException()
 
 
-def get_resource_id_from_header(resource_name, response):
+def get_resource_id_or_raise_exception(resource_name, response):
+    if not validate_response(response):
+        exception = status_code_to_exception(response.status_code)
+        exception.message = response.text
+        raise exception
     location = response.headers.get('location')
     pattern = '.+{}\/(?P<id>\d+)'.format(resource_name)
     p = re.compile(pattern)
@@ -32,8 +36,7 @@ def get_resource_id_from_header(resource_name, response):
         resource_id = m.group('id')
         return resource_id
     except:
-        return None
-
+        return UnexpectedException('Could not get the resource ID from the response.')
 
 class Base(object):
 
@@ -49,7 +52,7 @@ class Base(object):
 class TestPlan(Base):
 
     __endpoint__ = '/testplan/'
-    __classname__ = 'testplan'
+    __resourcename__ = 'testplan'
 
     def __init__(self, data=None, auth_token=None):
         self.auth_token = auth_token
@@ -59,11 +62,38 @@ class TestPlan(Base):
         url = self.get_url()
         headers = {'X-Auth-Token': self.auth_token}
         response = requests.post(url, headers=headers, data=json.dumps(self.data))
+        resource_id = get_resource_id_or_raise_exception(self.__resourcename__, response)
+        return resource_id
+
+    def get(self, resource_id):
+        url = self.get_url(extra=str(resource_id))
+        headers = {'X-Auth-Token': self.auth_token}
+        response = requests.get(url, headers=headers)
         if not validate_response(response):
             exception = status_code_to_exception(response.status_code)
             exception.message = response.text
             raise exception
-        resource_id = get_resource_id_from_header('testplan', response)
-        if not resource_id:
-            raise LocationHeaderNotFoundException()
-        return resource_id
+        testplan = json.loads(response.text)
+        return testplan
+
+
+class Rule(Base):
+
+    __endpoint__ = '/testplan/{testplan_id}/rule/'
+    __resourcename__ = 'rule'
+
+    def __init__(self, testplan_id, data=None, auth_token=None):
+        self.auth_token = auth_token
+        self.data = data
+        self.__endpoint__ = self.__endpoint__.format(testplan_id=testplan_id)
+
+    def get_all(self):
+        url = self.get_url()
+        headers = {'X-Auth-Token': self.auth_token}
+        response = requests.get(url, headers=headers)
+        if not validate_response(response):
+            exception = status_code_to_exception(response.status_code)
+            exception.message = response.text
+            raise exception
+        resource = json.loads(response.text)
+        return resource

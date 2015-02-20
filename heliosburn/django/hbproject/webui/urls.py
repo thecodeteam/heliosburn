@@ -17,7 +17,7 @@ urlpatterns = patterns(
     url(r'^executions/(?P<id>[\w-]+)$', 'execution_details', name='execution_details'),
 
     url(r'^testplans/$', 'testplan_list', name='testplan_list'),
-    url(r'^testplans/(?P<id>[\w-]+)$', 'testplan_details', name='testplan_details'),
+    url(r'^testplans/(?P<testplan_id>[\w-]+)$', 'testplan_details', name='testplan_details'),
     url(r'^testplans/update/$', 'testplan_update', name='testplan_update'),
     url(r'^testplans/new/$', 'testplan_new', name='testplan_new'),
     url(r'^testplans/delete/$', 'testplan_delete', name='testplan_delete'),
