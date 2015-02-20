@@ -9,7 +9,8 @@ from django.contrib import auth, messages
 from django.conf import settings
 import requests
 from webui.forms import TestPlanForm, RuleRequestForm, RuleForm
-from webui.utils import get_resource_id_from_header
+from webui.models import TestPlan
+from webui.exceptions import UnauthorizedException, NotFoundException
 
 
 MOCK_PROTOCOL = "http"
@@ -166,7 +167,6 @@ def testplan_list(request):
         return signout(request)
 
     testplans = json.loads(r.text)
-
     return render(request, 'testplan/testplan_list.html', testplans)
 
 
@@ -195,15 +195,6 @@ def testplan_details(request, id):
 
     data['rules'] = json.loads(r.text)
 
-    sample_rule = {}
-    sample_rule['id'] = 1
-    sample_rule['type'] = "request"
-    sample_rule['filter'] = "GET /cool-url/?param=wow"
-    sample_rule['action'] = "GET -> POST"
-    sample_rule['enabled'] = True
-
-    data['rules']['rules'].append(sample_rule)
-
     return render(request, 'testplan/testplan_details.html', data)
 
 
@@ -211,18 +202,16 @@ def testplan_details(request, id):
 def testplan_new(request):
     form = TestPlanForm(request.POST or None)
     if form.is_valid():
-        url = '%s/testplan/' % (settings.API_BASE_URL,)
-        headers = {'X-Auth-Token': request.user.password}
-        r = requests.post(url, headers=headers, data=json.dumps(form.cleaned_data))
-
-        if r.status_code < 200 or r.status_code >= 300:
-            return signout(request)
-
-        testplan_id = get_resource_id_from_header('testplan', r)
-        if testplan_id:
+        testplan = TestPlan(form.cleaned_data, auth_token=request.user.password)
+        try:
+            testplan_id = testplan.save()
             return HttpResponseRedirect(reverse('testplan_details', args=(str(testplan_id),)))
-        else:
-            messages.warning(request, 'Test Plan was created successfully, but we could not retrieve its ID')
+        except UnauthorizedException:
+            return signout(request)
+        except NotFoundException:
+            return render(request, '404.html')
+        except Exception as inst:
+            messages.error(request, inst.message if inst.message else 'Unexcepted error')
             return HttpResponseRedirect(reverse('testplan_list'))
 
     return render(request, 'testplan/testplan_new.html', {'form': form})
@@ -284,7 +273,6 @@ def rule_details(request, testplan_id, rule_id):
     url = '%s/testplan/%s' % (settings.API_BASE_URL, testplan_id)
     headers = {'X-Auth-Token': request.user.password}
     r = requests.get(url, headers=headers)
-
     if r.status_code == requests.codes.not_found:
         return render(request, '404.html')
 
@@ -294,9 +282,20 @@ def rule_details(request, testplan_id, rule_id):
 
     data = {'testplan': json.loads(r.text)}
 
-    url = get_mock_url('rule-details.json')
-    r = requests.get(url)
+    url = '%s/testplan/%s/rule/%s' % (settings.API_BASE_URL, testplan_id, rule_id)
+    headers = {'X-Auth-Token': request.user.password}
+    r = requests.get(url, headers=headers)
+    if r.status_code == requests.codes.not_found:
+        return render(request, '404.html')
+
+    if r.status_code != requests.codes.ok:
+        # TODO: do not sign out always, only if HTTP Unauthorized
+        return signout(request)
+
     rule = json.loads(r.text)
+    if str(rule['testPlanId']) != testplan_id:
+        return render(request, '404.html')
+
     data['rule'] = rule
     data['form'] = RuleRequestForm()
 

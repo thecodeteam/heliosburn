@@ -191,10 +191,10 @@
                                         <tr>
                                             <td>{{ rule.id }}</td>
                                             <td><a href="{% url 'rule_details' testplan.id rule.id %}">view</a></td>
-                                            <td>{{ rule.type }}</td>
+                                            <td>{{ rule.ruleType }}</td>
                                             <td>{{ rule.filter }}</td>
                                             <td>{{ rule.action }}</td>
-                                            <td>{{ rule.enabled|boolicon|safe }}</td>
+                                            <td>{{ rule.enabled|bool_to_icon|safe }}</td>
                                         </tr>
                                     {% endfor %}
                                 </tbody>

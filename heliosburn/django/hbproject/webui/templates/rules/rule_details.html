@@ -64,7 +64,7 @@
                 name: 'ruleType',
                 title: 'Rule type',
                 mode: 'popup',
-                value: '{{ rule.type }}',
+                value: '{{ rule.ruleType }}',
                 source: [{value: 'request', text: "Request"}, {value: 'response', text: "Response"}],
                 emptytext: "Empty",
                 params: '{csrfmiddlewaretoken:"{{csrf_token}}"}'
@@ -245,7 +245,7 @@
                         <dt>Description</dt>
                         <dd><a href="#" id="id_ruleDescription">{{ rule.description }}</a></dd>
                         <dt>Type</dt>
-                        <dd><a href="#" id="id_ruleType">{{ rule.type }}</a></dd>
+                        <dd><a href="#" id="id_ruleType">{{ rule.ruleType }}</a></dd>
                         <dt>Enabled</dt>
                         <dd><a href="#" id="id_ruleEnabled">{{ rule.enabled }}</a></dd>
                         <dt>Created at</dt>
