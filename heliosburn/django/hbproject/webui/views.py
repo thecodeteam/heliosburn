@@ -309,7 +309,7 @@ def rule_new(request, testplan_id):
     form = RuleForm(request.POST or None)
 
     if form.is_valid():
-        url = '%s/testplan/' % (settings.API_BASE_URL,)
+        url = '%s/testplan/%s/rule' % (settings.API_BASE_URL, str(testplan_id))
         headers = {'X-Auth-Token': request.user.password}
         r = requests.post(url, headers=headers, data=json.dumps(form.cleaned_data))
         if r.status_code < 200 or r.status_code >= 300:
