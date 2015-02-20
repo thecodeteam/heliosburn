@@ -222,7 +222,7 @@ def testplan_new(request):
         if testplan_id:
             return HttpResponseRedirect(reverse('testplan_details', args=(str(testplan_id),)))
         else:
-            messages.error(request, 'Test Plan was created successfully, but we could not retrieve its ID')
+            messages.warning(request, 'Test Plan was created successfully, but we could not retrieve its ID')
             return HttpResponseRedirect(reverse('testplan_list'))
 
     return render(request, 'testplan/testplan_new.html', {'form': form})
@@ -309,8 +309,18 @@ def rule_new(request, testplan_id):
     form = RuleForm(request.POST or None)
 
     if form.is_valid():
-        # TODO: submit the form to the API endpoint
-        return HttpResponse()
+        url = '%s/testplan/' % (settings.API_BASE_URL,)
+        headers = {'X-Auth-Token': request.user.password}
+        r = requests.post(url, headers=headers, data=json.dumps(form.cleaned_data))
+        if r.status_code < 200 or r.status_code >= 300:
+            return signout(request)
+
+        rule_id = get_resource_id_from_header('rule', r)
+        if rule_id:
+            return HttpResponseRedirect(reverse('rule_details', args=(str(testplan_id), str(rule_id))))
+        else:
+            messages.warning(request, 'Rule was created successfully, but we could not retrieve its ID')
+            return HttpResponseRedirect(reverse('testplan_details', args=(str(testplan_id),)))
 
     url = '%s/testplan/%s' % (settings.API_BASE_URL, testplan_id)
     headers = {'X-Auth-Token': request.user.password}
