@@ -76,6 +76,7 @@ class RedisOperationResponse(OperationResponse):
 
     def _send(self, result):
         self.redis_client.publish(self.response_channel, self.response)
+        self.redis_client.set(self.response['key'], self.response)
 
     def send(self):
         self.redis_conn.addCallback(self._send)
@@ -128,28 +129,38 @@ class OperationFactory(object):
                                    op_string['key'])
 
         if "reload" == op_string['operation']:
-            #           self.hb_proxy.reload_plugins()
-            operation = "plugins reloaded"
+            operation = ReloadPlugins(self.controller,
+                                      self.response_factory,
+                                      op_string['key'])
 
         if "reset" == op_string['operation']:
-            #           self.hb_proxy.reset_plugins()
-            operation = "plugins reset"
+            operation = ResetPlugins(self.controller,
+                                     self.response_factory,
+                                     op_string['key'])
 
         if "upstream_port" == op_string['operation']:
-            #           self.hb_proxy.set_upstream_port(op_string['param'])
-            operation = "upstream port changed"
+            self.controller.upstream_port = op_string['param']
+            operation = ChangeUpstreamPort(self.controller,
+                                           self.response_factory,
+                                           op_string['key'])
 
         if "upstream_host" == op_string['operation']:
-            #           self.hb_proxy.set_upstream_host(op_string['param'])
-            operation = "upstream host changed"
+            self.controller.upstream_host = op_string['param']
+            operation = ChangeUpstreamHost(self.controller,
+                                           self.response_factory,
+                                           op_string['key'])
 
-        if "listen_address" == op_string['operation']:
-            #           self.hb_proxy.set_listen_address(op_string['param'])
-            operation = "listen address changed"
+        if "bind_address" == op_string['operation']:
+            self.controller.bind_address = op_string['param']
+            operation = ChangeBindAddress(self.controller,
+                                          self.response_factory,
+                                          op_string['key'])
 
-        if "listen_port" == op_string['operation']:
-            #           self.hb_proxy.set_listen_port(op_string['command']['param'])
-            operation = "listen port changed"
+        if "bind_port" == op_string['operation']:
+            self.controller.protocol = op_string['param']
+            operation = ChangeBindPort(self.controller,
+                                       self.response_factory,
+                                       op_string['key'])
 
         return operation
 
@@ -186,7 +197,7 @@ class ControllerOperation(object):
         self.response.send()
 
     def addCallback(self, callback):
-        self.operation.addCallback(callback)
+        return self.operation.addCallback(callback)
 
 
 class StopProxy(ControllerOperation):
@@ -198,8 +209,10 @@ class StopProxy(ControllerOperation):
         self.addCallback(self.respond)
 
     def stop(self, result):
-        self.controller.proxy.stopListening()
+        deferred = self.controller.proxy.stopListening()
         self.response.set_message("stop " + self.response.get_message())
+
+        return deferred
 
 
 class StartProxy(ControllerOperation):
@@ -221,13 +234,133 @@ class StartProxy(ControllerOperation):
         bind_address = self.controller.bind_address
         self.controller.proxy = reactor.listenTCP(protocol, f,
                                                   interface=bind_address)
-        message = "proxy started:\n"
-        message += "-bind port: " + str(self.controller.protocol) + "\n"
-        message += "-bind addr: " + str(self.controller.upstream_host) + "\n"
-        message += "-upstream h: " + str(self.controller.upstream_host) + "\n"
-        message += "-upstream p: " + str(self.controller.upstream_host) + "\n"
+        message = "proxy_start: {"
+        message += " bind port: " + str(self.controller.protocol) + ", "
+        message += " bind addr: " + str(self.controller.bind_address) + ", "
+        message += " upstream h: " + str(self.controller.upstream_host) + ", "
+        message += " upstream p: " + str(self.controller.upstream_port) + "} "
 
         self.response.set_message(message)
+
+        return self.controller.proxy
+
+
+class ChangeUpstreamPort(ControllerOperation):
+
+    def __init__(self, controller, response_factory, key):
+        ControllerOperation.__init__(self, controller, response_factory, key)
+        stop_op = StopProxy(controller, response_factory, key)
+        self.start_op = StartProxy(controller, response_factory, key)
+
+        d = self.addCallback(stop_op.stop).addCallback(self.start_op.start)
+        d.addCallback(self.update_message)
+        d.addCallback(self.respond)
+
+    def update_message(self, result):
+        self.response.set_message("Change_upstream_port: { "
+                                  + self.response.get_message() + ", "
+                                  + self.start_op.response.get_message()
+                                  + "}")
+
+
+class ChangeUpstreamHost(ControllerOperation):
+
+    def __init__(self, controller, response_factory, key):
+        ControllerOperation.__init__(self, controller, response_factory, key)
+        stop_op = StopProxy(controller, response_factory, key)
+        self.start_op = StartProxy(controller, response_factory, key)
+
+        d = self.addCallback(stop_op.stop).addCallback(self.start_op.start)
+        d.addCallback(self.update_message)
+        d.addCallback(self.respond)
+
+    def update_message(self, result):
+        self.response.set_message("Change_upstream_host: { "
+                                  + self.response.get_message() + ", "
+                                  + self.start_op.response.get_message()
+                                  + "}")
+
+
+class ChangeBindAddress(ControllerOperation):
+
+    def __init__(self, controller, response_factory, key):
+        ControllerOperation.__init__(self, controller, response_factory, key)
+        stop_op = StopProxy(controller, response_factory, key)
+        self.start_op = StartProxy(controller, response_factory, key)
+
+        d = self.addCallback(stop_op.stop).addCallback(self.start_op.start)
+        d.addCallback(self.update_message)
+        d.addCallback(self.respond)
+
+    def update_message(self, result):
+        self.response.set_message("Change_bind_address: { "
+                                  + self.response.get_message() + ", "
+                                  + self.start_op.response.get_message()
+                                  + "}")
+
+
+class ChangeBindPort(ControllerOperation):
+
+    def __init__(self, controller, response_factory, key):
+        ControllerOperation.__init__(self, controller, response_factory, key)
+        stop_op = StopProxy(controller, response_factory, key)
+        self.start_op = StartProxy(controller, response_factory, key)
+
+        d = self.addCallback(stop_op.stop).addCallback(self.start_op.start)
+        d.addCallback(self.update_message)
+        d.addCallback(self.respond)
+
+    def update_message(self, result):
+        self.response.set_message("Change_bind_port: { "
+                                  + self.response.get_message() + ", "
+                                  + self.start_op.response.get_message()
+                                  + "}")
+
+
+class ResetPlugins(ControllerOperation):
+
+    def __init__(self, controller, response_factory, key):
+        ControllerOperation.__init__(self, controller, response_factory, key)
+        stop_op = StopProxy(controller, response_factory, key)
+        self.start_op = StartProxy(controller, response_factory, key)
+
+        d = self.addCallback(stop_op.stop)
+        d = d.addCallback(self.start_op.start)
+        d.addCallback(self.reset_plugins)
+        d.addCallback(self.update_message)
+        d.addCallback(self.respond)
+
+    def reset_plugins(self, result):
+        self.controller.plugin_registry.run_plugins(context='None')
+
+    def update_message(self, result):
+        self.response.set_message("Reset_modules: { "
+                                  + self.response.get_message() + ", "
+                                  + self.start_op.response.get_message()
+                                  + "}")
+
+
+class ReloadPlugins(ControllerOperation):
+
+    def __init__(self, controller, response_factory, key):
+        ControllerOperation.__init__(self, controller, response_factory, key)
+        stop_op = StopProxy(controller, response_factory, key)
+        self.start_op = StartProxy(controller, response_factory, key)
+
+        d = self.addCallback(stop_op.stop)
+        d = d.addCallback(self.start_op.start)
+        d.addCallback(self.reload_plugins)
+        d.addCallback(self.update_message)
+        d.addCallback(self.respond)
+
+    def reload_plugins(self, result):
+        self.controller.plugin_registry.run_plugins(context='None')
+
+    def update_message(self, result):
+        self.response.set_message("Reload_plugins: { "
+                                  + self.response.get_message() + ", "
+                                  + self.start_op.response.get_message()
+                                  + "}")
 
 
 class HBProxyController(object):
@@ -270,34 +403,6 @@ class HBProxyController(object):
         self.protocol = self.protocols['http']
         self.proxy = reactor.listenTCP(self.protocol, f,
                                        interface=self.bind_address)
-
-    def reset_plugins(self):
-        self.plugin_registry = Registry(self.config)
-        self.plugin_registry.run_plugins(context='None')
-
-    def reload_plugins(self):
-        self.plugin_registry = Registry(self.config)
-        self.plugin_registry.run_plugins(context='None')
-
-    def set_upstream_port(self, port):
-        self.stop_proxy()
-        self.upstream_port = port
-        self.start_proxy()
-
-    def set_upstream_host(self, host):
-        self.stop_proxy()
-        self.upstream_host = host
-        self.start_proxy()
-
-    def set_listen_port(self, port):
-        self.listen_port = port
-        self.stop_proxy()
-        self.start_proxy()
-
-    def set_listen_address(self, address):
-        self.listen_address = address
-        self.stop_proxy()
-        self.start_proxy()
 
     def subscribe(self, redis):
         response = redis.subscribe()
