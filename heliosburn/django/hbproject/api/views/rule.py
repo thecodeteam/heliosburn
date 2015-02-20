@@ -123,6 +123,7 @@ def post(request, testplan_id, rule_id=None, dbsession=None):
         return r
     try:
         new = json.loads(request.body)
+        assert "name" in new
         assert "ruleType" in new
         assert (new['ruleType'] == "response") or (new['ruleType'] == "request")
         if "action" in new:
@@ -156,7 +157,7 @@ def post(request, testplan_id, rule_id=None, dbsession=None):
     except IntegrityError:
         return HttpResponseBadRequest("constraint violated")
     r = JsonResponse({"id": rule.id})
-    r['location'] = "/api/testplan/%d/rule/%d" % (testplan_id, rule.id)
+    r['location'] = "/api/testplan/{}/rule/{}".format(testplan_id, rule.id)
     return r
 
 
