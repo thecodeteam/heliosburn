@@ -334,6 +334,7 @@ class RuleViewTestCase(TestCase):
                     "statusCode": 404,
                     "url": "http://newtest.com",
                     "protocol": "HTTPS",
+                    "headers": [['new-header1-name', 'new-header1-value'], ['new-header2-name', 'new-header2-value']],
                 },
             })
             response = rule.put(request, rule_id)

@@ -133,8 +133,6 @@ def post(request, testplan_id, rule_id=None, dbsession=None):
             assert "url" in new['filter']
             assert "protocol" in new['filter']
             assert "headers" in new['filter']
-
-
     except ValueError:
         return HttpResponseBadRequest("invalid JSON")
     except AssertionError:
@@ -147,8 +145,10 @@ def post(request, testplan_id, rule_id=None, dbsession=None):
     if 'filter' in new:
         filter = db_model.Filter(method=new['filter']['method'], status_code=new['filter']['statusCode'],
                                  url=new['filter']['url'], protocol=new['filter']['protocol'])
+        headers = list()
         for header_name, header_value in new['filter']['headers']:
-            pass  # TODO: sane way to create and link headers back to filter with sqlalchemy
+            headers.append(db_model.FilterHeaders(key=header_name, value=header_value))
+        filter.headers = headers
         rule.filter = filter
     dbsession.add(rule)
     try:
@@ -194,6 +194,12 @@ def put(request, rule_id, testplan_id=None, dbsession=None):
                 rule.filter.url = in_json['filter']['url']
             if "protocol" in in_json['filter']:
                 rule.filter.protocol = in_json['filter']['protocol']
+            if "headers" in in_json['filter']:
+                headers = list()
+                for header_name, header_value in in_json['filter']['headers']:
+                    headers.append(db_model.FilterHeaders(key=header_name, value=header_value))
+                map(dbsession.delete, rule.filter.headers)
+                rule.filter.headers = headers
         try:
             dbsession.commit()
         except IntegrityError:

@@ -130,8 +130,8 @@ class Rule(Base):
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.datetime.utcnow)
     rule_type = Column(String, nullable=False)  # "request" or "response"
-    filter = relationship("Filter", uselist=False, backref="rule")
-    action = relationship("Action", uselist=False, backref="rule")
+    filter = relationship("Filter", uselist=False, backref="rule", cascade="all")
+    action = relationship("Action", uselist=False, backref="rule", cascade="all")
     testplan_id = Column(Integer, ForeignKey('testplan.id', onupdate="CASCADE", ondelete="CASCADE"), nullable=False)
 
 
@@ -145,7 +145,7 @@ class Filter(Base):
     url = Column(String)
     protocol = Column(String)
     rule_id = Column(Integer, ForeignKey('rule.id', onupdate="CASCADE", ondelete="CASCADE"), nullable=False)
-    filter_headers = relationship("FilterHeaders", backref="filter")
+    headers = relationship("FilterHeaders", backref="filter", cascade="all,delete")
 
 
 class FilterHeaders(Base):
@@ -153,7 +153,8 @@ class FilterHeaders(Base):
 
     id = Column(Integer, primary_key=True)
     filter_id = Column(Integer, ForeignKey('filter.id', onupdate="CASCADE", ondelete="CASCADE"))
-    header = Column(Integer, ForeignKey('http_header.id', onupdate="CASCADE", ondelete="CASCADE"))
+    key = Column(String)
+    value = Column(String)
 
 
 class Action(Base):
