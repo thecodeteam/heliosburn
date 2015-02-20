@@ -301,7 +301,10 @@ class RuleViewTestCase(TestCase):
             # Create rule within the test plan
             request.body = json.dumps({
                 "ruleType": "request",
-                "action": {"type": "request"},
+                "action": {
+                    "type": "request",
+                    "headers": [['header1-name', 'header1-value'], ['header2-name', 'header2-value']],
+                },
                 "filter": {
                     "method": "PUT",
                     "statusCode": 200,
@@ -328,7 +331,10 @@ class RuleViewTestCase(TestCase):
         def update(request, rule_id):
             request.body = json.dumps({
                 "ruleType": "response",
-                "action": {"type": "response"},
+                "action": {
+                    "type": "response",
+                    "headers": [['new-header1-name', 'new-header1-value'], ['new-header2-name', 'new-header2-value']],
+                },
                 "filter": {
                     "method": "GET",
                     "statusCode": 404,

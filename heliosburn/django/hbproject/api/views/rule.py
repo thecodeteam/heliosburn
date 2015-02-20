@@ -50,7 +50,7 @@ def get(request, testplan_id, rule_id=None, dbsession=None):
                 'url': rule.filter.url,
                 'protocol': rule.filter.protocol,
                 'ruleId': rule.filter.rule_id,
-                'filterHeaders': [],
+                'filterHeaders': [(h.key, h.value) for h in rule.filter.headers],
             }
         else:
             cur_filter = None
@@ -60,6 +60,7 @@ def get(request, testplan_id, rule_id=None, dbsession=None):
                 'id': rule.action.id,
                 'type': rule.action.type,
                 'ruleId': rule.action.rule_id,
+                'actionHeaders': [(h.key, h.value) for h in rule.action.headers],
             }
         else:
             cur_action = None
@@ -88,6 +89,7 @@ def get_all_rules(request, testplan_id, dbsession=None):
                 'url': rule.filter.url,
                 'protocol': rule.filter.protocol,
                 'ruleId': rule.filter.rule_id,
+                'filterHeaders': [(h.key, h.value) for h in rule.filter.headers],
             }
         else:
             cur_filter = None
@@ -97,6 +99,7 @@ def get_all_rules(request, testplan_id, dbsession=None):
                 'id': rule.action.id,
                 'type': rule.action.type,
                 'rule_id': rule.action.rule_id,
+                'actionHeaders': [(h.key, h.value) for h in rule.action.headers],
             }
         else:
             cur_action = None
@@ -127,6 +130,7 @@ def post(request, testplan_id, rule_id=None, dbsession=None):
         assert (new['ruleType'] == "response") or (new['ruleType'] == "request")
         if "action" in new:
             assert "type" in new['action']
+            assert "headers" in new['action']
         if "filter" in new:
             assert "method" in new['filter']
             assert "statusCode" in new['filter']
@@ -139,9 +143,17 @@ def post(request, testplan_id, rule_id=None, dbsession=None):
         return HttpResponseBadRequest("argument mismatch")
 
     rule = db_model.Rule(rule_type=new['ruleType'], testplan_id=testplan_id)
+
+    # Handle actions
     if 'action' in new:
         action = db_model.Action(type=new['action']['type'])
+        headers = list()
+        for header_name, header_value in new['action']['headers']:
+            headers.append(db_model.ActionHeaders(key=header_name, value=header_value))
+        action.headers = headers
         rule.action = action
+
+    # Handle filters
     if 'filter' in new:
         filter = db_model.Filter(method=new['filter']['method'], status_code=new['filter']['statusCode'],
                                  url=new['filter']['url'], protocol=new['filter']['protocol'])
@@ -150,6 +162,7 @@ def post(request, testplan_id, rule_id=None, dbsession=None):
             headers.append(db_model.FilterHeaders(key=header_name, value=header_value))
         filter.headers = headers
         rule.filter = filter
+
     dbsession.add(rule)
     try:
         dbsession.commit()
@@ -182,9 +195,19 @@ def put(request, rule_id, testplan_id=None, dbsession=None):
                 return HttpResponseBadRequest("argument mismatch")
         if "testPlanId" in in_json:
             rule.testplan_id = int(in_json['testplan_id'])
+
+        # Handle actions
         if "action" in in_json:
             if "type" in in_json['action']:
                 rule.action.type = in_json['action']['type']
+            if "headers" in in_json['action']:
+                headers = list()
+                for header_name, header_value in in_json['action']['headers']:
+                    headers.append(db_model.ActionHeaders(key=header_name, value=header_value))
+                map(dbsession.delete, rule.action.headers)
+                rule.action.headers = headers
+
+        # Handle filters
         if "filter" in in_json:
             if "method" in in_json['filter']:
                 rule.filter.method = in_json['filter']['method']
