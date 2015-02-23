@@ -130,6 +130,7 @@ def post(request, testplan_id, rule_id=None, dbsession=None):
         assert (new['ruleType'] == "response") or (new['ruleType'] == "request")
         if "action" in new:
             assert "type" in new['action']
+            assert ("response" in new['action']) or ("request" in new['action'])
             assert "headers" in new['action']
         if "filter" in new:
             assert "method" in new['filter']
@@ -143,10 +144,12 @@ def post(request, testplan_id, rule_id=None, dbsession=None):
         return HttpResponseBadRequest("argument mismatch")
 
     rule = db_model.Rule(rule_type=new['ruleType'], testplan_id=testplan_id)
+    dbsession.add(rule)
 
     # Handle actions
     if 'action' in new:
         rule.action = db_model.Action(type=new['action']['type'])
+        dbsession.add(rule.action)
 
         # Action headers
         headers = list()
@@ -162,6 +165,7 @@ def post(request, testplan_id, rule_id=None, dbsession=None):
                 status_description=new['action']['response']['status_description'],
                 payload=new['action']['response']['payload']
             )
+            dbsession.add(rule.action.response)
 
         # Action request
         if (rule.action.type == "request") and ('request' in new['action']):
@@ -171,20 +175,19 @@ def post(request, testplan_id, rule_id=None, dbsession=None):
                 url=new['action']['request']['url'],
                 payload=new['action']['request']['payload']
             )
-
-
+            dbsession.add(rule.action.request)
 
     # Handle filters
     if 'filter' in new:
-        filter = db_model.Filter(method=new['filter']['method'], status_code=new['filter']['statusCode'],
-                                 url=new['filter']['url'], protocol=new['filter']['protocol'])
+        rule.filter = db_model.Filter(method=new['filter']['method'], status_code=new['filter']['statusCode'],
+                                      url=new['filter']['url'], protocol=new['filter']['protocol'])
+        dbsession.add(rule.filter)
         headers = list()
         for header_name, header_value in new['filter']['headers']:
             headers.append(db_model.FilterHeaders(key=header_name, value=header_value))
-        filter.headers = headers
-        rule.filter = filter
+        rule.filter.headers = headers
 
-    dbsession.add(rule)
+    #dbsession.add(rule)
     try:
         dbsession.commit()
     except IntegrityError as e:

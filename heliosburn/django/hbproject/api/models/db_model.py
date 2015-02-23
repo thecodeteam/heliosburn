@@ -171,7 +171,8 @@ class Action(Base):
 class ActionResponse(Action):
     __tablename__ = "action_response"
 
-    id = Column(Integer, ForeignKey('action.id', onupdate="CASCADE", ondelete="CASCADE"), primary_key=True)
+    xid = Column(Integer, primary_key=True)  # Using "id" as this name generates an sqlalchemy warning
+    action_id = Column(Integer, ForeignKey('action.id', onupdate="CASCADE", ondelete="CASCADE"), nullable=False)
     http_protocol = Column(String)
     status_code = Column(Integer)
     status_description = Column(String)
@@ -181,7 +182,8 @@ class ActionResponse(Action):
 class ActionRequest(Action):
     __tablename__ = "action_request"
 
-    id = Column(Integer, ForeignKey('action.id', onupdate="CASCADE", ondelete="CASCADE"), primary_key=True)
+    xid = Column(Integer, primary_key=True)  # Using "id" as this name generates an sqlalchemy warning
+    action_id = Column(Integer, ForeignKey('action.id', onupdate="CASCADE", ondelete="CASCADE"), nullable=False)
     http_protocol = Column(String)
     method = Column(String)
     url = Column(String)

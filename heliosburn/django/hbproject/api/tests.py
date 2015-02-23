@@ -304,12 +304,6 @@ class RuleViewTestCase(TestCase):
                 "action": {
                     "type": "request",
                     "headers": [['header1-name', 'header1-value'], ['header2-name', 'header2-value']],
-                    "response": {
-                        "http_protocol": "HTTP/2.0",
-                        "status_code": 503,
-                        "status_description": "Service Unavailable",
-                        "payload": "HARMLESS",
-                    },
                     "request": {
                         "http_protocol": "HTTP/2.0",
                         "method": "UPDATE",
