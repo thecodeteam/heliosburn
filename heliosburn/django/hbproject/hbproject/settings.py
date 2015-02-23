@@ -111,3 +111,10 @@ TOKEN_TTL = 3600  # milliseconds
 REDIS_HOST = 'localhost'
 REDIS_PORT = 6379
 REDIS_DB = 0
+
+MONGODB_HOST = 'localhost'
+MONGODB_PORT = 27017
+MONGODB_DATABASE = {
+    'production': 'heliosburn',  # for normal operation
+    'test': 'heliosburn_test'  # for unit testing
+}

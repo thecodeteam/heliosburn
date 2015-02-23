@@ -2,9 +2,8 @@ from django.http import JsonResponse, HttpResponseBadRequest, HttpResponseNotFou
     HttpResponseForbidden
 from django.views.decorators.csrf import csrf_exempt
 import json
-from api.models import db_model, auth
+from api.models import legacy_db_model, auth
 from api.models.auth import RequireLogin
-from api.decorators import RequireDB
 from sqlalchemy.exc import IntegrityError
 
 
@@ -33,7 +32,6 @@ def rest(request, *pargs):
 
 
 @RequireLogin()
-@RequireDB()
 def get(request, session_id=None, dbsession=None):
     """
     Retrieve a session based on session_id.
@@ -41,7 +39,7 @@ def get(request, session_id=None, dbsession=None):
     if session_id is None:
         return get_all_sessions(request.user['id'], dbsession=dbsession)
 
-    session = dbsession.query(db_model.Session).filter_by(id=session_id).first()
+    session = dbsession.query(legacy_db_model.Session).filter_by(id=session_id).first()
     if session is None:
         return HttpResponseNotFound("", status=404)
 
@@ -70,9 +68,9 @@ def get_all_sessions(user_id, dbsession=None):
     Retrieve all sessions.
     """
     if auth.is_admin(user_id) is True:  # Admins retrieve all sessions
-        all_sessions = dbsession.query(db_model.Session).all()
+        all_sessions = dbsession.query(legacy_db_model.Session).all()
     else:  # Regular users retrieve only the sessions they own
-        all_sessions = dbsession.query(db_model.Session).filter_by(user_id=user_id)
+        all_sessions = dbsession.query(legacy_db_model.Session).filter_by(user_id=user_id)
     session_list = list()
     for session in all_sessions:
         session_dict = {
@@ -94,7 +92,6 @@ def get_all_sessions(user_id, dbsession=None):
 
 
 @RequireLogin()
-@RequireDB()
 def post(request, dbsession=None):
     """
     Create a new session.
@@ -112,7 +109,7 @@ def post(request, dbsession=None):
     except ValueError:
         return HttpResponseBadRequest("invalid JSON", status=400)
 
-    session = db_model.Session(name=new['name'], description=new['description'], user_id=new['user_id'])
+    session = legacy_db_model.Session(name=new['name'], description=new['description'], user_id=new['user_id'])
 
     # Add optional column values
     if "testplan_id" in new:
@@ -130,7 +127,6 @@ def post(request, dbsession=None):
 
 
 @RequireLogin()
-@RequireDB()
 def put(request, session_id, dbsession=None):
     """
     Update existing session based on session_id.
@@ -140,7 +136,7 @@ def put(request, session_id, dbsession=None):
     except ValueError:
         return HttpResponseBadRequest("invalid JSON", status=400)
 
-    session = dbsession.query(db_model.Session).filter_by(id=session_id).first()
+    session = dbsession.query(legacy_db_model.Session).filter_by(id=session_id).first()
     if session is None:
         return HttpResponseNotFound(status=404)
 
@@ -164,12 +160,11 @@ def put(request, session_id, dbsession=None):
 
 
 @RequireLogin()
-@RequireDB()
 def delete(request, session_id, dbsession=None):
     """
     Delete session based on session_id.
     """
-    session = dbsession.query(db_model.Session).filter_by(id=session_id).first()
+    session = dbsession.query(legacy_db_model.Session).filter_by(id=session_id).first()
     if session is None:
         r = JsonResponse({"error": "session_id not found"})
         r.status_code = 404
