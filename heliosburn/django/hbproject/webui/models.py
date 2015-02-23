@@ -2,7 +2,8 @@ import json
 import re
 from django.conf import settings
 import requests
-from webui.exceptions import BadRequestException, UnauthorizedException, ServerErrorException, RedirectException, UnexpectedException, LocationHeaderNotFoundException
+from webui.exceptions import BadRequestException, UnauthorizedException, ServerErrorException, RedirectException, \
+    UnexpectedException, LocationHeaderNotFoundException, NotFoundException
 
 
 def validate_response(response):
@@ -16,6 +17,8 @@ def status_code_to_exception(status_code):
         return BadRequestException()
     if status_code == 401:
         return UnauthorizedException()
+    if status_code == 404:
+        return NotFoundException()
     if status_code >= 500:
         return ServerErrorException()
     if 300 <= status_code < 400:
@@ -40,7 +43,6 @@ def get_resource_id_or_raise_exception(resource_name, response):
 
 
 class Base(object):
-
     def __init__(self, auth_token=None):
         self.auth_token = auth_token
 
@@ -51,7 +53,6 @@ class Base(object):
 
 
 class TestPlan(Base):
-
     __endpoint__ = '/testplan/'
     __resourcename__ = 'testplan'
 
@@ -93,15 +94,34 @@ class TestPlan(Base):
         resource = json.loads(response.text)
         return resource
 
+    def delete(self, resource_id):
+        url = self.get_url(extra=str(resource_id))
+        headers = {'X-Auth-Token': self.auth_token}
+        response = requests.delete(url, headers=headers)
+        if not validate_response(response):
+            exception = status_code_to_exception(response.status_code)
+            exception.message = response.text
+            raise exception
+
 
 class Rule(Base):
-
     __endpoint__ = '/testplan/{testplan_id}/rule/'
     __resourcename__ = 'rule'
 
     def __init__(self, testplan_id, auth_token=None):
         self.auth_token = auth_token
         self.__endpoint__ = self.__endpoint__.format(testplan_id=testplan_id)
+
+    def get(self, resource_id):
+        url = self.get_url(extra=str(resource_id))
+        headers = {'X-Auth-Token': self.auth_token}
+        response = requests.get(url, headers=headers)
+        if not validate_response(response):
+            exception = status_code_to_exception(response.status_code)
+            exception.message = response.text
+            raise exception
+        rule = json.loads(response.text)
+        return rule
 
     def get_all(self):
         url = self.get_url()
@@ -113,3 +133,4 @@ class Rule(Base):
             raise exception
         resource = json.loads(response.text)
         return resource
+

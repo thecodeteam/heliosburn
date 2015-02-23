@@ -1,6 +1,6 @@
 import json
 
-from django.http import HttpResponseRedirect, HttpResponse, HttpResponseBadRequest, JsonResponse
+from django.http import HttpResponseRedirect, HttpResponse, HttpResponseBadRequest, JsonResponse, HttpResponseNotFound
 from django.shortcuts import render, redirect
 from django.core.urlresolvers import reverse
 from django.contrib.staticfiles.templatetags.staticfiles import static
@@ -10,7 +10,7 @@ from django.conf import settings
 import requests
 from webui.forms import TestPlanForm, RuleRequestForm, RuleForm
 from webui.models import TestPlan, Rule
-from webui.exceptions import UnauthorizedException, NotFoundException
+from webui.exceptions import UnauthorizedException, NotFoundException, BadRequestException
 
 
 MOCK_PROTOCOL = "http"
@@ -234,18 +234,19 @@ def testplan_delete(request):
     if not request.POST:
         return HttpResponseRedirect(reverse('testplan_list'))
 
-    headers = {'X-Auth-Token': request.user.password}
     testplans = request.POST.getlist('testplans[]')
-
     # Workaround to support different kinds of form submission
     if testplans is None or len(testplans) == 0:
         testplans = request.POST.getlist('testplans')
 
+    t = TestPlan(auth_token=request.user.password)
     for testplan_id in testplans:
-        url = '%s/testplan/%s' % (settings.API_BASE_URL, testplan_id)
-        r = requests.delete(url, headers=headers)
-        if r.status_code != requests.codes.ok:
-            return HttpResponse(status=r.status_code, content='Error deleting the Test Plan. %s' % (r.text,))
+        try:
+            t.delete(testplan_id)
+        except NotFoundException:
+            return HttpResponseNotFound()
+        except Exception as inst:
+            return HttpResponseBadRequest()
     return HttpResponse()
 
 
@@ -257,41 +258,26 @@ def execution_details(request, id):
 
 @login_required
 def rule_details(request, testplan_id, rule_id):
-    url = '%s/testplan/%s' % (settings.API_BASE_URL, testplan_id)
-    headers = {'X-Auth-Token': request.user.password}
-    r = requests.get(url, headers=headers)
-    if r.status_code == requests.codes.not_found:
-        return render(request, '404.html')
-
-    if r.status_code != requests.codes.ok:
-        # TODO: do not sign out always, only if HTTP Unauthorized
+    try:
+        testplan = TestPlan(auth_token=request.user.password).get(testplan_id)
+        rule = Rule(testplan_id, auth_token=request.user.password).get(rule_id)
+        # check if the Rule belongs to the Test Plan
+        if str(rule['testPlanId']) != testplan_id:
+            return render(request, '404.html')
+    except UnauthorizedException:
         return signout(request)
-
-    data = {'testplan': json.loads(r.text)}
-
-    url = '%s/testplan/%s/rule/%s' % (settings.API_BASE_URL, testplan_id, rule_id)
-    headers = {'X-Auth-Token': request.user.password}
-    r = requests.get(url, headers=headers)
-    if r.status_code == requests.codes.not_found:
+    except NotFoundException:
         return render(request, '404.html')
+    except Exception as inst:
+        messages.error(request, inst.message if inst.message else 'Unexpected error')
+        return HttpResponseRedirect(reverse('testplan_list'))
 
-    if r.status_code != requests.codes.ok:
-        # TODO: do not sign out always, only if HTTP Unauthorized
-        return signout(request)
-
-    rule = json.loads(r.text)
-    if str(rule['testPlanId']) != testplan_id:
-        return render(request, '404.html')
-
-    data['rule'] = rule
-    data['form'] = RuleRequestForm()
-
+    data = {'testplan': testplan, 'rule': rule, 'form': RuleRequestForm()}
     return render(request, 'rules/rule_details.html', data)
 
 
 @login_required
 def rule_new(request, testplan_id):
-
     form = RuleForm(request.POST or None)
 
     if form.is_valid():
