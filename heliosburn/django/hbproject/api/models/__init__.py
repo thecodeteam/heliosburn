@@ -9,5 +9,5 @@ engine = create_engine("postgresql://%s:%s@%s/%s" % (
     settings.DATABASES['default']['PASSWORD'],
     settings.DATABASES['default']['HOST'],
     settings.DATABASES['default']['NAME'],
-    ))
+    ), echo=True)
 dbsession.configure(bind=engine, autoflush=False, expire_on_commit=False)

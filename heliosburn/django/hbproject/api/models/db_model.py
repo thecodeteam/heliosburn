@@ -164,8 +164,8 @@ class Action(Base):
     type = Column(String, nullable=False)  # "request" or "response"
     rule_id = Column(Integer, ForeignKey('rule.id', onupdate="CASCADE", ondelete="CASCADE"), nullable=False)
     headers = relationship("ActionHeaders", backref="action", cascade="all,delete")
-    response = relationship("ActionResponse", backref="action", cascade="all,delete")
-    request = relationship("ActionRequest", backref="action", cascade="all,delete")
+    response = relationship("ActionResponse", backref="action", uselist=False, cascade="all,delete")
+    request = relationship("ActionRequest", backref="action", uselist=False, cascade="all,delete")
 
 
 class ActionResponse(Action):

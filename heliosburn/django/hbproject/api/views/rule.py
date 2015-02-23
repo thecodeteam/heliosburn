@@ -146,38 +146,31 @@ def post(request, testplan_id, rule_id=None, dbsession=None):
 
     # Handle actions
     if 'action' in new:
-        action = db_model.Action(type=new['action']['type'])
-        rule.action = action
+        rule.action = db_model.Action(type=new['action']['type'])
 
         # Action headers
         headers = list()
         for header_name, header_value in new['action']['headers']:
             headers.append(db_model.ActionHeaders(key=header_name, value=header_value))
-        action.headers = headers
+        rule.action.headers = headers
 
         # Action response
-        if 'response' in new['action']:
-            response = db_model.ActionResponse(
-                id=action.id,
+        if (rule.action.type == "response") and ('response' in new['action']):
+            rule.action.response = db_model.ActionResponse(
                 http_protocol=new['action']['response']['http_protocol'],
                 status_code=new['action']['response']['status_code'],
                 status_description=new['action']['response']['status_description'],
                 payload=new['action']['response']['payload']
             )
-            rule.action.response = [response]
 
         # Action request
-        if 'request' in new['action']:
-            request = db_model.ActionRequest(
-                id=action.id,
+        if (rule.action.type == "request") and ('request' in new['action']):
+            rule.action.request = db_model.ActionRequest(
                 http_protocol=new['action']['request']['http_protocol'],
                 method=new['action']['request']['method'],
                 url=new['action']['request']['url'],
                 payload=new['action']['request']['payload']
             )
-            rule.action.request = [request]
-
-        rule.action = action
 
 
 
@@ -194,7 +187,7 @@ def post(request, testplan_id, rule_id=None, dbsession=None):
     dbsession.add(rule)
     try:
         dbsession.commit()
-    except IntegrityError:
+    except IntegrityError as e:
         return HttpResponseBadRequest("constraint violated")
     r = JsonResponse({"id": rule.id})
     r['location'] = "/api/testplan/%d/rule/%d" % (testplan_id, rule.id)
@@ -236,28 +229,24 @@ def put(request, rule_id, testplan_id=None, dbsession=None):
                 rule.action.headers = headers
 
             # Action response
-            if 'response' in in_json['action']:
-                response = db_model.ActionResponse(
+            if (rule.action.type == "response") and ('response' in in_json['action']):
+                rule.action.response = db_model.ActionResponse(
                     id=rule.action.id,
                     http_protocol=in_json['action']['response']['http_protocol'],
                     status_code=in_json['action']['response']['status_code'],
                     status_description=in_json['action']['response']['status_description'],
                     payload=in_json['action']['response']['payload']
                 )
-                map(dbsession.delete, rule.action.response)
-                rule.action.response = [response]
 
             # Action request
-            if 'request' in in_json['action']:
-                request = db_model.ActionRequest(
+            if (rule.action.type == "request") and ('request' in in_json['action']):
+                rule.action.request = db_model.ActionRequest(
                     id=rule.action.id,
                     http_protocol=in_json['action']['request']['http_protocol'],
                     method=in_json['action']['request']['method'],
                     url=in_json['action']['request']['url'],
                     payload=in_json['action']['request']['payload']
                 )
-                map(dbsession.delete, rule.action.request)
-                rule.action.request = [request]
 
 
         # Handle filters
