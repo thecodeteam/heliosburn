@@ -159,14 +159,14 @@ def session_update(request):
 
 @login_required
 def testplan_list(request):
-    url = '%s/testplan/' % (settings.API_BASE_URL,)
-    headers = {'X-Auth-Token': request.user.password}
-    r = requests.get(url, headers=headers)
-
-    if r.status_code != requests.codes.ok:
+    try:
+        testplans = TestPlan(auth_token=request.user.password).get_all()
+    except UnauthorizedException:
         return signout(request)
+    except Exception as inst:
+        messages.error(request, inst.message if inst.message else 'Unexpected error')
+        return HttpResponseRedirect(reverse('testplan_list'))
 
-    testplans = json.loads(r.text)
     return render(request, 'testplan/testplan_list.html', testplans)
 
 
@@ -192,9 +192,8 @@ def testplan_details(request, testplan_id):
 def testplan_new(request):
     form = TestPlanForm(request.POST or None)
     if form.is_valid():
-        testplan = TestPlan(form.cleaned_data, auth_token=request.user.password)
         try:
-            testplan_id = testplan.save()
+            testplan_id = TestPlan(auth_token=request.user.password).create(form.cleaned_data)
             return HttpResponseRedirect(reverse('testplan_details', args=(str(testplan_id),)))
         except UnauthorizedException:
             return signout(request)
@@ -223,12 +222,10 @@ def testplan_update(request):
     if name == 'latencyEnabled':
         value = True if value == '1' else False
 
-    url = '%s/testplan/%s' % (settings.API_BASE_URL, pk)
-    headers = {'X-Auth-Token': request.user.password}
-    data = {name: value}
-    r = requests.put(url, headers=headers, data=json.dumps(data))
-    if r.status_code != requests.codes.ok:
-        return HttpResponse(status=r.status_code, content='Error updating the Test Plan. %s' % (r.text,))
+    try:
+        TestPlan(auth_token=request.user.password).update(pk, {name: value})
+    except Exception as inst:
+        return HttpResponseBadRequest(content='Error updating the Test Plan. {}'.format(inst.message))
     return HttpResponse()
 
 

@@ -38,6 +38,7 @@ def get_resource_id_or_raise_exception(resource_name, response):
     except:
         return UnexpectedException('Could not get the resource ID from the response.')
 
+
 class Base(object):
 
     def __init__(self, auth_token=None):
@@ -54,16 +55,21 @@ class TestPlan(Base):
     __endpoint__ = '/testplan/'
     __resourcename__ = 'testplan'
 
-    def __init__(self, data=None, auth_token=None):
-        self.auth_token = auth_token
-        self.data = data
-
-    def save(self):
+    def create(self, data):
         url = self.get_url()
         headers = {'X-Auth-Token': self.auth_token}
-        response = requests.post(url, headers=headers, data=json.dumps(self.data))
+        response = requests.post(url, headers=headers, data=json.dumps(data))
         resource_id = get_resource_id_or_raise_exception(self.__resourcename__, response)
         return resource_id
+
+    def update(self, resource_id, data):
+        url = self.get_url(extra=str(resource_id))
+        headers = {'X-Auth-Token': self.auth_token}
+        response = requests.put(url, headers=headers, data=json.dumps(data))
+        if not validate_response(response):
+            exception = status_code_to_exception(response.status_code)
+            exception.message = response.text
+            raise exception
 
     def get(self, resource_id):
         url = self.get_url(extra=str(resource_id))
@@ -76,15 +82,25 @@ class TestPlan(Base):
         testplan = json.loads(response.text)
         return testplan
 
+    def get_all(self):
+        url = self.get_url()
+        headers = {'X-Auth-Token': self.auth_token}
+        response = requests.get(url, headers=headers)
+        if not validate_response(response):
+            exception = status_code_to_exception(response.status_code)
+            exception.message = response.text
+            raise exception
+        resource = json.loads(response.text)
+        return resource
+
 
 class Rule(Base):
 
     __endpoint__ = '/testplan/{testplan_id}/rule/'
     __resourcename__ = 'rule'
 
-    def __init__(self, testplan_id, data=None, auth_token=None):
+    def __init__(self, testplan_id, auth_token=None):
         self.auth_token = auth_token
-        self.data = data
         self.__endpoint__ = self.__endpoint__.format(testplan_id=testplan_id)
 
     def get_all(self):
