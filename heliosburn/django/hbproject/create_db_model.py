@@ -1,42 +1,58 @@
-
 def main():
-    from django.conf import settings
-    from hbproject import settings as hb_settings
-    settings.configure(default_settings=hb_settings)
-    from sqlalchemy import create_engine
-    from sqlalchemy.orm import scoped_session
-    from sqlalchemy.orm.session import sessionmaker
+    from hbproject import settings as s
 
-    dbsession = scoped_session(sessionmaker())
-    engine = create_engine("postgresql://%s:%s@%s/%s" % (
-        settings.DATABASES['default']['USER'],
-        settings.DATABASES['default']['PASSWORD'],
-        settings.DATABASES['default']['HOST'],
-        settings.DATABASES['default']['NAME'],
-        ))
-    dbsession.configure(bind=engine, autoflush=False, expire_on_commit=False)
-######################## pasted in above, delete this later
+    import pymongo
+
+    dbc = pymongo.Connection()
+    for db in s.MONGODB_DATABASE.keys():
+        print("Dropping database '%s': %s" % (db, s.MONGODB_DATABASE[db]))
+        dbc.drop_database(s.MONGODB_DATABASE[db])
+
+
+    # Initial roles
+    roles = [
+        {"name": "admin"},
+    ]
+
+    # Initial users
     import hashlib
-    from api.models import db_model
+    hasher1 = hashlib.sha512()
+    hasher1.update("admin")
+    hasher2 = hashlib.sha512()
+    admin_hash = hasher1.hexdigest()
+    hasher2.update("test1")
+    test1_hash = hasher2.hexdigest()
+    users = [
+        {
+            "username": "admin",
+            "password": admin_hash,
+            "email": "admin@local",
+            "roles": ["admin"],
+        },
+        {
+            "username": "test1",
+            "password": test1_hash,
+            "email": "test1@local",
+            "roles": ["standard"],
+        },
+    ]
 
-    db_model.Base.metadata.drop_all(engine)
-    db_model.Base.metadata.create_all(engine)
+    # Initial roles
+    roles = [
+        {"name": "admin"},
+        {"name": "standard"},
+    ]
 
-    print("Creating 'admin' role")
-    admin_role = db_model.UserRole(name='admin')
+    for db in s.MONGODB_DATABASE.keys():
+        current_db = dbc[s.MONGODB_DATABASE[db]]
 
-    print("Creating an initial user named 'admin' with password 'admin' with role 'admin'")
-    m = hashlib.sha512()
-    m.update("admin")
-    admin_user = db_model.User(username='admin', password=m.hexdigest(), email="admin@local", user_role=admin_role)
-    dbsession.add(admin_user)
+        print("Creating users in db '%s': %s" % (db, s.MONGODB_DATABASE[db]))
+        for user in users:
+            current_db.user.save(user)
 
-    print("Creating an initial user named 'test1' with password 'test1' with no role")
-    m = hashlib.sha512()
-    m.update("test1")
-    test_user = db_model.User(username='test1', password=m.hexdigest(), email="test1@local")
-    dbsession.add(test_user)
-    dbsession.commit()
+        print("Creating roles in db '%s': %s" % (db, s.MONGODB_DATABASE[db]))
+        for role in roles:
+            current_db.role.save(role)
 
 if __name__ == '__main__':
     main()

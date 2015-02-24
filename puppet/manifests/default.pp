@@ -15,7 +15,7 @@ package { ['python-software-properties']:
   require => Exec['apt-get update'],
 }
 
-$sysPackages = ['git', 'curl', 'postgresql-server-dev-9.3', 'ipython-notebook']
+$sysPackages = ['git', 'curl', 'postgresql-server-dev-9.3', 'ipython-notebook', 'mongodb-server', 'mongodb-clients']
 package { $sysPackages:
   ensure => "installed",
   require => Exec['apt-get update'],
