@@ -131,6 +131,7 @@ DEBUG_TOOLBAR_CONFIG = {
 
 def true(request):
     return True
+
 MONGODB_HOST = 'localhost'
 MONGODB_PORT = 27017
 MONGODB_DATABASE = {
