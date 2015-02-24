@@ -70,3 +70,6 @@ docs/_build/
 
 # iPython notebooks
 *.ipynb
+
+# django-dotenv
+.env
