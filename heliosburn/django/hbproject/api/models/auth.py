@@ -15,7 +15,7 @@ def is_admin(user):
     #       do_something_less_drastic()
     from api.models import db_model
     dbc = db_model.connect()
-    user = dbc.user.find_one({"username": user['username'], "roles": {"$in": ["admin"]}})
+    user = dbc.hbuser.find_one({"username": user['username'], "roles": {"$in": ["admin"]}})
     if user is None:
         return False
     else:
@@ -63,7 +63,7 @@ class RequireLogin(object):
         """
         from api.models import db_model
         dbc = db_model.connect()
-        return dbc.user.find_one({"username": self.username})
+        return dbc.hbuser.find_one({"username": self.username})
 
     def valid_token(self):
         """

@@ -74,7 +74,8 @@ WSGI_APPLICATION = 'hbproject.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.dummy'
+        'ENGINE': 'django.db.backends.sqlite3',  # This is only used for unit-test stats
+        'NAME': 'dummy.sqlite3',
     }
     # 'default': {
     #     'ENGINE': 'django.db.backends.postgresql_psycopg2',
