@@ -2,6 +2,12 @@ from django import forms
 from django.core.validators import MinValueValidator
 
 
+class LoginForm(forms.Form):
+    username = forms.CharField(label='', max_length=100, widget=forms.TextInput(attrs={'placeholder': 'Username'}))
+    password = forms.CharField(label='', max_length=100, widget=forms.PasswordInput(attrs={'placeholder': 'Password'}))
+    rememberLogin = forms.BooleanField(label='Remember me', required=False)
+
+
 class TestPlanForm(forms.Form):
     name = forms.CharField(label='Name', max_length=100)
     description = forms.CharField(label='Description', widget=forms.Textarea)

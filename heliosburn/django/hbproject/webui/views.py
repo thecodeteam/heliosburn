@@ -7,45 +7,43 @@ from django.contrib.staticfiles.templatetags.staticfiles import static
 from django.contrib.auth.decorators import login_required
 from django.contrib import auth, messages
 from django.conf import settings
+from django.views.generic import View
 import requests
-from webui.forms import TestPlanForm, RuleRequestForm, RuleForm
+from webui.forms import TestPlanForm, RuleRequestForm, RuleForm, LoginForm
 from webui.models import TestPlan, Rule
 from webui.exceptions import UnauthorizedException, NotFoundException, BadRequestException
 
 
-MOCK_PROTOCOL = "http"
-MOCK_HOST = "127.0.0.1"
-MOCK_PORT = "8000"
-
 WIZARD_SESSION_KEY = 'session_id'
-
 WIZARD_STEPS = ['1', '2', '3', '4']
 
 
-def signin(request):
-    if not request.POST:
-        return render(request, 'signin.html')
+class LoginView(View):
+    form_class = LoginForm
+    template_name = 'signin.html'
 
-    username = request.POST.get('username', '')
-    password = request.POST.get('password', '')
+    def get(self, request, *args, **kwargs):
+        form = self.form_class()
+        return render(request, self.template_name, {'form': form})
 
-    if not username or not password:
-        messages.error(request, 'Invalid login credentials')
-        return render(request, 'signin.html')
+    def post(self, request, *args, **kwargs):
+        form = self.form_class(request.POST)
+        if not form.is_valid():
+            return render(request, self.template_name, {'form': form})
 
-    try:
-        user = auth.authenticate(username=username, password=password)
-    except Exception as inst:
-        messages.error(request, 'Something went wrong. %s' % (inst,))
-        return render(request, 'signin.html')
+        try:
+            user = auth.authenticate(username=form.cleaned_data['username'], password=form.cleaned_data['password'])
+        except Exception as inst:
+            messages.error(request, 'Something went wrong. %s' % (inst,))
+            return render(request, self.template_name, {'form': form})
 
-    if not user:
-        messages.error(request, 'Invalid login credentials')
-        return render(request, 'signin.html')
+        if not user:
+            messages.error(request, 'Invalid login credentials')
+            return render(request, self.template_name, {'form': form})
 
-    auth.login(request, user)
-    redirect_url = request.GET.get('next', reverse('dashboard'))
-    return HttpResponseRedirect(redirect_url)
+        auth.login(request, user)
+        redirect_url = request.GET.get('next', reverse('dashboard'))
+        return HttpResponseRedirect(redirect_url)
 
 
 def signout(request):
