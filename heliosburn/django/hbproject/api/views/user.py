@@ -1,10 +1,9 @@
 from django.http import JsonResponse, HttpResponseBadRequest, HttpResponseNotFound, HttpResponse, HttpResponseForbidden
 from django.views.decorators.csrf import csrf_exempt
 from sqlalchemy.exc import IntegrityError
-from api.models import db_model
+from api.models import legacy_db_model
 from api.models import auth
 from api.models.auth import RequireLogin
-from api.decorators import RequireDB
 import hashlib
 import json
 
@@ -34,51 +33,37 @@ def rest(request, *pargs):
 
 
 @RequireLogin()
-@RequireDB()
-def get(request, username=None, dbsession=None):
+def get(request, username=None):
     """
     Retrieve user based on username.
     """
     if username is None:  # Retrieve all users
-        return get_all_users(request, dbsession=dbsession)
+        return get_all_users(request)
 
     # Users can only retrieve their own account, unless admin
-    if (request.user['username'] != username) and (auth.is_admin(request.user['id']) is False):
+    if (request.user['username'] != username) and (auth.is_admin(request.user) is False):
         return HttpResponseForbidden(status=401)
 
-    user = dbsession.query(db_model.User).filter_by(username=username).first()
+    from api.models import db_model
+    dbc = db_model.connect()
+    user = dbc.user.find_one({"username": username}, {"_id": 0})
     if user is None:
         return HttpResponseNotFound(status=404)
     else:
-        user_dict = {
-            'username': user.username,
-            'email': user.email,
-            'created_at': user.created_at,
-            'update_at': user.update_at,
-            }
-        return JsonResponse(user_dict, status=200)
+        return JsonResponse(user, status=200)
 
 
 @RequireLogin(role='admin')
-@RequireDB()
-def get_all_users(request, dbsession=None):  # TODO: this should require admin
+def get_all_users(request):  # TODO: this should require admin
     """
     Retrieve all users.
     """
-    all_users = dbsession.query(db_model.User).all()
-    user_list = list()
-    for user in all_users:
-        user_list.append({
-            'username': user.username,
-            'email': user.email,
-            'created_at': user.created_at,
-            'update_at': user.update_at,
-            })
-    return JsonResponse({"users": user_list}, status=200)
+    from api.models import db_model
+    dbc = db_model.connect()
+    return JsonResponse({"users": [user for user in dbc.user.find({}, {"_id": 0})]}, status=200)
 
 
 @RequireLogin(role='admin')
-@RequireDB()
 def post(request, dbsession=None):
     """
     Create a new user.
@@ -93,28 +78,31 @@ def post(request, dbsession=None):
     except ValueError:
         return HttpResponseBadRequest("invalid JSON", status=400)
 
-    user = dbsession.query(db_model.User).filter_by(username=new['username']).first()
+    from api.models import db_model
+    dbc = db_model.connect()
+    user = dbc.user.find_one({"username": new['username']})
     if user is not None:
         return HttpResponseBadRequest("user already exists")
     else:
         m = hashlib.sha512()
         m.update(new['password'])
-        user = db_model.User(username=new['username'], email=new['email'], password=m.hexdigest())
-        dbsession.add(user)
-        dbsession.commit()
+        dbc.user.save({
+            'username': new['username'],
+            'email': new['email'],
+            'password': m.hexdigest()
+        })
         r = HttpResponse(status=200)
-        r['location'] = "/api/user/%s" % user.username
+        r['location'] = "/api/user/%s" % new['username']
         return r
 
 
 @RequireLogin()
-@RequireDB()
-def put(request, username, dbsession=None):
+def put(request, username):
     """
     Update existing user based on username.
     """
     # Users can only update their own account, unless admin
-    if (request.user['username'] != username) and (auth.is_admin(request.user['id']) is False):
+    if (request.user['username'] != username) and (auth.is_admin(request.user) is False):
         return HttpResponseForbidden(status=401)
 
     try:
@@ -122,36 +110,38 @@ def put(request, username, dbsession=None):
     except ValueError:
         return HttpResponseBadRequest("invalid JSON", status=400)
 
-    user = dbsession.query(db_model.User).filter_by(username=username).first()
+    from api.models import db_model
+    dbc = db_model.connect()
+    user = dbc.user.find_one({"username": username})
     if user is None:
         return HttpResponseNotFound("")
     else:
         if "username" in in_json:
-            user.username = in_json['username']
+            user['username'] = in_json['username']
         if "password" in in_json:
             m = hashlib.sha512()
             m.update(in_json['password'])
-            user.password = m.hexdigest()
+            user['password'] = m.hexdigest()
         if "email" in in_json:
-            user.email = in_json['email']
+            user['email'] = in_json['email']
         try:
-            dbsession.commit()
+            dbc.user.save(user)
         except IntegrityError:
             return HttpResponseBadRequest("user already exists", status=409)
         return HttpResponse(status=200)
         
 
 @RequireLogin(role='admin')
-@RequireDB()
-def delete(request, username, dbsession=None):
+def delete(request, username):
     """
     Delete user based on username.
     """
-    user = dbsession.query(db_model.User).filter_by(username=username).first()
+    from api.models import db_model
+    dbc = db_model.connect()
+    user = dbc.user.find_one({"username": username})
     if user is None:
         return HttpResponseNotFound("user not found", status=404)
     else:
-        dbsession.delete(user)
-        dbsession.commit()
+        dbc.user.remove(user)
         return HttpResponse(status=200)
 

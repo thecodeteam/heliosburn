@@ -9,4 +9,4 @@ CherryPy
 SQLAlchemy
 selenium
 django-bootstrap3
-django-debug-toolbar
+django-debug-toolbarpymongo

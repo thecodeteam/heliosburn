@@ -1,8 +1,7 @@
 from django.http import JsonResponse, HttpResponseNotFound, HttpResponseBadRequest, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
-from api.models import db_model
+from api.models import legacy_db_model
 from api.models.auth import RequireLogin
-from api.decorators import RequireDB
 from sqlalchemy.exc import IntegrityError
 import json
 
@@ -31,14 +30,13 @@ def rest(request, *pargs, **kwargs):
 
 
 @RequireLogin()
-@RequireDB()
 def get(request, testplan_id, rule_id=None, dbsession=None):
     """
     Retrieve rule based on testplan_id and rule_id.
     """
     if rule_id is None:
         return get_all_rules(request, testplan_id, dbsession)
-    rule = dbsession.query(db_model.Rule).filter_by(id=rule_id).first()
+    rule = dbsession.query(legacy_db_model.Rule).filter_by(id=rule_id).first()
     if rule is None:
         return HttpResponseNotFound()
     else:
@@ -50,7 +48,7 @@ def get(request, testplan_id, rule_id=None, dbsession=None):
                 'url': rule.filter.url,
                 'protocol': rule.filter.protocol,
                 'ruleId': rule.filter.rule_id,
-                'filterHeaders': [],
+                'filterHeaders': [(h.key, h.value) for h in rule.filter.headers],
             }
         else:
             cur_filter = None
@@ -60,6 +58,7 @@ def get(request, testplan_id, rule_id=None, dbsession=None):
                 'id': rule.action.id,
                 'type': rule.action.type,
                 'ruleId': rule.action.rule_id,
+                'actionHeaders': [(h.key, h.value) for h in rule.action.headers],
             }
         else:
             cur_action = None
@@ -77,7 +76,7 @@ def get_all_rules(request, testplan_id, dbsession=None):
     """
     Retrieve all rules for a test plan.
     """
-    rules = dbsession.query(db_model.Rule).filter_by(testplan_id=int(testplan_id)).all()
+    rules = dbsession.query(legacy_db_model.Rule).filter_by(testplan_id=int(testplan_id)).all()
     rule_list = list()
     for rule in rules:
         if rule.filter is not None:
@@ -88,6 +87,7 @@ def get_all_rules(request, testplan_id, dbsession=None):
                 'url': rule.filter.url,
                 'protocol': rule.filter.protocol,
                 'ruleId': rule.filter.rule_id,
+                'filterHeaders': [(h.key, h.value) for h in rule.filter.headers],
             }
         else:
             cur_filter = None
@@ -97,6 +97,7 @@ def get_all_rules(request, testplan_id, dbsession=None):
                 'id': rule.action.id,
                 'type': rule.action.type,
                 'rule_id': rule.action.rule_id,
+                'actionHeaders': [(h.key, h.value) for h in rule.action.headers],
             }
         else:
             cur_action = None
@@ -112,7 +113,6 @@ def get_all_rules(request, testplan_id, dbsession=None):
 
 
 @RequireLogin()
-@RequireDB()
 def post(request, testplan_id, rule_id=None, dbsession=None):
     """
     Create new rule for testplan marked by testplan_id.
@@ -128,33 +128,67 @@ def post(request, testplan_id, rule_id=None, dbsession=None):
         assert (new['ruleType'] == "response") or (new['ruleType'] == "request")
         if "action" in new:
             assert "type" in new['action']
+            assert ("response" in new['action']) or ("request" in new['action'])
+            assert "headers" in new['action']
         if "filter" in new:
             assert "method" in new['filter']
             assert "statusCode" in new['filter']
             assert "url" in new['filter']
             assert "protocol" in new['filter']
             assert "headers" in new['filter']
-
-
     except ValueError:
         return HttpResponseBadRequest("invalid JSON")
     except AssertionError:
         return HttpResponseBadRequest("argument mismatch")
 
-    rule = db_model.Rule(rule_type=new['ruleType'], testplan_id=testplan_id)
-    if 'action' in new:
-        action = db_model.Action(type=new['action']['type'])
-        rule.action = action
-    if 'filter' in new:
-        filter = db_model.Filter(method=new['filter']['method'], status_code=new['filter']['statusCode'],
-                                 url=new['filter']['url'], protocol=new['filter']['protocol'])
-        for header_name, header_value in new['filter']['headers']:
-            pass  # TODO: sane way to create and link headers back to filter with sqlalchemy
-        rule.filter = filter
+    rule = legacy_db_model.Rule(rule_type=new['ruleType'], testplan_id=testplan_id)
     dbsession.add(rule)
+
+    # Handle actions
+    if 'action' in new:
+        rule.action = legacy_db_model.Action(type=new['action']['type'])
+        dbsession.add(rule.action)
+
+        # Action headers
+        headers = list()
+        for header_name, header_value in new['action']['headers']:
+            headers.append(legacy_db_model.ActionHeaders(key=header_name, value=header_value))
+        rule.action.headers = headers
+
+        # Action response
+        if (rule.action.type == "response") and ('response' in new['action']):
+            rule.action.response = legacy_db_model.ActionResponse(
+                http_protocol=new['action']['response']['http_protocol'],
+                status_code=new['action']['response']['status_code'],
+                status_description=new['action']['response']['status_description'],
+                payload=new['action']['response']['payload']
+            )
+            dbsession.add(rule.action.response)
+
+        # Action request
+        if (rule.action.type == "request") and ('request' in new['action']):
+            rule.action.request = legacy_db_model.ActionRequest(
+                http_protocol=new['action']['request']['http_protocol'],
+                method=new['action']['request']['method'],
+                url=new['action']['request']['url'],
+                payload=new['action']['request']['payload']
+            )
+            dbsession.add(rule.action.request)
+
+    # Handle filters
+    if 'filter' in new:
+        rule.filter = legacy_db_model.Filter(method=new['filter']['method'], status_code=new['filter']['statusCode'],
+                                      url=new['filter']['url'], protocol=new['filter']['protocol'])
+        dbsession.add(rule.filter)
+        headers = list()
+        for header_name, header_value in new['filter']['headers']:
+            headers.append(legacy_db_model.FilterHeaders(key=header_name, value=header_value))
+        rule.filter.headers = headers
+
+    #dbsession.add(rule)
     try:
         dbsession.commit()
-    except IntegrityError:
+    except IntegrityError as e:
         return HttpResponseBadRequest("constraint violated")
     r = JsonResponse({"id": rule.id})
     r['location'] = "/api/testplan/{}/rule/{}".format(testplan_id, rule.id)
@@ -162,7 +196,6 @@ def post(request, testplan_id, rule_id=None, dbsession=None):
 
 
 @RequireLogin()
-@RequireDB()
 def put(request, rule_id, testplan_id=None, dbsession=None):
     """
     Update existing rule based on rule_id.
@@ -172,7 +205,7 @@ def put(request, rule_id, testplan_id=None, dbsession=None):
     except ValueError:
         return HttpResponseBadRequest("invalid JSON")
 
-    rule = dbsession.query(db_model.Rule).filter_by(id=rule_id).first()
+    rule = dbsession.query(legacy_db_model.Rule).filter_by(id=rule_id).first()
     if rule is None:
         return HttpResponseNotFound()
     else:
@@ -183,9 +216,40 @@ def put(request, rule_id, testplan_id=None, dbsession=None):
                 return HttpResponseBadRequest("argument mismatch")
         if "testPlanId" in in_json:
             rule.testplan_id = int(in_json['testplan_id'])
+
+        # Handle actions
         if "action" in in_json:
             if "type" in in_json['action']:
                 rule.action.type = in_json['action']['type']
+            if "headers" in in_json['action']:
+                headers = list()
+                for header_name, header_value in in_json['action']['headers']:
+                    headers.append(legacy_db_model.ActionHeaders(key=header_name, value=header_value))
+                map(dbsession.delete, rule.action.headers)
+                rule.action.headers = headers
+
+            # Action response
+            if (rule.action.type == "response") and ('response' in in_json['action']):
+                rule.action.response = legacy_db_model.ActionResponse(
+                    id=rule.action.id,
+                    http_protocol=in_json['action']['response']['http_protocol'],
+                    status_code=in_json['action']['response']['status_code'],
+                    status_description=in_json['action']['response']['status_description'],
+                    payload=in_json['action']['response']['payload']
+                )
+
+            # Action request
+            if (rule.action.type == "request") and ('request' in in_json['action']):
+                rule.action.request = legacy_db_model.ActionRequest(
+                    id=rule.action.id,
+                    http_protocol=in_json['action']['request']['http_protocol'],
+                    method=in_json['action']['request']['method'],
+                    url=in_json['action']['request']['url'],
+                    payload=in_json['action']['request']['payload']
+                )
+
+
+        # Handle filters
         if "filter" in in_json:
             if "method" in in_json['filter']:
                 rule.filter.method = in_json['filter']['method']
@@ -195,6 +259,12 @@ def put(request, rule_id, testplan_id=None, dbsession=None):
                 rule.filter.url = in_json['filter']['url']
             if "protocol" in in_json['filter']:
                 rule.filter.protocol = in_json['filter']['protocol']
+            if "headers" in in_json['filter']:
+                headers = list()
+                for header_name, header_value in in_json['filter']['headers']:
+                    headers.append(legacy_db_model.FilterHeaders(key=header_name, value=header_value))
+                map(dbsession.delete, rule.filter.headers)
+                rule.filter.headers = headers
         try:
             dbsession.commit()
         except IntegrityError:
@@ -204,12 +274,11 @@ def put(request, rule_id, testplan_id=None, dbsession=None):
 
 
 @RequireLogin()
-@RequireDB()
 def delete(request, rule_id, testplan_id=None, dbsession=None):
     """
     Delete rule based on rule_id.
     """
-    rule = dbsession.query(db_model.Rule).filter_by(id=rule_id).first()
+    rule = dbsession.query(legacy_db_model.Rule).filter_by(id=rule_id).first()
     if rule is None:
         return HttpResponseNotFound()
     else:

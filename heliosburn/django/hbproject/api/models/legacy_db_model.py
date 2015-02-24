@@ -163,12 +163,16 @@ class Action(Base):
     id = Column(Integer, primary_key=True)
     type = Column(String, nullable=False)  # "request" or "response"
     rule_id = Column(Integer, ForeignKey('rule.id', onupdate="CASCADE", ondelete="CASCADE"), nullable=False)
+    headers = relationship("ActionHeaders", backref="action", cascade="all,delete")
+    response = relationship("ActionResponse", backref="action", uselist=False, cascade="all,delete")
+    request = relationship("ActionRequest", backref="action", uselist=False, cascade="all,delete")
 
 
 class ActionResponse(Action):
     __tablename__ = "action_response"
 
-    id = Column(Integer, ForeignKey('action.id', onupdate="CASCADE", ondelete="CASCADE"), primary_key=True)
+    xid = Column(Integer, primary_key=True)  # Using "id" as this name generates an sqlalchemy warning
+    action_id = Column(Integer, ForeignKey('action.id', onupdate="CASCADE", ondelete="CASCADE"), nullable=False)
     http_protocol = Column(String)
     status_code = Column(Integer)
     status_description = Column(String)
@@ -178,7 +182,8 @@ class ActionResponse(Action):
 class ActionRequest(Action):
     __tablename__ = "action_request"
 
-    id = Column(Integer, ForeignKey('action.id', onupdate="CASCADE", ondelete="CASCADE"), primary_key=True)
+    xid = Column(Integer, primary_key=True)  # Using "id" as this name generates an sqlalchemy warning
+    action_id = Column(Integer, ForeignKey('action.id', onupdate="CASCADE", ondelete="CASCADE"), nullable=False)
     http_protocol = Column(String)
     method = Column(String)
     url = Column(String)
@@ -189,8 +194,9 @@ class ActionHeaders(Base):
     __tablename__ = "action_headers"
 
     id = Column(Integer, primary_key=True)
-    action = Column(Integer, ForeignKey('action.id', onupdate="CASCADE", ondelete="CASCADE"), nullable=False)
-    header = Column(Integer, ForeignKey('http_header.id', onupdate="CASCADE", ondelete="CASCADE"), nullable=False)
+    action_id = Column(Integer, ForeignKey('action.id', onupdate="CASCADE", ondelete="CASCADE"), nullable=False)
+    key = Column(String)
+    value = Column(String)
 
 
 class Match(Base):
