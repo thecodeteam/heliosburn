@@ -4,6 +4,7 @@ import os
 from django.http import HttpResponse, HttpResponseBadRequest
 from django.views.decorators.csrf import csrf_exempt
 from django.conf import settings
+from api.models import db_model
 
 @csrf_exempt
 def login(request):
@@ -24,9 +25,8 @@ def login(request):
     except ValueError as e:
         return HttpResponseBadRequest("invalid JSON")
 
-    from api.models import db_model
-    dbconn = db_model.connect()
-    user = dbconn.user.find_one({"username": in_json['username']})
+    dbc = db_model.connect()
+    user = dbc.user.find_one({"username": in_json['username']})
 
     if user is None:
         # not returning "user not found" to avoid attackers to guess valid users

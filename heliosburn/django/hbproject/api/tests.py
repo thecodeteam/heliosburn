@@ -132,8 +132,8 @@ class TestplanViewTestCase(TestCase):
             assert response.status_code == 200
             assert "location" in response._headers
             in_json = json.loads(response.content)
-            assert "id" in in_json
-            return in_json['id']
+            assert "_id" in in_json
+            return in_json['_id']
 
         def read(request, testplan_id):
             response = testplan.get(request, testplan_id)
@@ -295,8 +295,8 @@ class RuleViewTestCase(TestCase):
             assert response.status_code == 200
             assert "location" in response._headers
             in_json = json.loads(response.content)
-            assert "id" in in_json
-            testplan_id = in_json['id']
+            assert "_id" in in_json
+            testplan_id = in_json['_id']
 
             # Create rule within the test plan
             request.body = json.dumps({

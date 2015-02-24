@@ -1,7 +1,5 @@
 from django.http import JsonResponse, HttpResponseBadRequest, HttpResponseNotFound, HttpResponse, HttpResponseForbidden
 from django.views.decorators.csrf import csrf_exempt
-from sqlalchemy.exc import IntegrityError
-from api.models import legacy_db_model
 from api.models import auth
 from api.models.auth import RequireLogin
 import hashlib
@@ -38,7 +36,7 @@ def get(request, username=None):
     Retrieve user based on username.
     """
     if username is None:  # Retrieve all users
-        return get_all_users(request)
+        return get_all_users()
 
     # Users can only retrieve their own account, unless admin
     if (request.user['username'] != username) and (auth.is_admin(request.user) is False):
@@ -54,7 +52,7 @@ def get(request, username=None):
 
 
 @RequireLogin(role='admin')
-def get_all_users(request):  # TODO: this should require admin
+def get_all_users():
     """
     Retrieve all users.
     """
@@ -64,7 +62,7 @@ def get_all_users(request):  # TODO: this should require admin
 
 
 @RequireLogin(role='admin')
-def post(request, dbsession=None):
+def post(request):
     """
     Create a new user.
     """
@@ -116,18 +114,13 @@ def put(request, username):
     if user is None:
         return HttpResponseNotFound("")
     else:
-        if "username" in in_json:
-            user['username'] = in_json['username']
         if "password" in in_json:
             m = hashlib.sha512()
             m.update(in_json['password'])
             user['password'] = m.hexdigest()
         if "email" in in_json:
             user['email'] = in_json['email']
-        try:
-            dbc.user.save(user)
-        except IntegrityError:
-            return HttpResponseBadRequest("user already exists", status=409)
+        dbc.user.save(user)
         return HttpResponse(status=200)
         
 
@@ -144,4 +137,3 @@ def delete(request, username):
     else:
         dbc.user.remove(user)
         return HttpResponse(status=200)
-

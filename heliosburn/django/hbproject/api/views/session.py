@@ -2,9 +2,10 @@ from django.http import JsonResponse, HttpResponseBadRequest, HttpResponseNotFou
     HttpResponseForbidden
 from django.views.decorators.csrf import csrf_exempt
 import json
-from api.models import legacy_db_model, auth
+from api.models import db_model, auth
 from api.models.auth import RequireLogin
 from sqlalchemy.exc import IntegrityError
+from api.models import db_model
 
 
 @csrf_exempt
@@ -32,77 +33,52 @@ def rest(request, *pargs):
 
 
 @RequireLogin()
-def get(request, session_id=None, dbsession=None):
+def get(request, session_id=None):
     """
     Retrieve a session based on session_id.
     """
     if session_id is None:
-        return get_all_sessions(request.user['id'], dbsession=dbsession)
+        return get_all_sessions(request)
 
-    session = dbsession.query(legacy_db_model.Session).filter_by(id=session_id).first()
+    from pymongo.helpers import bson
+    dbc = db_model.connect()
+    session = dbc.session.find_one({"_id": bson.ObjectId(session_id)}, {"_id": 0})
     if session is None:
         return HttpResponseNotFound("", status=404)
 
     # Users cannot retrieve sessions they do not own, unless admin
-    elif (session.user.id != request.user['id']) and (auth.is_admin(request.user['id']) is False):
+    elif (session['username'] != request.user['username']) and (auth.is_admin(request.user) is False):
         return HttpResponseForbidden(status=401)
     else:
-        session_dict = {
-            'id': session.id,
-            'name': session.name,
-            'description': session.description,
-            'testPlan': session.testplan,
-            'createdAt': session.created_at,
-            'updatedAt': session.updated_at,
-            'user': {
-                "username": session.user.username,
-                "email": session.user.email,
-            }
-        }
-        r = JsonResponse(session_dict)
-        return r
+        return JsonResponse(session)
 
 
-def get_all_sessions(user_id, dbsession=None):
+def get_all_sessions(request):
     """
     Retrieve all sessions.
     """
-    if auth.is_admin(user_id) is True:  # Admins retrieve all sessions
-        all_sessions = dbsession.query(legacy_db_model.Session).all()
+    dbc = db_model.connect()
+    if auth.is_admin(request.user) is True:  # Admins retrieve all sessions
+        sessions = [s for s in dbc.session.find()]
     else:  # Regular users retrieve only the sessions they own
-        all_sessions = dbsession.query(legacy_db_model.Session).filter_by(user_id=user_id)
-    session_list = list()
-    for session in all_sessions:
-        session_dict = {
-            'id': session.id,
-            'name': session.name,
-            'description': session.description,
-            'testPlan': session.testplan,
-            'createdAt': session.created_at,
-            'updatedAt': session.updated_at,
-            'user': {
-                "username": session.user.username,
-                "email": session.user.email,
-            },
-            "executions": 0  # TODO: get the real value here
-        }
-        session_list.append(session_dict)
+        sessions = [s for s in dbc.session.find({"username": request.user['username']})]
 
-    return JsonResponse({"sessions": session_list}, status=200)
+    # Replace the _id ObjectId type with a "id" string representing it
+    for s in sessions:
+        s['id'] = str(s['_id'])
+        del s['_id']
+
+    return JsonResponse({"sessions": sessions}, status=200)
 
 
 @RequireLogin()
-def post(request, dbsession=None):
+def post(request):
     """
     Create a new session.
     """
     try:
         new = json.loads(request.body)
         assert "name" in new
-        if hasattr(request, "user"):
-            new['user_id'] = request.user['id']
-        else:
-            assert "user_id" in new
         assert "description" in new
     except AssertionError:
         return HttpResponseBadRequest("argument mismatch", status=400)
