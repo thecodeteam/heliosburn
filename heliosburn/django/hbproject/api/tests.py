@@ -56,7 +56,7 @@ class SessionViewTestCase(TestCase):
         """
         Tests CRUD for session model.
         """
-        from views import session
+        from views import session, testplan
         import json
 
         def create(request):
@@ -96,6 +96,29 @@ class SessionViewTestCase(TestCase):
             response = session.delete(request, session_id)
             assert response.status_code == 200
 
+        def linked_crud(request):
+            # Create a testplan
+            request.body = json.dumps({"name": "crud testplan"})
+            response = testplan.post(request)
+            assert response.status_code == 200
+            testplan_id = json.loads(response.content)['_id']
+
+            # Create a session linked to testplan
+            request.body = json.dumps({
+                'name': 'crud session',
+                'description': 'crud session description',
+                'testplan': testplan_id,
+            })
+            response = session.post(request)
+            assert response.status_code == 200
+            session_id = json.loads(response.content)['_id']
+
+            # Delete session and testplan
+            response = session.delete(request, session_id)
+            assert response.status_code == 200
+            response = testplan.delete(request, testplan_id)
+            assert response.status_code == 200
+
         print("Creating authenticated request for CRUD tests in %s" % self.__class__)
         request = create_authenticated_request("admin", "admin")
         request.method = "POST"
@@ -111,6 +134,9 @@ class SessionViewTestCase(TestCase):
 
         print("Testing DELETE in %s" % self.__class__)
         delete(request, session_id)
+
+        print("Testing CRUD specific to a linked testplan in %s" % self.__class__)
+        linked_crud(request)
 
 
 class TestplanViewTestCase(TestCase):
