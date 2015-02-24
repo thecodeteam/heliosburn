@@ -108,6 +108,7 @@ AUTHENTICATION_BACKENDS = (
 
 API_BASE_URL = 'http://127.0.0.1:8000/api'
 
+
 TOKEN_TTL = 3600  # milliseconds
 
 REDIS_HOST = 'localhost'
