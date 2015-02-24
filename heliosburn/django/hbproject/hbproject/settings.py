@@ -14,6 +14,9 @@ import os
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
 
+from mongoengine import *
+connect('heliosburn')
+
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.7/howto/deployment/checklist/
 
@@ -69,13 +72,19 @@ WSGI_APPLICATION = 'hbproject.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'heliosburn',
-        'USER': 'postgres',
-        'PASSWORD': 'postgres',
-        'HOST': 'localhost',
+        'ENGINE': 'django.db.backends.dummy'
     }
+    # 'default': {
+    #     'ENGINE': 'django.db.backends.postgresql_psycopg2',
+    #     'NAME': 'heliosburn',
+    #     'USER': 'postgres',
+    #     'PASSWORD': 'postgres',
+    #     'HOST': 'localhost',
+    # }
 }
+
+SESSION_ENGINE = 'mongoengine.django.sessions'
+SESSION_SERIALIZER = 'mongoengine.django.sessions.BSONSerializer'
 
 # Internationalization
 # https://docs.djangoproject.com/en/1.7/topics/i18n/
