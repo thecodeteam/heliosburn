@@ -11,3 +11,4 @@ selenium
 django-bootstrap3
 pymongo
 django-debug-toolbar
+coverage
