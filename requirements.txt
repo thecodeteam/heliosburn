@@ -10,3 +10,4 @@ SQLAlchemy
 selenium
 django-bootstrap3
 pymongo
+mongoengine
