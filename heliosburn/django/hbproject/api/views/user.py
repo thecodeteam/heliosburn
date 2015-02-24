@@ -52,7 +52,7 @@ def get(request, username=None):
 
 
 @RequireLogin(role='admin')
-def get_all_users():
+def get_all_users(request):
     """
     Retrieve all users.
     """

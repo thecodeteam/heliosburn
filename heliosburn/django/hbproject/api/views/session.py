@@ -4,8 +4,8 @@ from django.views.decorators.csrf import csrf_exempt
 import json
 from api.models import db_model, auth
 from api.models.auth import RequireLogin
-from sqlalchemy.exc import IntegrityError
-from api.models import db_model
+from bson import ObjectId
+from pymongo.helpers import DuplicateKeyError
 
 
 @csrf_exempt
@@ -40,9 +40,8 @@ def get(request, session_id=None):
     if session_id is None:
         return get_all_sessions(request)
 
-    from pymongo.helpers import bson
     dbc = db_model.connect()
-    session = dbc.session.find_one({"_id": bson.ObjectId(session_id)}, {"_id": 0})
+    session = dbc.session.find_one({"_id": ObjectId(session_id)})
     if session is None:
         return HttpResponseNotFound("", status=404)
 
@@ -50,6 +49,7 @@ def get(request, session_id=None):
     elif (session['username'] != request.user['username']) and (auth.is_admin(request.user) is False):
         return HttpResponseForbidden(status=401)
     else:
+        session['_id'] = str(session['_id'])
         return JsonResponse(session)
 
 
@@ -63,11 +63,8 @@ def get_all_sessions(request):
     else:  # Regular users retrieve only the sessions they own
         sessions = [s for s in dbc.session.find({"username": request.user['username']})]
 
-    # Replace the _id ObjectId type with a "id" string representing it
     for s in sessions:
-        s['id'] = str(s['_id'])
-        del s['_id']
-
+        s['_id'] = str(s['_id'])
     return JsonResponse({"sessions": sessions}, status=200)
 
 
@@ -85,25 +82,33 @@ def post(request):
     except ValueError:
         return HttpResponseBadRequest("invalid JSON", status=400)
 
-    session = legacy_db_model.Session(name=new['name'], description=new['description'], user_id=new['user_id'])
+    dbc = db_model.connect()
 
-    # Add optional column values
-    if "testplan_id" in new:
-        session.testplan_id = new['testplan_id']
+    session = {
+        'name': new['name'],
+        'description': new['description'],
+        'username': request.user['username'],
+    }
 
-    dbsession.add(session)
+    # Add optional fields
+    if "testplan" in new:
+        testplan = dbc.testplan.find_one({"_id": ObjectId(new['testplan'])})
+        if testplan is not None:
+            session['testplan'] = new['testplan']
+        else:
+            return HttpResponseNotFound("testplan '%s' does not exist" % new['testplan'])
 
     try:
-        dbsession.commit()
-    except IntegrityError as e:
-        return HttpResponseBadRequest("constraint violated", status=409)
-    r = JsonResponse({"id": session.id}, status=200)
-    r['location'] = "/api/session/%d" % session.id
+        session_id = str(dbc.session.save(session))
+    except DuplicateKeyError:
+        return HttpResponseBadRequest("session name is not unique", status=409)
+    r = JsonResponse({"_id": session_id}, status=200)
+    r['location'] = "/api/session/%s" % session_id
     return r
 
 
 @RequireLogin()
-def put(request, session_id, dbsession=None):
+def put(request, session_id):
     """
     Update existing session based on session_id.
     """
@@ -112,45 +117,49 @@ def put(request, session_id, dbsession=None):
     except ValueError:
         return HttpResponseBadRequest("invalid JSON", status=400)
 
-    session = dbsession.query(legacy_db_model.Session).filter_by(id=session_id).first()
+    dbc = db_model.connect()
+    session = dbc.session.find_one({"_id": ObjectId(session_id)})
     if session is None:
         return HttpResponseNotFound(status=404)
 
     # Users can only update their own sessions, unless admin
-    elif (session.user_id != request.user['id']) and (auth.is_admin(request.user['id']) is False):
+    elif (session['username'] != request.user['username']) and (auth.is_admin(request.user) is False):
         return HttpResponseForbidden(status=401)
     else:
         if "name" in new:
-            session.name = new['name']
+            session['name'] = new['name']
         if "description" in new:
-            session.description = new['description']
-        if ("user" in new) and ("user_id" in new['user']):
-            session.user_id = new['user_id']
-        if "testplan_id" in new:
-            session.testplan_id = new['testplan_id']
+            session['description'] = new['description']
+        if "username" in new:
+            session['username'] = new['username']
+        if "testplan" in new:
+            testplan = dbc.testplan.find_one({"_id": ObjectId(new['testplan'])})
+            if testplan is not None:
+                session['testplan'] = new['testplan']
+            else:
+                return HttpResponseNotFound("testplan '%s' does not exist" % new['testplan'])
         try:
-            dbsession.commit()
-        except IntegrityError as e:
-            return HttpResponseBadRequest("constraint violated", status=409)
+            dbc.session.save(session)
+        except DuplicateKeyError:
+            return HttpResponseBadRequest("session name is not unique", status=409)
         return HttpResponse(status=200)
 
 
 @RequireLogin()
-def delete(request, session_id, dbsession=None):
+def delete(request, session_id):
     """
     Delete session based on session_id.
     """
-    session = dbsession.query(legacy_db_model.Session).filter_by(id=session_id).first()
+    dbc = db_model.connect()
+    session = dbc.session.find_one({"_id": ObjectId(session_id)})
     if session is None:
         r = JsonResponse({"error": "session_id not found"})
         r.status_code = 404
         return r
 
     # Users can only delete their own sessions, unless admin
-    elif (session.user_id != request.user['id']) and (auth.is_admin(request.user['id']) is False):
+    elif (session['username'] != request.user['username']) and (auth.is_admin(request.user) is False):
         return HttpResponseForbidden(status=401)
     else:
-        dbsession.delete(session)
-        dbsession.commit()
+        dbc.session.remove(session)
         return HttpResponse(status=200)
-
