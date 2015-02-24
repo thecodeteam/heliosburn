@@ -44,7 +44,7 @@ def get(request, username=None):
 
     from api.models import db_model
     dbc = db_model.connect()
-    user = dbc.user.find_one({"username": username}, {"_id": 0})
+    user = dbc.hbuser.find_one({"username": username}, {"_id": 0})
     if user is None:
         return HttpResponseNotFound(status=404)
     else:
@@ -58,7 +58,7 @@ def get_all_users(request):
     """
     from api.models import db_model
     dbc = db_model.connect()
-    return JsonResponse({"users": [user for user in dbc.user.find({}, {"_id": 0})]}, status=200)
+    return JsonResponse({"users": [user for user in dbc.hbuser.find({}, {"_id": 0})]}, status=200)
 
 
 @RequireLogin(role='admin')
@@ -78,13 +78,13 @@ def post(request):
 
     from api.models import db_model
     dbc = db_model.connect()
-    user = dbc.user.find_one({"username": new['username']})
+    user = dbc.hbuser.find_one({"username": new['username']})
     if user is not None:
         return HttpResponseBadRequest("user already exists")
     else:
         m = hashlib.sha512()
         m.update(new['password'])
-        dbc.user.save({
+        dbc.hbuser.save({
             'username': new['username'],
             'email': new['email'],
             'password': m.hexdigest()
@@ -110,7 +110,7 @@ def put(request, username):
 
     from api.models import db_model
     dbc = db_model.connect()
-    user = dbc.user.find_one({"username": username})
+    user = dbc.hbuser.find_one({"username": username})
     if user is None:
         return HttpResponseNotFound("")
     else:
@@ -120,7 +120,7 @@ def put(request, username):
             user['password'] = m.hexdigest()
         if "email" in in_json:
             user['email'] = in_json['email']
-        dbc.user.save(user)
+        dbc.hbuser.save(user)
         return HttpResponse(status=200)
         
 
@@ -131,9 +131,9 @@ def delete(request, username):
     """
     from api.models import db_model
     dbc = db_model.connect()
-    user = dbc.user.find_one({"username": username})
+    user = dbc.hbuser.find_one({"username": username})
     if user is None:
         return HttpResponseNotFound("user not found", status=404)
     else:
-        dbc.user.remove(user)
+        dbc.hbuser.remove(user)
         return HttpResponse(status=200)

@@ -26,7 +26,7 @@ def login(request):
         return HttpResponseBadRequest("invalid JSON")
 
     dbc = db_model.connect()
-    user = dbc.user.find_one({"username": in_json['username']})
+    user = dbc.hbuser.find_one({"username": in_json['username']})
 
     if user is None:
         # not returning "user not found" to avoid attackers to guess valid users
