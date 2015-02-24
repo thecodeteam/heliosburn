@@ -7,6 +7,7 @@ from django.contrib.staticfiles.templatetags.staticfiles import static
 from django.contrib.auth.decorators import login_required
 from django.contrib import auth, messages
 from django.conf import settings
+from django.utils.decorators import method_decorator
 from django.views.generic import View
 import requests
 from webui.forms import TestPlanForm, RuleRequestForm, RuleForm, LoginForm
@@ -22,11 +23,11 @@ class LoginView(View):
     form_class = LoginForm
     template_name = 'signin.html'
 
-    def get(self, request, *args, **kwargs):
+    def get(self, request):
         form = self.form_class()
         return render(request, self.template_name, {'form': form})
 
-    def post(self, request, *args, **kwargs):
+    def post(self, request):
         form = self.form_class(request.POST)
         if not form.is_valid():
             return render(request, self.template_name, {'form': form})
@@ -51,12 +52,13 @@ def signout(request):
     return redirect(reverse('signin'))
 
 
-@login_required
-def dashboard(request):
-    args = {}
-    args['maxRequests'] = 20
+class DashboardView(View):
+    template_name = 'dashboard.html'
 
-    return render(request, 'dashboard.html', args)
+    @method_decorator(login_required)
+    def get(self, request):
+        args = {'maxRequests': 20}
+        return render(request, self.template_name, args)
 
 
 @login_required
@@ -162,8 +164,7 @@ def testplan_list(request):
     except UnauthorizedException:
         return signout(request)
     except Exception as inst:
-        messages.error(request, inst.message if inst.message else 'Unexpected error')
-        return HttpResponseRedirect(reverse('testplan_list'))
+        return render(request, '500.html', {'message': inst.message})
 
     return render(request, 'testplan/testplan_list.html', testplans)
 

@@ -1,10 +1,10 @@
 from django.conf.urls import patterns, url
 from django.views.generic import TemplateView
-from webui.views import LoginView
+from webui.views import LoginView, DashboardView
 
 urlpatterns = patterns(
     'webui.views',
-    url(r'^$', 'dashboard', name='dashboard'),
+    url(r'^$', DashboardView.as_view(), name='dashboard'),
 
     url(r'^signin/$', LoginView.as_view(), name='signin'),
     url(r'^signout/$', 'signout', name='signout'),
