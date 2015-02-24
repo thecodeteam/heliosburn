@@ -1,9 +1,13 @@
-from base import ProxyModuleBase
+from proxy.iproxymodule import IModule
+from zope.interface import implements
+from twisted.plugin import IPlugin
 
 
-class UnitTestModule(ProxyModuleBase):
+class UnitTestModule(object):
+    implements(IPlugin, IModule)
     """
-    This module injects specific header/body attributes that proxy_core unittests looks for.
+    This module injects specific header/body attributes that proxy_core
+    unittests looks for.
     """
     def onRequest(self, **kwargs):
         """

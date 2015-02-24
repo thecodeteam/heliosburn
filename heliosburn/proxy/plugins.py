@@ -1,10 +1,15 @@
 from twisted.python import log
+from twisted.plugin import getPlugins
+from proxy.iproxymodule import IModule
 
 
 class Registry(object):
 
-    def __init__(self, modules):
-        self.modules = modules
+    def __init__(self, modules_list):
+        self.modules_list = modules_list
+        self.modules = {}
+        for module in getPlugins(IModule):
+            self.modules[module.name] = module
 
     def _get_class(self, mod_dict):
         """

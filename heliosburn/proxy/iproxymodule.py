@@ -1,14 +1,16 @@
 import io
+from zope.interface import Interface, Attribute
+
 
 """
 Simple Interface to handling proxy requests and responses via class instances.
 To use, make a new class that inherits ProxyModuleBase. Each context
-represents a step in the proxy request or client response process. 
+represents a step in the proxy request or client response process.
 
 """
 
 
-class ProxyModuleBase(object):
+class IModule(Interface):
     """
     Base class used to implement ProxyModule interface.
 
@@ -26,29 +28,33 @@ class ProxyModuleBase(object):
         """
         from twisted.python import log
 
+        self.name = "Interface Module"
         self.log = log
         self.run_contexts = run_contexts
         self.context = context
         self.request_object = request_object
 
+    def get_name(self):
+        return self.name
+
     def onRequest(self, **keywords):
         """
         Called by .run() when instantiated with a run_context that includes
-        'request'. 
+        'request'.
         """
         self.log.msg("Request: %s" % keywords)
 
     def onStatus(self, **keywords):
         """
         Called by .run() when instantiated with a run_context that includes
-        'status'. 
+        'status'.
         """
         self.log.msg("Status: %s" % keywords)
 
     def onResponse(self, **keywords):
         """
         Called by .run() when instantiated with a run_context that includes
-        'response'. 
+        'response'.
         """
         self.log.msg("Response: %s" % keywords)
 
@@ -162,9 +168,11 @@ class ProxyModuleBase(object):
 
     def setHeader(self, name, value):
         if self.context == 'request':
-            return self.request_object.requestHeaders.setRawHeaders(name, [value])
+            return self.request_object.requestHeaders.setRawHeaders(name,
+                                                                    [value])
         elif self.context == 'response':
-            return self.request_object.responseHeaders.setRawHeaders(name, [value])
+            return self.request_object.responseHeaders.setRawHeaders(name,
+                                                                     [value])
         else:
             raise Exception('Invalid context')
 

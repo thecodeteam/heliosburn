@@ -1,7 +1,11 @@
-from base import ProxyModuleBase
+from proxy.iproxymodule import IModule
+from zope.interface import implements
+from twisted.plugin import IPlugin
 
 
-class SampleModule(ProxyModuleBase):
+class SampleModule(object):
+    implements(IPlugin, IModule)
+
     def onRequest(self, **kwargs):
 
         headers = self.getAllHeaders()
@@ -22,7 +26,7 @@ class SampleModule(ProxyModuleBase):
 
         uri = self.getURI()
         print uri
-        #self.setURI('/modified/url')
+        # self.setURI('/modified/url')
 
         content = self.getContent()
         print content
@@ -43,11 +47,11 @@ class SampleModule(ProxyModuleBase):
 
         status_code = self.getStatusCode()
         print status_code
-        #self.setStatusCode(500)
+        # self.setStatusCode(500)
 
         status_desc = self.getStatusDescription()
         print status_desc
-        #self.setStatusDescription("Internal Server Error")
+        # self.setStatusDescription("Internal Server Error")
 
         content = self.getContent()
         print content

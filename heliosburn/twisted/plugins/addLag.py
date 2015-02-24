@@ -1,7 +1,11 @@
-from base import ProxyModuleBase
+from proxy.iproxymodule import IModule
+from zope.interface import implements
+from twisted.plugin import IPlugin
 
 
-class addLag(ProxyModuleBase):
+class addLag(object):
+    implements(IPlugin, IModule)
+
     def onRequest(self, minimum=1, maximum=1, **keywords):
         import time
         import random
