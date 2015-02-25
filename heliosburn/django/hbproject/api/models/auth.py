@@ -1,7 +1,7 @@
 # Model to contain authentication and authorization related assets
 
 
-def is_admin(user_id):
+def is_admin(user):
     """
     Tests for 'admin' role on a user_id. Returns True/False.
     """
@@ -13,14 +13,13 @@ def is_admin(user_id):
     #       do_something_drastic()
     #   else:
     #       do_something_less_drastic()
-    from api.models import dbsession, db_model
-    user = dbsession.query(db_model.User).filter_by(id=user_id).first()
-    if user.user_role is None:  # no role set?
+    from api.models import db_model
+    dbc = db_model.connect()
+    user = dbc.user.find_one({"username": user['username'], "roles": {"$in": ["admin"]}})
+    if user is None:
         return False
-    elif user.user_role.name == "admin":  # role set to admin
+    else:
         return True
-    else:  # role set, but not admin
-        return False
 
 
 class RequireLogin(object):
@@ -34,9 +33,8 @@ class RequireLogin(object):
         self.f = None
         self.required_role = role
         self.token_string = "INVALID"  # valid string that will always fail to validate
-        self.user_id = None
         self.username = None
-        self.user_role = None
+        self.user = None
 
     def __call__(self, f):
         def wrapped_f(request, *pargs, **kwargs):
@@ -48,13 +46,9 @@ class RequireLogin(object):
                     user = self.fetch_user()
                     if user is None:  # The user matching the token has been deleted
                         return HttpResponseForbidden(status=401)
-                    if (self.required_role is not None) and (self.user_role != self.required_role):
+                    if (self.required_role is not None) and (self.required_role not in user['roles']):
                         return HttpResponseForbidden(status=401)
-                    request.user = {
-                        'id': self.user_id,
-                        'username': self.username,
-                        'user_role': self.user_role,
-                        }
+                    request.user = user
                     request.token_string = self.token_string
                     return self.f(request, *pargs, **kwargs)
 
@@ -65,20 +59,11 @@ class RequireLogin(object):
 
     def fetch_user(self):
         """
-        Populate self.user_id, self.username, self.user_role with user information.
+        Return user matching self.username, otherwise None
         """
-        from api.models import dbsession, db_model
-        user = dbsession.query(db_model.User).filter_by(id=self.user_id).first()
-        if user is None:  # User not in database means they were deleted, but (still) have a valid token
-            return False
-        self.username = user.username
-        if user.user_role is None:
-            self.user_role = ''
-        else:
-            self.user_role = user.user_role.name
-        return True
-
-
+        from api.models import db_model
+        dbc = db_model.connect()
+        return dbc.user.find_one({"username": self.username})
 
     def valid_token(self):
         """
@@ -88,10 +73,10 @@ class RequireLogin(object):
         from django.conf import settings
 
         r = redis_wrapper.init_redis()
-        user_id = r.get(self.token_string)
-        if not user_id:
+        username = r.get(self.token_string)
+        if username is None:
             return False
         else:
-            self.user_id = int(user_id)
+            self.username = username
             r.expire(self.token_string, settings.TOKEN_TTL)  # renew the token expiration
             return True

@@ -10,7 +10,5 @@ SQLAlchemy
 selenium
 txredis
 django-bootstrap3
-<<<<<<< HEAD
 ipython
-=======
->>>>>>> master
+pymongo

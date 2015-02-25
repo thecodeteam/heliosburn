@@ -4,13 +4,9 @@ import os
 from django.http import HttpResponse, HttpResponseBadRequest
 from django.views.decorators.csrf import csrf_exempt
 from django.conf import settings
-from api.models import db_model
-from api.decorators import RequireDB
-
 
 @csrf_exempt
-@RequireDB()
-def login(request, dbsession=None):
+def login(request):
     """
     Authenticates given 'username' and 'password_hash' against user in database.
     """
@@ -28,21 +24,24 @@ def login(request, dbsession=None):
     except ValueError as e:
         return HttpResponseBadRequest("invalid JSON")
 
-    user = dbsession.query(db_model.User).filter_by(username=in_json['username']).first()
-    if not user:
+    from api.models import db_model
+    dbconn = db_model.connect()
+    user = dbconn.user.find_one({"username": in_json['username']})
+
+    if user is None:
         # not returning "user not found" to avoid attackers to guess valid users
         return HttpResponse(status=401)
     else:
         m = hashlib.sha512()
         m.update(in_json['password'])
         password_hash = m.hexdigest()
-        if user.password == password_hash:
+        if user['password'] == password_hash:
             m = hashlib.sha512()
             m.update(os.urandom(64))
             token_string = m.hexdigest()
             from api.models import redis_wrapper
             r = redis_wrapper.init_redis()
-            r.set(token_string, user.id, settings.TOKEN_TTL)  # Store tokens to expire in 1 hour
+            r.set(token_string, user['username'], settings.TOKEN_TTL)  # Store tokens to expire in 1 hour
             r = HttpResponse()
             r['X-Auth-Token'] = token_string
             return r

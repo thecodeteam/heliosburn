@@ -66,6 +66,7 @@ class SessionViewTestCase(TestCase):
                 })
             response = session.post(request)
             assert response.status_code == 200
+            assert "location" in response._headers
             in_json = json.loads(response.content)
             assert "id" in in_json
             session_id = in_json['id']
@@ -129,6 +130,7 @@ class TestplanViewTestCase(TestCase):
             request.body = json.dumps({"name": "CRUD test"})
             response = testplan.post(request)
             assert response.status_code == 200
+            assert "location" in response._headers
             in_json = json.loads(response.content)
             assert "id" in in_json
             return in_json['id']
@@ -185,6 +187,7 @@ class UserViewTestCase(TestCase):
             })
             response = user.post(request)
             assert response.status_code == 200
+            assert "location" in response._headers
 
             response = user.post(create_authenticated_request("test1", "test1"))
             assert response.status_code == 401
@@ -290,12 +293,32 @@ class RuleViewTestCase(TestCase):
             # First create a test plan to hold our rules
             response = testplan.post(request)
             assert response.status_code == 200
+            assert "location" in response._headers
             in_json = json.loads(response.content)
             assert "id" in in_json
             testplan_id = in_json['id']
 
             # Create rule within the test plan
-            request.body = json.dumps({"ruleType": "request"})
+            request.body = json.dumps({
+                "ruleType": "request",
+                "action": {
+                    "type": "request",
+                    "headers": [['header1-name', 'header1-value'], ['header2-name', 'header2-value']],
+                    "request": {
+                        "http_protocol": "HTTP/2.0",
+                        "method": "UPDATE",
+                        "url": "http://en.wikipedia.org/wiki/The_Hitchhiker%27s_Guide_to_the_Galaxy",
+                        "payload": "MOSTLY HARMLESS",
+                    }
+                },
+                "filter": {
+                    "method": "PUT",
+                    "statusCode": 200,
+                    "url": "http://test.com",
+                    "protocol": "HTTP/1.1",
+                    "headers": [['header1-name', 'header1-value'], ['header2-name', 'header2-value']],
+                },
+            })
             response = rule.post(request, testplan_id=testplan_id)
             assert response.status_code == 200
             in_json = json.loads(response.content)
@@ -312,7 +335,32 @@ class RuleViewTestCase(TestCase):
             assert int(response_json['testPlanId'] == testplan_id)
 
         def update(request, rule_id):
-            request.body = json.dumps({"ruleType": "response"})
+            request.body = json.dumps({
+                "ruleType": "response",
+                "action": {
+                    "type": "response",
+                    "headers": [['new-header1-name', 'new-header1-value'], ['new-header2-name', 'new-header2-value']],
+                    "response": {
+                        "http_protocol": "HTTP/2.0",
+                        "status_code": 503,
+                        "status_description": "Service Unavailable",
+                        "payload": "FISHY",
+                    },
+                    "request": {
+                        "http_protocol": "HTTP/2.0",
+                        "method": "UPDATE",
+                        "url": "http://en.wikipedia.org/wiki/So_Long,_and_Thanks_for_All_the_Fish",
+                        "payload": "LESS FISHY",
+                    }
+                },
+                "filter": {
+                    "method": "GET",
+                    "statusCode": 404,
+                    "url": "http://newtest.com",
+                    "protocol": "HTTPS",
+                    "headers": [['new-header1-name', 'new-header1-value'], ['new-header2-name', 'new-header2-value']],
+                },
+            })
             response = rule.put(request, rule_id)
             assert response.status_code == 200
 

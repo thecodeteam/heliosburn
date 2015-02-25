@@ -1,8 +1,7 @@
 from django.http import JsonResponse, HttpResponseNotFound, HttpResponseBadRequest, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
-from api.models import db_model
+from api.models import legacy_db_model
 from api.models.auth import RequireLogin
-from api.decorators import RequireDB
 from sqlalchemy.exc import IntegrityError
 import json
 
@@ -31,7 +30,6 @@ def rest(request, *pargs):
 
 
 @RequireLogin()
-@RequireDB()
 def get(request, testplan_id=None, dbsession=None):
     """
     Retrieve test plan based on testplan_id.
@@ -39,7 +37,7 @@ def get(request, testplan_id=None, dbsession=None):
     if testplan_id is None:
         return get_all_testplans(request, dbsession=dbsession)
 
-    testplan = dbsession.query(db_model.TestPlan).filter_by(id=testplan_id).first()
+    testplan = dbsession.query(legacy_db_model.TestPlan).filter_by(id=testplan_id).first()
     if testplan is None:
         return HttpResponseNotFound("")
     else:
@@ -60,7 +58,7 @@ def get_all_testplans(request, dbsession=None):
     """
     Retrieve all test plans.
     """
-    testplans = dbsession.query(db_model.TestPlan).all()
+    testplans = dbsession.query(legacy_db_model.TestPlan).all()
     all_testplans = list()
     for testplan in testplans:
         all_testplans.append({
@@ -78,7 +76,6 @@ def get_all_testplans(request, dbsession=None):
 
 
 @RequireLogin()
-@RequireDB()
 def post(request, dbsession=None):
     """
     Create new test plan.
@@ -91,7 +88,7 @@ def post(request, dbsession=None):
     except AssertionError:
         return HttpResponseBadRequest("argument mismatch")
 
-    testplan = db_model.TestPlan(name=new['name'])
+    testplan = legacy_db_model.TestPlan(name=new['name'])
     if "description" in new:
         testplan.description = new['description']
     if "latencyEnabled" in new:
@@ -103,11 +100,12 @@ def post(request, dbsession=None):
 
     dbsession.add(testplan)
     dbsession.commit()
-    return JsonResponse({"id": testplan.id}, status=200)
+    r = JsonResponse({"id": testplan.id}, status=200)
+    r['location'] = "/api/testplan/%d" % testplan.id
+    return r
 
 
 @RequireLogin()
-@RequireDB()
 def put(request, testplan_id, dbsession=None):
     """
     Update existing test plan based on testplan_id.
@@ -117,7 +115,7 @@ def put(request, testplan_id, dbsession=None):
     except ValueError:
         return HttpResponseBadRequest("invalid JSON")
 
-    testplan = dbsession.query(db_model.TestPlan).filter_by(id=testplan_id).first()
+    testplan = dbsession.query(legacy_db_model.TestPlan).filter_by(id=testplan_id).first()
     if testplan is None:
         return HttpResponseNotFound("")
     else:
@@ -139,12 +137,11 @@ def put(request, testplan_id, dbsession=None):
 
 
 @RequireLogin()
-@RequireDB()
 def delete(request, testplan_id, dbsession=None):
     """
     Delete test plan based on testplan_id.
     """
-    testplan = dbsession.query(db_model.TestPlan).filter_by(id=testplan_id).first()
+    testplan = dbsession.query(legacy_db_model.TestPlan).filter_by(id=testplan_id).first()
     if testplan is None:
         return HttpResponseNotFound("")
     else:
