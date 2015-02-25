@@ -846,7 +846,7 @@ The response body contains a list containing the following elements in JSON form
 
 | Element | Description |
 |---|---|
-| id | An integer value that uniquely identifies the Test Plan. |
+| id | An alphanumeric value that uniquely identifies the Test Plan. |
 | name | Name of the Test Plan. |
 | description | Description of the Test Plan. |
 | createdAt | A dateTime value that specifies the date and time the session was created. |
@@ -869,7 +869,7 @@ The response body contains a list containing the following elements in JSON form
 ```json
 [
     {
-        "id": 1,
+        "id": "54edbcd9eb90892f5eed9129",
         "name": "Amazon S3 Test Plan",
         "description": "My test plan for Amazon S3...",
         "rules": 42,
@@ -880,7 +880,7 @@ The response body contains a list containing the following elements in JSON form
         "serverLatency": 0
     },
     {
-        "id": 2,
+        "id": "h34b5k3425kl45b2345b3245b",
         "name": "Test Plan for Swift",
         "description": "bla bla bla bla bla blaaaa...",
         "rules": 654,
@@ -900,7 +900,7 @@ To retrieve information about a Test Plan, an application submits an HTTP GET re
 ### Request
 
 #### URL
-`/testplan/:id`, for example, `/testplan/23` to retrieve information about a Test Plan with ID 23.
+`/testplan/:id`, for example, `/testplan/54edbcd9eb90892f5eed9129`.
 
 #### Method
 GET
@@ -921,7 +921,7 @@ The response body contains the following elements in JSON format:
 
 | Element | Description |
 |---|---|
-| id | An integer value that uniquely identifies the Test Plan. |
+| id | An alphanumeric value that uniquely identifies the Test Plan. |
 | name | Name of the Test Plan. |
 | description | Description of the Test Plan. |
 | createdAt | A dateTime value that specifies the date and time the Test Plan was created. |
@@ -944,7 +944,7 @@ The response body contains the following elements in JSON format:
 
 ```json
     {
-        "id": 1,
+        "id": "54edbcd9eb90892f5eed9129",
         "name": "Amazon S3 Test Plan",
         "description": "My test plan for Amazon S3...",
         "rules": 42,
@@ -991,7 +991,7 @@ JSON input that contains a Test Plan representation with the following elements:
 
 #### Request example
 
-```
+```json
 POST https://api.heliosburn.com/testplans/ HTTP/1.1
 User-Agent: Jakarta Commons-HttpClient/3.1
 Host: api.heliosburn.com
@@ -1006,9 +1006,11 @@ Content-Type: application/json; charset=UTF-8
     "serverLatency": 0
 }
 ```
+
 ### Response
 
 #### Response Header
+
 The response header includes the following information:
 
 | Field | Description |
@@ -1046,7 +1048,7 @@ In addition, the app needs to provide as input, JSON that identifies the new att
 ### Request
 
 #### URL
-`/testplan/:id`, for example, `/testplan/23` to update the Test Plan with ID 23.
+`/testplan/:id`, for example, `/testplan/54edbcd9eb90892f5eed9129`.
 
 #### Method
 PUT
@@ -1073,8 +1075,8 @@ JSON input that contains a Test Plan representation with the elements to be modi
 
 #### Request example
 
-```
-PUT https://api.heliosburn.com/testplans/34 HTTP/1.1
+```json
+PUT https://api.heliosburn.com/testplans/54edbcd9eb90892f5eed9129 HTTP/1.1
 User-Agent: Jakarta Commons-HttpClient/3.1
 Host: api.heliosburn.com
 Content-Length: 294
@@ -1126,7 +1128,7 @@ An application can permanantly delete a Test Plan by issuing an HTTP DELETE requ
 ### Request
 
 #### URL
-`/testplan/:id`, for example, `/testplan/23` to delete the Test Plan with ID 23.
+`/testplan/:id`, for example, `/testplan/54edbcd9eb90892f5eed9129`.
 
 #### Method
 DELETE
@@ -1154,12 +1156,13 @@ JSON input that contains a Test Plan representation with the elements to be modi
 #### Request example
 
 ```
-DELETE https://api.heliosburn.com/testplans/34 HTTP/1.1
+DELETE https://api.heliosburn.com/testplans/54edbcd9eb90892f5eed9129 HTTP/1.1
 User-Agent: Jakarta Commons-HttpClient/3.1
 Host: api.heliosburn.com
 Content-Length: 0
 Content-Type: application/json; charset=UTF-8
 ```
+
 ### Response
 
 #### Response Header
@@ -1198,6 +1201,27 @@ Server: Noelios-Restlet-Engine/1.1.5
 
 # Test Plan Rules
 
+Rules will determine how the traffic is altered and, therefore, they are the most important part of the traffic injection engine. Rules can be either `request` or `response` types, the type determines when the rule is applied in the whole process. `request` rules are evaluated when HeliosBurn receives an HTTP request from the client and before forwarding it to the server. Whereas `response` rules are evaluated once HeliosBurn has received the response from the server and before forwarding it to the client.
+
+A rule is made up of an `filter` and a `action`.
+
+The filter determines whether or not the rule matches a given request or response. A filter includes information about the different aspects of HTTP traffic that will be used to compare it with the real traffic. Filter elements vary depending on the type of rule (i.e. `request` or `response`).
+
+The following table shows the different kind of elements that can be specified in a filter and in which context (i.e. rule type) they are applied.
+
+| Filter | Context | Description |
+|---|---|---|
+| httpProtocol | both | Text that will be compared to the request or response HTTP protocol. |
+| method | request | Text that will be compared to the request method. |
+| url | request | Text that will be compared to the request URL. |
+| statusCode | response | Integer to be compared with the status code returned by the server. |
+| headers | both | List of header filters to be compared to the HTTP headers in the request or response. A header filter can contain either only the header key or both the header key and value. If it only contains the header key, only the key will be compared to the given headers. If it contains both the key and the value, both elements will be compared. |
+
+
+
+> **Note**: All text filters are evaluated using regular expressions.
+
+
 ## Get a list of Rules in a Test Plan
 
 To retrieve a list of Test Plan Rules, an application submits an HTTP GET request to the URL that represents the Rule resource for a Test Plan.
@@ -1205,7 +1229,7 @@ To retrieve a list of Test Plan Rules, an application submits an HTTP GET reques
 ### Request
 
 #### URL
-`/testplan/:testplan_id/rule/:testplan_id`
+`/testplan/:testplan_id/rule/`
 
 #### Method
 GET
@@ -1222,15 +1246,16 @@ The response header includes the following information:
 
 #### Response Body
 
-The response body contains a list containing the following elements in JSON format:
+The response body contains a `rules` key containing a list with the following elements in JSON format:
 
 | Element | Description |
 |---|---|
-| id | An integer value that uniquely identifies the Rule. |
+| id | An alphanumeric value that uniquely identifies the Rule. |
 | createdAt | A dateTime value that specifies the date and time the session was created. |
 | updatedAt | A dateTime value that specifies the date and time the session was last modified. |
 | ruleType | A string value that specifies `request` or `response`.|
-| testplanId | An ID identifying the testplan_id a rule belongs to.|
+| testplanId | An ID identifying the testplan_id a Rule belongs to. |
+
 #### Status Codes
 
 | Status Code | Description |
@@ -1242,33 +1267,68 @@ The response body contains a list containing the following elements in JSON form
 #### Response example
 
 ```json
-{ "rules": [
-	{
-    	"id": 1,
-		"createdAt": "2014-02-12 03:34:51",
-		"updatedAt": "2014-02-12 03:34:52",
-		"ruleType": "request",
-		"testplanId": 1
-	},
-	{
-    	"id": 2,
-		"createdAt": "2014-02-12 03:34:51",
-		"updatedAt": "2014-02-12 03:34:52",
-		"ruleType": "response",
-		"testplanId": 1
-	}
-]}
+{
+    "rules": [
+        {
+            "id": "32j45kbk3245b3245kbn",
+            "createdAt": "2014-02-12 03:34:51",
+            "updatedAt": "2014-02-12 03:34:52",
+            "ruleType": "request",
+            "testplanId": "k980ufd9g34kbwejv243v5342",
+            "filter": {
+                "method": "GET",
+                "headers": [
+                    {
+                        "key": "X-Auth-Token"
+                    },
+                    {
+                        "key": "User-Agent",
+                        "value": "Mozilla"
+                    }
+                ]
+            },
+            "action": {
+                "type": "modify",
+                "method": "PUT",
+                "setHeaders": [
+                    {
+                        "key": "X-Auth-Token",
+                        "value": "k54l3b6k6b43l56b346"
+                    }
+                ],
+                "deleteHeaders": [
+                    {
+                        "key": "User-Agent"
+                    }
+                ]
+            }
+       },
+       {
+            "id": "j34k2b5l3425bl3425l03",
+            "createdAt": "2014-02-12 03:34:51",
+            "updatedAt": "2014-02-12 03:34:52",
+            "ruleType": "response",
+            "testplanId": "91ho4ilqebhdib34kre",
+            "filter": {
+                "statusCode": 200
+            },
+            "action": {
+                "type": "modify",
+                "statusCode": 404
+            }
+        }
+    ]
+}
 ```
 
-## Get
- Rule details
+## Get Rule details
 
 To retrieve information about a Rule, an application submits an HTTP GET request to the URL that represents the Rule's resource.
 
 ### Request
 
 #### URL
-`/testplan/:testplan_id/rule/:rule_id`, for example, `/testplan/1/rule/19` to retrieve information about Rule 19 within Test Plan 1.
+`/testplan/:testplan_id/rule/:rule_id`, for example, `/testplan/89345hb342hb5bdfsg3/rule/j34k2b5l3425bl3425l03`.
 
 #### Method
 GET
@@ -1289,11 +1349,13 @@ The response body contains a list containing the following elements in JSON form
 
 | Element | Description |
 |---|---|
-| id | An integer value that uniquely identifies the Rule. |
+| id | An alphanumeric value that uniquely identifies the Rule. |
 | createdAt | A dateTime value that specifies the date and time the session was created. |
 | updatedAt | A dateTime value that specifies the date and time the session was last modified. |
 | ruleType | A string value that specifies `request` or `response`.|
-| testplanId | An ID identifying the testplan_id a rule belongs to.|
+| testplanId | An ID identifying the testplan_id a rule belongs to. |
+| filter | The filter that will be applied to determine whether or not the rule matches a given request or response. See the `Filter` resource. |
+| action | The action that will be applied when the filter matches the given request or response. |
 
 #### Status Codes
 
@@ -1308,11 +1370,38 @@ The response body contains a list containing the following elements in JSON form
 
 ```json
 {
-   	"id": 1,
+   	"id": "j34k2b5l3425bl3425l03",
 	"createdAt": "2014-02-12 03:34:51",
 	"updatedAt": "2014-02-12 03:34:52",
 	"ruleType": "request",
-	"testplanId": 1
+	"testplanId": "j34k2b5l3425bl3425l03",
+    "filter": {
+        "method": "GET",
+        "headers": [
+            {
+                "key": "X-Auth-Token"
+            },
+            {
+                "key": "User-Agent",
+                "value": "Mozilla"
+            }
+        ]
+    },
+    "action": {
+        "type": "modify",
+        "method": "PUT",
+        "setHeaders": [
+            {
+                "key": "X-Auth-Token",
+                "value": "k54l3b6k6b43l56b346"
+            }
+        ],
+        "deleteHeaders": [
+            {
+                "key": "User-Agent"
+            }
+        ]
+    }
 }
 ```
 
