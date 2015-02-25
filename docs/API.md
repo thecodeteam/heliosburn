@@ -1199,7 +1199,7 @@ Server: Noelios-Restlet-Engine/1.1.5
 
 
 
-# Test Plan Rules
+# Rules
 
 Rules will determine how the traffic is altered and, therefore, they are the most important part of the traffic injection engine. Rules can be either `request` or `response` types, the type determines when the rule is applied in the whole process. `request` rules are evaluated when HeliosBurn receives an HTTP request from the client and before forwarding it to the server. Whereas `response` rules are evaluated once HeliosBurn has received the response from the server and before forwarding it to the client.
 
@@ -1217,9 +1217,57 @@ The following table shows the different kind of elements that can be specified i
 | statusCode | response | Integer to be compared with the status code returned by the server. |
 | headers | both | List of header filters to be compared to the HTTP headers in the request or response. A header filter can contain either only the header key or both the header key and value. If it only contains the header key, only the key will be compared to the given headers. If it contains both the key and the value, both elements will be compared. |
 
-
-
 > **Note**: All text filters are evaluated using regular expressions.
+
+The action determines how the given request or response is altered. An action is only applied if the filter fully matches the evaluated request or response. Actions vary depending on the type of rule (i.e. `request` or `response`).
+
+The following table shows the different kind of actions available and in which context (i.e. rule type) they are applied.
+
+| Action | Context | Description |
+|---|---|---|
+| modify | both | Modifies different aspects of a given request or response. |
+| newResponse | both | Generates a completely new response independently of the given request or response. Note that if used in the `request` context it will directly respond to the client without even forwarding the request to the server. |
+| newRequest | request | Generates a completely new request independently of the given request. |
+| drop | both | Drops the HTTP connection. | 
+| reset | both | Resets the HTTP connection. |
+
+
+An action type `modify` contains the following elements depending on the traffic context.
+
+| Element | Context | Description |
+|---|---|---|
+| httpProtocol | both | HTTP protocol. |
+| method | request | Request method. |
+| url | request | Request URL. |
+| statusCode | response | Status Code. |
+| statusDescription | response | Status description. |
+| insertHeaders | both | List of headers to be inserted to the request or response. |
+| deleteHeaders | both | List of headers to be deleted from the request or response. |
+
+An action type `newResponse` contains the following elements.
+
+| Element | Description |
+|---|---|
+| httpProtocol | HTTP protocol. |
+| statusCode | Status Code. |
+| statusDescription | Status description. |
+| headers | List of headers. |
+| payload | Response payload. |
+
+An action type `newRequest` contains the following elements.
+
+| Element | Description |
+|---|---|
+| httpProtocol | HTTP protocol. |
+| method | Request method. |
+| url | Request URL. |
+| headers | List of headers. |
+| payload | Request payload. |
+
+Actions types `drop` and `reset` do not contain any elements.
+
+
+
 
 
 ## Get a list of Rules in a Test Plan
