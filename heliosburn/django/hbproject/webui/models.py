@@ -81,6 +81,10 @@ class TestPlan(Base):
             exception.message = response.text
             raise exception
         testplan = json.loads(response.text)
+
+        # FIXME: API should return "id", not "_id"
+        id = testplan.pop('_id')
+        testplan['id'] = id
         return testplan
 
     def get_all(self):
@@ -91,8 +95,14 @@ class TestPlan(Base):
             exception = status_code_to_exception(response.status_code)
             exception.message = response.text
             raise exception
-        resource = json.loads(response.text)
-        return resource
+        testplans = json.loads(response.text)
+
+        # FIXME: API should return "id", not "_id"
+        for testplan in testplans['testplans']:
+            id = testplan.pop('_id')
+            testplan['id'] = id
+
+        return testplans
 
     def delete(self, resource_id):
         url = self.get_url(extra=str(resource_id))

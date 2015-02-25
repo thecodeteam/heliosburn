@@ -57,7 +57,7 @@
         $('#testplan-name').editable({
             url: '{% url 'testplan_update' %}',
             type: 'text',
-            pk: {{ testplan.id }},
+            pk: '{{ testplan.id }}',
             name: 'name',
             title: 'Test Plan name',
             inputclass: 'title-input',
@@ -67,7 +67,7 @@
         $('#testplan-description').editable({
             url: '{% url 'testplan_update' %}',
             type: 'textarea',
-            pk: {{ testplan.id }},
+            pk: '{{ testplan.id }}',
             name: 'description',
             title: 'Test Plan description',
             inputclass: 'description-input',
@@ -77,7 +77,7 @@
         $('#testplan-enablelatency').editable({
             url: '{% url 'testplan_update' %}',
             type: 'select',
-            pk: {{ testplan.id }},
+            pk: '{{ testplan.id }}',
             name: 'latencyEnabled',
             title: 'Latency',
             mode: 'popup',
@@ -90,7 +90,7 @@
         $('#testplan-clientlatency').editable({
             url: '{% url 'testplan_update' %}',
             type: 'text',
-            pk: {{ testplan.id }},
+            pk: '{{ testplan.id }}',
             name: 'clientLatency',
             title: 'Client latency',
             params: '{csrfmiddlewaretoken:"{{csrf_token}}"}'
@@ -99,7 +99,7 @@
         $('#testplan-serverlatency').editable({
             url: '{% url 'testplan_update' %}',
             type: 'text',
-            pk: {{ testplan.id }},
+            pk: '{{ testplan.id }}',
             name: 'serverLatency',
             title: 'Server latency',
             params: '{csrfmiddlewaretoken:"{{csrf_token}}"}'

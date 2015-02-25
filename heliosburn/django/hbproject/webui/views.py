@@ -174,7 +174,8 @@ def testplan_details(request, testplan_id):
     try:
         testplan = TestPlan(auth_token=request.user.password).get(testplan_id)
         # TODO: the Test Plan call should return the list of rules
-        rules = Rule(testplan_id, auth_token=request.user.password).get_all()
+        # rules = Rule(testplan_id, auth_token=request.user.password).get_all()
+        rules = {'rules': []}  # TODO: remove it once API Rule's endpoint is fixed
     except UnauthorizedException:
         return signout(request)
     except NotFoundException:

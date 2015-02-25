@@ -39,7 +39,7 @@
             $('#id_ruleName').editable({
                 url: '{% url 'rule_update' testplan.id rule.id %}',
                 type: 'text',
-                pk: {{ rule.id }},
+                pk: '{{ rule.id }}',
                 name: 'ruleName',
                 title: 'Rule name',
                 inputclass: 'title-input',
@@ -50,7 +50,7 @@
             $('#id_ruleDescription').editable({
                 url: '{% url 'rule_update' testplan.id rule.id %}',
                 type: 'textarea',
-                pk: {{ rule.id }},
+                pk: '{{ rule.id }}',
                 name: 'ruleDescription',
                 title: 'Rule description',
                 inputclass: 'description-input',
@@ -60,7 +60,7 @@
             $('#id_ruleType').editable({
                 url: '{% url 'rule_update' testplan.id rule.id %}',
                 type: 'select',
-                pk: {{ rule.id }},
+                pk: '{{ rule.id }}',
                 name: 'ruleType',
                 title: 'Rule type',
                 mode: 'popup',
@@ -73,7 +73,7 @@
             $('#id_ruleEnabled').editable({
                 url: '{% url 'rule_update' testplan.id rule.id %}',
                 type: 'select',
-                pk: {{ rule.id }},
+                pk: '{{ rule.id }}',
                 name: 'ruleEnabled',
                 title: 'Enabled',
                 mode: 'popup',
