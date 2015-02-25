@@ -17,7 +17,11 @@ from configurations import Configuration, values
 
 class Common(Configuration):
 
-    BASE_DIR = os.path.dirname(os.path.dirname(__file__))
+from mongoengine import *
+connect('heliosburn')
+
+# Quick-start development settings - unsuitable for production
+# See https://docs.djangoproject.com/en/1.7/howto/deployment/checklist/
 
     # Quick-start development settings - unsuitable for production
     # See https://docs.djangoproject.com/en/1.7/howto/deployment/checklist/
@@ -33,21 +37,19 @@ class Common(Configuration):
     ALLOWED_HOSTS = []
 
 
-    # Application definition
+INSTALLED_APPS = (
+    'django.contrib.admin',
+    'django.contrib.auth',
+    'mongoengine.django.mongo_auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'django.contrib.messages',
+    'django.contrib.staticfiles',
+    'django_bootstrap_breadcrumbs',
+    'bootstrap3',
+    'webui',
+)
 
-    INSTALLED_APPS = (
-        'django.contrib.admin',
-        'django.contrib.auth',
-        'django.contrib.contenttypes',
-        'django.contrib.sessions',
-        'django.contrib.messages',
-        'django.contrib.staticfiles',
-
-        'django_bootstrap_breadcrumbs',
-        'bootstrap3',
-
-        'webui',
-    )
 
     MIDDLEWARE_CLASSES = (
         'django.contrib.sessions.middleware.SessionMiddleware',
@@ -69,21 +71,25 @@ class Common(Configuration):
     WSGI_APPLICATION = 'hbproject.wsgi.application'
 
 
-    # Database
-    # https://docs.djangoproject.com/en/1.7/ref/settings/#databases
-
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql_psycopg2',
-            'NAME': 'heliosburn',
-            'USER': 'postgres',
-            'PASSWORD': 'postgres',
-            'HOST': 'localhost',
-        }
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',  # This is only used for unit-test stats
+        'NAME': 'dummy.sqlite3',
     }
+    # 'default': {
+    #     'ENGINE': 'django.db.backends.postgresql_psycopg2',
+    #     'NAME': 'heliosburn',
+    #     'USER': 'postgres',
+    #     'PASSWORD': 'postgres',
+    #     'HOST': 'localhost',
+    # }
+}
 
-    # Internationalization
-    # https://docs.djangoproject.com/en/1.7/topics/i18n/
+SESSION_ENGINE = 'mongoengine.django.sessions'
+SESSION_SERIALIZER = 'mongoengine.django.sessions.BSONSerializer'
+
+# Internationalization
+# https://docs.djangoproject.com/en/1.7/topics/i18n/
 
     LANGUAGE_CODE = 'en-us'
 

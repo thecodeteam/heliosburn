@@ -48,11 +48,16 @@ def main():
 
         print("Creating users in db '%s': %s" % (db, s.MONGODB_DATABASE[db]))
         for user in users:
-            current_db.user.save(user)
+            current_db.hbuser.save(user)
 
         print("Creating roles in db '%s': %s" % (db, s.MONGODB_DATABASE[db]))
         for role in roles:
             current_db.role.save(role)
+
+        print("Creating indexes in db '%s': %s" % (db, s.MONGODB_DATABASE[db]))
+        current_db.hbuser.ensure_index('username', unique=True)
+        current_db.testplan.ensure_index('name', unique=True)
+        current_db.session.ensure_index('name', unique=True)
 
 if __name__ == '__main__':
     main()

@@ -1,5 +1,6 @@
 from django.conf import settings
-from django.contrib.auth.models import User
+#from django.contrib.auth.models import User
+from mongoengine.django.auth import User
 import requests
 import json
 
