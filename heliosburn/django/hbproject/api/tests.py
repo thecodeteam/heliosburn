@@ -68,8 +68,8 @@ class SessionViewTestCase(TestCase):
             assert response.status_code == 200
             assert "location" in response._headers
             in_json = json.loads(response.content)
-            assert "_id" in in_json
-            session_id = in_json['_id']
+            assert "id" in in_json
+            session_id = in_json['id']
             return session_id
 
         def read(request, session_id):
@@ -101,7 +101,7 @@ class SessionViewTestCase(TestCase):
             request.body = json.dumps({"name": "crud testplan"})
             response = testplan.post(request)
             assert response.status_code == 200
-            testplan_id = json.loads(response.content)['_id']
+            testplan_id = json.loads(response.content)['id']
 
             # Create a session linked to testplan
             request.body = json.dumps({
@@ -111,7 +111,7 @@ class SessionViewTestCase(TestCase):
             })
             response = session.post(request)
             assert response.status_code == 200
-            session_id = json.loads(response.content)['_id']
+            session_id = json.loads(response.content)['id']
 
             # Delete session and testplan
             response = session.delete(request, session_id)
@@ -158,8 +158,8 @@ class TestplanViewTestCase(TestCase):
             assert response.status_code == 200
             assert "location" in response._headers
             in_json = json.loads(response.content)
-            assert "_id" in in_json
-            return in_json['_id']
+            assert "id" in in_json
+            return in_json['id']
 
         def read(request, testplan_id):
             response = testplan.get(request, testplan_id)
