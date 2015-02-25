@@ -17,11 +17,10 @@ from configurations import Configuration, values
 
 class Common(Configuration):
 
-from mongoengine import *
-connect('heliosburn')
+    from mongoengine import *
+    connect('heliosburn')
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/1.7/howto/deployment/checklist/
+    BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
     # Quick-start development settings - unsuitable for production
     # See https://docs.djangoproject.com/en/1.7/howto/deployment/checklist/
@@ -36,20 +35,20 @@ connect('heliosburn')
 
     ALLOWED_HOSTS = []
 
+    INSTALLED_APPS = (
+        'django.contrib.admin',
+        'django.contrib.auth',
+        'mongoengine.django.mongo_auth',
+        'django.contrib.contenttypes',
+        'django.contrib.sessions',
+        'django.contrib.messages',
+        'django.contrib.staticfiles',
 
-INSTALLED_APPS = (
-    'django.contrib.admin',
-    'django.contrib.auth',
-    'mongoengine.django.mongo_auth',
-    'django.contrib.contenttypes',
-    'django.contrib.sessions',
-    'django.contrib.messages',
-    'django.contrib.staticfiles',
-    'django_bootstrap_breadcrumbs',
-    'bootstrap3',
-    'webui',
-)
+        'django_bootstrap_breadcrumbs',
+        'bootstrap3',
 
+        'webui',
+    )
 
     MIDDLEWARE_CLASSES = (
         'django.contrib.sessions.middleware.SessionMiddleware',
@@ -70,26 +69,25 @@ INSTALLED_APPS = (
 
     WSGI_APPLICATION = 'hbproject.wsgi.application'
 
-
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',  # This is only used for unit-test stats
-        'NAME': 'dummy.sqlite3',
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',  # This is only used for unit-test stats
+            'NAME': 'dummy.sqlite3',
+        }
+        # 'default': {
+        #     'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        #     'NAME': 'heliosburn',
+        #     'USER': 'postgres',
+        #     'PASSWORD': 'postgres',
+        #     'HOST': 'localhost',
+        # }
     }
-    # 'default': {
-    #     'ENGINE': 'django.db.backends.postgresql_psycopg2',
-    #     'NAME': 'heliosburn',
-    #     'USER': 'postgres',
-    #     'PASSWORD': 'postgres',
-    #     'HOST': 'localhost',
-    # }
-}
 
-SESSION_ENGINE = 'mongoengine.django.sessions'
-SESSION_SERIALIZER = 'mongoengine.django.sessions.BSONSerializer'
+    SESSION_ENGINE = 'mongoengine.django.sessions'
+    SESSION_SERIALIZER = 'mongoengine.django.sessions.BSONSerializer'
 
-# Internationalization
-# https://docs.djangoproject.com/en/1.7/topics/i18n/
+    # Internationalization
+    # https://docs.djangoproject.com/en/1.7/topics/i18n/
 
     LANGUAGE_CODE = 'en-us'
 
@@ -100,7 +98,6 @@ SESSION_SERIALIZER = 'mongoengine.django.sessions.BSONSerializer'
     USE_L10N = True
 
     USE_TZ = True
-
 
     # Static files (CSS, JavaScript, Images)
     # https://docs.djangoproject.com/en/1.7/howto/static-files/
@@ -115,7 +112,6 @@ SESSION_SERIALIZER = 'mongoengine.django.sessions.BSONSerializer'
     )
 
     API_BASE_URL = 'http://127.0.0.1:8000/api'
-
 
     TOKEN_TTL = 3600  # milliseconds
 
@@ -174,4 +170,4 @@ class Production(Staging):
 
 # Django-Debug-Toolbar workaround to make it work with the Vagrant VM
 def true(request):
-        return True
+    return True
