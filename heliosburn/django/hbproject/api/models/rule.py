@@ -37,13 +37,13 @@ def validate(rule):
         with rule['action'] as a:
             if rule['type'] == 'request':
                 if 'newRequest' in a:
-                    new_rule['newRequest'] = str(a['newRequest'])
+                    pass  # TODO: handle newrequest members
             if rule['type'] == 'response':
                 pass
             if 'modify' in a:
                 pass  # TODO: handle contexts in which modify is given
             if 'newResponse' in a:
-                new_rule['newResponse'] = str(a['newResponse'])
+                pass  # TODO: handle newresponse members
             if 'drop' in a:
                 new_rule['drop'] = bool(a['drop'])
             if 'reset' in a:
