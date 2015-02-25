@@ -1,5 +1,9 @@
 import io
-from zope.interface import Interface, Attribute
+from zope.interface import implements
+from zope.interface import Interface
+from twisted.plugin import IPlugin
+from twisted.plugin import getPlugins
+from twisted.python import log
 
 
 """
@@ -12,7 +16,62 @@ represents a step in the proxy request or client response process.
 
 class IModule(Interface):
     """
-    Base class used to implement ProxyModule interface.
+    Module interface defined for proxy modules.
+
+    .run() is called in every (defined) context.
+
+    Currently implemented contexts:
+        'request'
+        'response'
+    """
+
+    def get_name(self):
+        """
+        Returns the unique name of the module
+
+        @rtype: C{string}
+        """
+
+        return self.name
+
+    def onRequest(self, **keywords):
+        """
+        Called by .run() when instantiated with a run_context that includes
+        'request'.
+        """
+
+    def onStatus(self, **keywords):
+        """
+        Called by .run() when instantiated with a run_context that includes
+        'status'.
+        """
+
+    def onResponse(self, **keywords):
+        """
+        Called by .run() when instantiated with a run_context that includes
+        'response'.
+        """
+
+    def reset(self, **keywords):
+        """
+        If the module maintains state, this method is called to reset
+        the current state of the module
+
+        """
+
+    def run(self, **keywords):
+        """
+        Called by run_modules() after a module has been loaded (instantiated).
+        if a given (predefined) context is listed in 'run_contexts', the
+        respective method is called.
+        """
+
+
+class AbstractModule(object):
+    implements(IPlugin, IModule)
+
+    """
+    Base class used to implement a twisted plugin based IModule interface.
 
     .run() is called in every (defined) context.
 
@@ -24,9 +83,8 @@ class IModule(Interface):
     def __init__(self, run_contexts=[], context=None,
                  request_object=None):
         """
-        Initialization of ProxyModuleBase instance
+        Initialization of a proxy module instance
         """
-        from twisted.python import log
 
         self.name = "Interface Module"
         self.log = log
@@ -35,6 +93,10 @@ class IModule(Interface):
         self.request_object = request_object
 
     def get_name(self):
+        """
+        Returns the name of the module
+        """
+
         return self.name
 
     def onRequest(self, **keywords):
@@ -55,6 +117,13 @@ class IModule(Interface):
         """
         Called by .run() when instantiated with a run_context that includes
         'response'.
+        """
+        self.log.msg("Response: %s" % keywords)
+
+    def reset(self, **keywords):
+        """
+        If the module maintains state, this method is called to reset
+        the current state of the module
         """
         self.log.msg("Response: %s" % keywords)
 
@@ -191,3 +260,53 @@ class IModule(Interface):
             self.request_object.content = io.BytesIO(content)
         else:
             raise Exception('Invalid context')
+
+
+class Registry(object):
+
+    def __init__(self, modules_list):
+        self.modules_list = modules_list
+        self.modules = {}
+        for module in getPlugins(IModule, "plugins"):
+            self.modules[module.name] = module
+
+        print (getPlugins(IModule, "plugins"))
+        print (self.modules)
+
+    def _get_class(self, mod_dict):
+        """
+        Simple function which returns a class dynamically
+        when passed a dictionary containing the appropriate
+        information about a proxy module
+
+        """
+        log.msg("mod_dict: %s" % mod_dict)
+        module_path = mod_dict['path']
+        class_name = mod_dict['name']
+        try:
+            module = __import__(module_path, fromlist=[class_name])
+        except ImportError:
+            raise ValueError("Module '%s' could not be imported" %
+                             (module_path,))
+
+        try:
+            class_ = getattr(module, class_name)
+        except AttributeError:
+            raise ValueError("Module '%s' has no class '%s'" % (module_path,
+                                                                class_name,))
+        return class_
+
+    def run_plugins(self, context, request_object=None):
+
+        """
+        Runs all proxy modules in the order specified in config.yaml
+
+        """
+#       for module_dict in self.modules:
+#           class_ = self._get_class(module_dict)
+#           instance_ = class_(context=context,
+#                              request_object=request_object,
+#                              run_contexts=module_dict['run_contexts'])
+#           instance_.run(**module_dict['kwargs'])
+
+

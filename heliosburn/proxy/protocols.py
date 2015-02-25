@@ -3,7 +3,7 @@ from twisted.web.proxy import ProxyClient
 from twisted.web.proxy import ReverseProxyRequest
 from twisted.web.proxy import ReverseProxyResource
 from twisted.web.proxy import ProxyClientFactory
-from plugins import Registry
+from modules import Registry
 from twisted.internet import reactor
 from twisted.internet.endpoints import TCP4ClientEndpoint
 from twisted.python import log

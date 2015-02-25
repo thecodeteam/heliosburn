@@ -1,10 +1,15 @@
-from proxy.iproxymodule import IModule
+from proxy.modules import IModule
+from proxy.modules import AbstractModule
 from zope.interface import implements
 from twisted.plugin import IPlugin
 
 
-class SampleModule(object):
+class SampleModule(AbstractModule):
     implements(IPlugin, IModule)
+
+    def get_name(self):
+        self.name = "SampleModule"
+        return self.name
 
     def onRequest(self, **kwargs):
 

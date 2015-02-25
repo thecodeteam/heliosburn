@@ -20,7 +20,7 @@ from twisted.web import proxy
 from twisted.web import server
 from twisted.python import log
 from txredis.client import RedisClientFactory
-from plugins import Registry
+from modules import Registry
 from protocols import HBProxyClient
 from protocols import HBProxyClientFactory
 from protocols import HBReverseProxyRequest
@@ -227,7 +227,7 @@ class StartProxy(ControllerOperation):
     def start(self, result):
         resource = HBReverseProxyResource(self.controller.upstream_host,
                                           self.controller.upstream_port, '',
-                                          self.controller.plugin_registry)
+                                          self.controller.module_registry)
         f = server.Site(resource)
         f.requestFactory = HBReverseProxyRequest
         protocol = self.controller.protocol
@@ -331,7 +331,7 @@ class ResetPlugins(ControllerOperation):
         d.addCallback(self.respond)
 
     def reset_plugins(self, result):
-        self.controller.plugin_registry.run_plugins(context='None')
+        self.controller.module_registry.run_plugins(context='None')
 
     def update_message(self, result):
         self.response.set_message("Reset_modules: { "
@@ -354,7 +354,7 @@ class ReloadPlugins(ControllerOperation):
         d.addCallback(self.respond)
 
     def reload_plugins(self, result):
-        self.controller.plugin_registry.run_plugins(context='None')
+        self.controller.module_registry.run_plugins(context='None')
 
     def update_message(self, result):
         self.response.set_message("Reload_plugins: { "
@@ -383,7 +383,7 @@ class HBProxyController(object):
         self.tcp_mgmt_address = tcp_mgmt_address
         self.tcp_mgmt_port = tcp_mgmt_port
 
-        self.plugin_registry = Registry(plugins)
+        self.module_registry = Registry(plugins)
         self.site = server.Site(proxy.ReverseProxyResource(self.upstream_host,
                                 self.upstream_port, ''))
 
@@ -397,7 +397,7 @@ class HBProxyController(object):
     def start_proxy(self):
         resource = HBReverseProxyResource(self.upstream_host,
                                           self.upstream_port, '',
-                                          self.plugin_registry)
+                                          self.module_registry)
         f = server.Site(resource)
         f.requestFactory = HBReverseProxyRequest
         self.protocol = self.protocols['http']
@@ -408,7 +408,7 @@ class HBProxyController(object):
         response = redis.subscribe()
 
     def run(self):
-        self.plugin_registry.run_plugins(context='None')
+        self.module_registry.run_plugins(context='None')
 
         reactor.listenTCP(self.tcp_mgmt_port, self.mgmt_protocol_factory,
                           interface=self.tcp_mgmt_address)
@@ -521,8 +521,6 @@ def main():
     redis_port = mgmt_config['redis']['port']
     request_channel = mgmt_config['redis']['request_channel']
     response_channel = mgmt_config['redis']['response_channel']
-
-    print (redis_port)
 
     if args.tcp_mgmt:
         if args.tcp_mgmt_address:
