@@ -1199,7 +1199,7 @@ Server: Noelios-Restlet-Engine/1.1.5
 
 
 
-# Rules
+# Rule
 
 Rules will determine how the traffic is altered and, therefore, they are the most important part of the traffic injection engine. Rules can be either `request` or `response` types, the type determines when the rule is applied in the whole process. `request` rules are evaluated when HeliosBurn receives an HTTP request from the client and before forwarding it to the server. Whereas `response` rules are evaluated once HeliosBurn has received the response from the server and before forwarding it to the client.
 
@@ -1241,7 +1241,7 @@ An action type `modify` contains the following elements depending on the traffic
 | url | request | Request URL. |
 | statusCode | response | Status Code. |
 | statusDescription | response | Status description. |
-| insertHeaders | both | List of headers to be inserted to the request or response. |
+| setHeaders | both | List of headers to be set to the request or response. |
 | deleteHeaders | both | List of headers to be deleted from the request or response. |
 
 An action type `newResponse` contains the following elements.
@@ -1264,10 +1264,48 @@ An action type `newRequest` contains the following elements.
 | headers | List of headers. |
 | payload | Request payload. |
 
-Actions types `drop` and `reset` do not contain any elements.
+Action types `drop` and `reset` do not contain any elements.
 
 
+The following example will modify all requests that use an HTTP protocol `HTTP/1.1`, have the HTTP method `GET`, contain the header `X-Auth-Token`, and have the header `User-Agent` with value `Mozilla`. If a request matches the filter, it will be modified by changing the HTTP method to `PUT`, updating the `X-Auth-Token` value to `k54l3b6k6b43l56b346`, and deleting the header `User-Agent`, if present.
 
+```json
+{
+    "id": "32j45kbk3245b3245kbn",
+    "createdAt": "2014-02-12 03:34:51",
+    "updatedAt": "2014-02-12 03:34:52",
+    "ruleType": "request",
+    "testplanId": "k980ufd9g34kbwejv243v5342",
+    "filter": {
+        "httpProtocol": "HTTP/1.1",
+        "method": "GET",
+        "headers": [
+            {
+                "key": "X-Auth-Token"
+            },
+            {
+                "key": "User-Agent",
+                "value": "Mozilla"
+            }
+        ]
+    },
+    "action": {
+        "type": "modify",
+        "method": "PUT",
+        "setHeaders": [
+            {
+                "key": "X-Auth-Token",
+                "value": "k54l3b6k6b43l56b346"
+            }
+        ],
+        "deleteHeaders": [
+            {
+                "key": "User-Agent"
+            }
+        ]
+    }
+}
+```
 
 
 ## Get a list of Rules in a Test Plan
