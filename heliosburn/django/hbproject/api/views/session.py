@@ -49,7 +49,7 @@ def get(request, session_id=None):
     elif (session['username'] != request.user['username']) and (auth.is_admin(request.user) is False):
         return HttpResponseForbidden(status=401)
     else:
-        session['_id'] = str(session['_id'])
+        session['id'] = str(session.pop('_id'))
         return JsonResponse(session)
 
 
@@ -64,7 +64,7 @@ def get_all_sessions(request):
         sessions = [s for s in dbc.session.find({"username": request.user['username']})]
 
     for s in sessions:
-        s['_id'] = str(s['_id'])
+        s['id'] = str(s.pop('_id'))
     return JsonResponse({"sessions": sessions}, status=200)
 
 
@@ -102,7 +102,7 @@ def post(request):
         session_id = str(dbc.session.save(session))
     except DuplicateKeyError:
         return HttpResponseBadRequest("session name is not unique", status=409)
-    r = JsonResponse({"_id": session_id}, status=200)
+    r = JsonResponse({"id": session_id}, status=200)
     r['location'] = "/api/session/%s" % session_id
     return r
 
