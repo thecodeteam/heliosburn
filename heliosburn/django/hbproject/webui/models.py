@@ -81,10 +81,6 @@ class TestPlan(Base):
             exception.message = response.text
             raise exception
         testplan = json.loads(response.text)
-
-        # FIXME: API should return "id", not "_id"
-        id = testplan.pop('_id')
-        testplan['id'] = id
         return testplan
 
     def get_all(self):
@@ -96,12 +92,6 @@ class TestPlan(Base):
             exception.message = response.text
             raise exception
         testplans = json.loads(response.text)
-
-        # FIXME: API should return "id", not "_id"
-        for testplan in testplans['testplans']:
-            id = testplan.pop('_id')
-            testplan['id'] = id
-
         return testplans
 
     def delete(self, resource_id):
@@ -121,6 +111,22 @@ class Rule(Base):
     def __init__(self, testplan_id, auth_token=None):
         self.auth_token = auth_token
         self.__endpoint__ = self.__endpoint__.format(testplan_id=testplan_id)
+
+    def create(self, data):
+        url = self.get_url()
+        headers = {'X-Auth-Token': self.auth_token}
+        response = requests.post(url, headers=headers, data=json.dumps(data))
+        resource_id = get_resource_id_or_raise_exception(self.__resourcename__, response)
+        return resource_id
+
+    def update(self, resource_id, data):
+        url = self.get_url(extra=str(resource_id))
+        headers = {'X-Auth-Token': self.auth_token}
+        response = requests.put(url, headers=headers, data=json.dumps(data))
+        if not validate_response(response):
+            exception = status_code_to_exception(response.status_code)
+            exception.message = response.text
+            raise exception
 
     def get(self, resource_id):
         url = self.get_url(extra=str(resource_id))
