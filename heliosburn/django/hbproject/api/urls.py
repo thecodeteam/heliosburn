@@ -13,6 +13,6 @@ urlpatterns = patterns('',
     url(r'^testplan/(\w+?)/{0,1}$', testplan.rest),
     url(r'^auth/login/{0,1}$', auth.login),
     url(r'^traffic/{0,1}$', traffic.rest),
-    url(r'^testplan/(?P<testplan_id>\w+?)/rule/{0,1}$', rule.rest),
-    url(r'^testplan/(?P<testplan_id>\w+?)/rule/(?P<rule_id>\w+?)/{0,1}$', rule.rest),
+    url(r'^rule/{0,1}$', rule.rest),
+    url(r'^rule/(\w+?)/{0,1}$', rule.rest),
 )

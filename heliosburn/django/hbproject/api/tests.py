@@ -356,3 +356,103 @@ class TrafficViewTestCase(TestCase):
 
         print("Testing READ in %s" % self.__class__)
         read(request)
+
+
+class RuleViewTestCase(TestCase):
+    """
+    Test views/rule.py CRUD
+    This test requires a valid user "admin" with password "admin".
+    """
+
+    def test_crud(self):
+        """
+        Tests CRUD for rule model.
+        """
+        from views import rule
+        import json
+
+        def create(request):
+            request.body = json.dumps({
+                'ruleType': 'request',
+                'filter': {
+                    'httpProtocol': 'HTTP/1.1',
+                    'method': 'GET',
+                    'headers': [
+                        {'key': 'foo'},
+                        {'key': 'fizz', 'value': 'buzz'},
+                    ],
+                },
+                'action': {
+                    'type': 'modify',
+                    'method': 'PUT',
+                    'url': 'www.newurl.com/foo/bar',
+                    'setHeaders': [
+                        {
+                            'key': 'zaphod', 'value': 'beeblebrox',
+                        },
+                    ],
+                    'deleteHeaders': [
+                        {
+                            'key': 'foo',
+                        },
+                    ],
+                }
+            })
+            response = rule.post(request)
+            assert response.status_code == 200
+            assert "location" in response._headers
+            in_json = json.loads(response.content)
+            assert "id" in in_json
+            return in_json['id']
+
+        def read(request, rule_id):
+            response = rule.get(request, rule_id)
+            assert response.status_code == 200
+
+        def update(request, rule_id):
+            request.body = json.dumps({
+                'ruleType': 'request',
+                'filter': {
+                    'httpProtocol': 'HTTP/1.1',
+                    'method': 'GET',
+                    'headers': [
+                        {'key': 'paul bunyon'},
+                        {'key': 'companion', 'value': 'blue oxe'},
+                    ],
+                },
+                'action': {
+                    'type': 'newResponse',
+                    'httpProtocol': 'CARRIERPIGEON/1.1',
+                    'statusCode': 403,
+                    'statusDescription': 'TOO RIDICULOUS',
+                    'headers': [
+                        {
+                            'key': 'User-Agent',
+                            'value': 'Broken Telescope 1.9'
+                        },
+                    ],
+                    'payload': 'The answer to life, the universe, and everything...is 42.',
+                },
+            })
+            response = rule.put(request, rule_id)
+            assert response.status_code == 200
+
+        def delete(request, rule_id):
+            response = rule.delete(request, rule_id)
+            assert response.status_code == 200
+
+        print("Creating authenticated request for CRUD tests in %s" % self.__class__)
+        request = create_authenticated_request("admin", "admin")
+        request.method = "POST"
+
+        print("Testing CREATE in %s" % self.__class__)
+        rule_id = create(request)
+
+        print("Testing READ in %s" % self.__class__)
+        read(request, rule_id)
+
+        print("Testing UPDATE in %s" % self.__class__)
+        update(request, rule_id)
+
+        print("Testing DELETE in %s" % self.__class__)
+        delete(request, rule_id)
