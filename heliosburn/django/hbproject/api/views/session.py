@@ -6,7 +6,7 @@ from api.models import db_model, auth
 from api.models.auth import RequireLogin
 from bson import ObjectId
 from pymongo.helpers import DuplicateKeyError
-
+from datetime import datetime
 
 @csrf_exempt
 def rest(request, *pargs):
@@ -88,6 +88,8 @@ def post(request):
         'name': new['name'],
         'description': new['description'],
         'username': request.user['username'],
+        'createdAt': datetime.isoformat(datetime.now()),
+        'updatedAt': datetime.isoformat(datetime.now()),
     }
 
     # Add optional fields
@@ -139,6 +141,7 @@ def put(request, session_id):
             else:
                 return HttpResponseNotFound("testplan '%s' does not exist" % new['testplan'])
         try:
+            session['updatedAt'] = datetime.isoformat(datetime.now())
             dbc.session.save(session)
         except DuplicateKeyError:
             return HttpResponseBadRequest("session name is not unique", status=409)

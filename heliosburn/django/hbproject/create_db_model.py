@@ -2,6 +2,7 @@ import os
 import dotenv
 from configurations import importer
 import pymongo
+from datetime import datetime
 
 dotenv.read_dotenv()
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'hbproject.settings')
@@ -39,12 +40,16 @@ def main():
             "password": admin_hash,
             "email": "admin@local",
             "roles": ["admin"],
+            "createdAt": datetime.isoformat(datetime.now()),
+            "updatedAt": datetime.isoformat(datetime.now()),
         },
         {
             "username": "test1",
             "password": test1_hash,
             "email": "test1@local",
             "roles": ["standard"],
+            "createdAt": datetime.isoformat(datetime.now()),
+            "updatedAt": datetime.isoformat(datetime.now()),
         },
     ]
 

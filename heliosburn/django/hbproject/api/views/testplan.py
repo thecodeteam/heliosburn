@@ -6,6 +6,7 @@ from api.models import rule_model
 from pymongo.helpers import DuplicateKeyError
 from bson import ObjectId
 import json
+from datetime import datetime
 
 
 @csrf_exempt
@@ -88,6 +89,8 @@ def post(request):
     if testplan is not None:
         return HttpResponse("testplan named '%s' already exists" % new['name'])
 
+    new['createdAt'] = datetime.isoformat(datetime.now())
+    new['updatedAt'] = datetime.isoformat(datetime.now())
     testplan_id = str(dbc.testplan.save(new))
     r = JsonResponse({"id": testplan_id}, status=200)
     r['location'] = "/api/testplan/%s" % testplan_id
@@ -124,6 +127,7 @@ def put(request, testplan_id):
             if None in in_json['rules']:
                 return HttpResponse("invalid rule(s) provided")
         try:
+            testplan['updatedAt'] = datetime.isoformat(datetime.now())
             dbc.testplan.save(testplan)
         except DuplicateKeyError:
             return HttpResponseBadRequest("testplan named '%s' already exists" % in_json['name'])

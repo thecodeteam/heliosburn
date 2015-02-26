@@ -4,6 +4,7 @@ from api.models import auth
 from api.models.auth import RequireLogin
 import hashlib
 import json
+from datetime import datetime
 
 
 @csrf_exempt
@@ -87,7 +88,9 @@ def post(request):
         dbc.hbuser.save({
             'username': new['username'],
             'email': new['email'],
-            'password': m.hexdigest()
+            'password': m.hexdigest(),
+            'createdAt': datetime.isoformat(datetime.now()),
+            'updatedAt': datetime.isoformat(datetime.now()),
         })
         r = HttpResponse(status=200)
         r['location'] = "/api/user/%s" % new['username']
@@ -120,6 +123,7 @@ def put(request, username):
             user['password'] = m.hexdigest()
         if "email" in in_json:
             user['email'] = in_json['email']
+        user['updatedAt'] = datetime.isoformat(datetime.now())
         dbc.hbuser.save(user)
         return HttpResponse(status=200)
         
