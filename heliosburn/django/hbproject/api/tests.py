@@ -355,35 +355,35 @@ class RuleViewTestCase(TestCase):
             #assert "ruleType" in response_json
             #assert response_json['ruleType'] == 'request'
 
-        def update(request, rule_id):
-            request.body = json.dumps({
-                "ruleType": "response",
-                "action": {
-                    "type": "response",
-                    "headers": [['new-header1-name', 'new-header1-value'], ['new-header2-name', 'new-header2-value']],
-                    "response": {
-                        "http_protocol": "HTTP/2.0",
-                        "status_code": 503,
-                        "status_description": "Service Unavailable",
-                        "payload": "FISHY",
-                    },
-                    "request": {
-                        "http_protocol": "HTTP/2.0",
-                        "method": "UPDATE",
-                        "url": "http://en.wikipedia.org/wiki/So_Long,_and_Thanks_for_All_the_Fish",
-                        "payload": "LESS FISHY",
-                    }
-                },
-                "filter": {
-                    "method": "GET",
-                    "statusCode": 404,
-                    "url": "http://newtest.com",
-                    "protocol": "HTTPS",
-                    "headers": [['new-header1-name', 'new-header1-value'], ['new-header2-name', 'new-header2-value']],
-                },
-            })
-            response = rule.put(request, rule_id)
-            assert response.status_code == 200
+        # def update(request, rule_id):
+        #     request.body = json.dumps({
+        #         "ruleType": "response",
+        #         "action": {
+        #             "type": "response",
+        #             "headers": [['new-header1-name', 'new-header1-value'], ['new-header2-name', 'new-header2-value']],
+        #             "response": {
+        #                 "http_protocol": "HTTP/2.0",
+        #                 "status_code": 503,
+        #                 "status_description": "Service Unavailable",
+        #                 "payload": "FISHY",
+        #             },
+        #             "request": {
+        #                 "http_protocol": "HTTP/2.0",
+        #                 "method": "UPDATE",
+        #                 "url": "http://en.wikipedia.org/wiki/So_Long,_and_Thanks_for_All_the_Fish",
+        #                 "payload": "LESS FISHY",
+        #             }
+        #         },
+        #         "filter": {
+        #             "method": "GET",
+        #             "statusCode": 404,
+        #             "url": "http://newtest.com",
+        #             "protocol": "HTTPS",
+        #             "headers": [['new-header1-name', 'new-header1-value'], ['new-header2-name', 'new-header2-value']],
+        #         },
+        #     })
+        #     response = rule.put(request, rule_id)
+        #     assert response.status_code == 200
 
         def delete(request, testplan_id):
             response = testplan.delete(request, testplan_id)
