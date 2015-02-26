@@ -39,11 +39,11 @@ def get(request, testplan_id=None):
         return get_all_testplans()
 
     dbc = db_model.connect()
-    testplan = dbc.testplan.find_one({"_id": ObjectId(testplan_id)})
+    testplan = dbc.testplan.find_one({"_id": ObjectId(testplan_id)}, {'_id': 0})
     if testplan is None:
         return HttpResponseNotFound("")
     else:
-        testplan['_id'] = testplan_id  # Replace ObjectId with str version
+        testplan['id'] = testplan_id  # Replace ObjectId with str version
         return JsonResponse(testplan, status=200)
 
 
@@ -57,9 +57,9 @@ def get_all_testplans():
         # Find and append any sessions within each testplan
         sessions = [s for s in dbc.session.find({"testplan": t['_id']})]
 
-        for s in sessions:  # Translate ObjectId for sessions and testplans
-            s['_id'] = str(s['_id'])
-        t['_id'] = str(t['_id'])
+        for s in sessions:  # Translate _id to id
+            s['id'] = str(s.pop('_id'))
+        t['id'] = str(t.pop('_id'))
 
     return JsonResponse({"testplans": testplans}, status=200)
 
@@ -82,7 +82,7 @@ def post(request):
         testplan_id = str(dbc.testplan.save(new))
     except DuplicateKeyError:
         return HttpResponseBadRequest("testplan name is not unique")
-    r = JsonResponse({"_id": testplan_id}, status=200)
+    r = JsonResponse({"id": testplan_id}, status=200)
     r['location'] = "/api/testplan/%s" % testplan_id
     return r
 
