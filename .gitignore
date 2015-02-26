@@ -73,3 +73,6 @@ docs/_build/
 
 # django-dotenv
 .env
+
+# SQLite database
+*.sqlite3

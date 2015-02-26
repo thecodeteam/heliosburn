@@ -221,6 +221,8 @@ def testplan_update(request):
 
     if name == 'latencyEnabled':
         value = True if value == '1' else False
+    elif name == 'clientLatency' or name == 'serverLatency':
+        value = int(value)
 
     try:
         TestPlan(auth_token=request.user.password).update(pk, {name: value})
