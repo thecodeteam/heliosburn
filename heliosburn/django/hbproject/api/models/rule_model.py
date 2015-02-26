@@ -7,9 +7,13 @@ def validate(rule):
 
     NOTE: Type conversions are attempted(eg str-to-int), but incompatible data types will still cause a failure.
     """
-
     try:
         new_rule = {}
+        if 'createdAt' in rule:
+            new_rule['createdAt'] = rule['createdAt']
+        if 'updatedAt' in rule:
+            new_rule['updatedAt'] = rule['updatedAt']
+
         assert 'ruleType' in rule
         assert rule['ruleType'] in ('request', 'response')
         new_rule['ruleType'] = rule['ruleType']

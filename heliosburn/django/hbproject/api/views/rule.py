@@ -8,6 +8,7 @@ from api.models.auth import RequireLogin
 from api.models import rule_model
 from sqlalchemy.exc import IntegrityError
 import json
+from datetime import datetime
 
 
 @csrf_exempt
@@ -76,6 +77,8 @@ def post(request):
         return HttpResponseBadRequest("invalid rule")
     else:
         dbc = db_model.connect()
+        rule['createdAt'] = datetime.isoformat(datetime.now())
+        rule['updatedAt'] = datetime.isoformat(datetime.now())
         rule_id = str(dbc.rule.save(rule))
         r = JsonResponse({"id": rule_id})
         r['location'] = "/api/rule/%s" % rule_id
@@ -96,11 +99,14 @@ def put(request, rule_id):
     if rule is None:
         return HttpResponseNotFound(status=404)
     else:
+        in_json['createdAt'] = rule['createdAt']
         rule = rule_model.validate(in_json)
         if rule is None:
             return HttpResponseBadRequest("invalid rule")
         else:
+
             rule['_id'] = ObjectId(rule_id)
+            rule['updatedAt'] = datetime.isoformat(datetime.now())
             dbc.rule.save(rule)
             r = JsonResponse({"id": rule_id})
             r['location'] = "/api/rule/%s" % rule_id
