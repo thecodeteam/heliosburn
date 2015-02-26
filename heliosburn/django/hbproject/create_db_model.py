@@ -28,8 +28,9 @@ def main():
     import hashlib
     hasher1 = hashlib.sha512()
     hasher1.update("admin")
-    hasher2 = hashlib.sha512()
     admin_hash = hasher1.hexdigest()
+
+    hasher2 = hashlib.sha512()
     hasher2.update("test1")
     test1_hash = hasher2.hexdigest()
     users = [
