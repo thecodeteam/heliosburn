@@ -44,6 +44,7 @@ def get(request, testplan_id, rule_id=None):
     if rule is None:
         return HttpResponseNotFound()
     else:
+        rule['id'] = rule_id  # Replace ObjectId with str version
         return JsonResponse(rule, status=200)
 
 
@@ -52,7 +53,7 @@ def get_all_rules(request, testplan_id):
     Retrieve all rules for a test plan.
     """
     dbc = db_model.connect()
-    rules = dbc.rule.find()
+    rules = [r for r in dbc.rule.find()]
     for rule in rules:
         rule['id'] = str(rule.pop('_id'))
     return JsonResponse({"rules": rules})
