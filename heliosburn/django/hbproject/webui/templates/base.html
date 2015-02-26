@@ -131,6 +131,15 @@
                 <!-- Main content -->
                 <section class="content">
 
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }} alert-dismissable">
+                                <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                <p>{{ message|safe }}</p>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+
                     {% block content %}
                     {% endblock %}
 

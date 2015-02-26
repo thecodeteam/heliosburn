@@ -15,7 +15,7 @@ package { ['python-software-properties']:
   require => Exec['apt-get update'],
 }
 
-$sysPackages = ['git', 'curl', 'postgresql-server-dev-9.3', 'ipython-notebook', 'mongodb-server', 'mongodb-clients']
+$sysPackages = ['git', 'curl', 'postgresql-server-dev-9.3', 'ipython-notebook']
 package { $sysPackages:
   ensure => "installed",
   require => Exec['apt-get update'],
@@ -32,6 +32,11 @@ python::requirements { '/tmp/requirements.txt': }
 
 class { 'java':
   distribution => 'jre',
+}
+
+class {'::mongodb::server':
+  port    => 27017,
+  verbose => true,
 }
 
 class { 'postgresql::server':

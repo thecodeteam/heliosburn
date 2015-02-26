@@ -2,6 +2,12 @@ from django import forms
 from django.core.validators import MinValueValidator
 
 
+class LoginForm(forms.Form):
+    username = forms.CharField(label='', max_length=100, widget=forms.TextInput(attrs={'placeholder': 'Username'}))
+    password = forms.CharField(label='', max_length=100, widget=forms.PasswordInput(attrs={'placeholder': 'Password'}))
+    rememberLogin = forms.BooleanField(label='Remember me', required=False)
+
+
 class TestPlanForm(forms.Form):
     name = forms.CharField(label='Name', max_length=100)
     description = forms.CharField(label='Description', widget=forms.Textarea)
@@ -10,6 +16,14 @@ class TestPlanForm(forms.Form):
                                        validators=[MinValueValidator(0)])
     serverLatency = forms.IntegerField(label='Server latency', required=False, initial=0,
                                        validators=[MinValueValidator(0)])
+
+
+class RuleForm(forms.Form):
+    rule_choices = (('request', 'Request'), ('response', 'Response'))
+
+    name = forms.CharField(label='Name', max_length=100)
+    description = forms.CharField(label='Description', widget=forms.Textarea, required=False)
+    ruleType = forms.ChoiceField(label='Rule type', choices=rule_choices)
 
 
 class RuleRequestForm(forms.Form):

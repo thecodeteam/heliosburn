@@ -57,7 +57,7 @@
         $('#testplan-name').editable({
             url: '{% url 'testplan_update' %}',
             type: 'text',
-            pk: {{ testplan.id }},
+            pk: '{{ testplan.id }}',
             name: 'name',
             title: 'Test Plan name',
             inputclass: 'title-input',
@@ -67,7 +67,7 @@
         $('#testplan-description').editable({
             url: '{% url 'testplan_update' %}',
             type: 'textarea',
-            pk: {{ testplan.id }},
+            pk: '{{ testplan.id }}',
             name: 'description',
             title: 'Test Plan description',
             inputclass: 'description-input',
@@ -77,7 +77,7 @@
         $('#testplan-enablelatency').editable({
             url: '{% url 'testplan_update' %}',
             type: 'select',
-            pk: {{ testplan.id }},
+            pk: '{{ testplan.id }}',
             name: 'latencyEnabled',
             title: 'Latency',
             mode: 'popup',
@@ -90,7 +90,7 @@
         $('#testplan-clientlatency').editable({
             url: '{% url 'testplan_update' %}',
             type: 'text',
-            pk: {{ testplan.id }},
+            pk: '{{ testplan.id }}',
             name: 'clientLatency',
             title: 'Client latency',
             params: '{csrfmiddlewaretoken:"{{csrf_token}}"}'
@@ -99,7 +99,7 @@
         $('#testplan-serverlatency').editable({
             url: '{% url 'testplan_update' %}',
             type: 'text',
-            pk: {{ testplan.id }},
+            pk: '{{ testplan.id }}',
             name: 'serverLatency',
             title: 'Server latency',
             params: '{csrfmiddlewaretoken:"{{csrf_token}}"}'
@@ -115,7 +115,6 @@
             <div class="nav-tabs-custom">
                 <ul class="nav nav-tabs">
                     <li class="header"><i class="fa fa-info-circle"></i>Test Plan details</li>
-                    <li class="pull-right"><a href="#" id="details-edit" class="text-muted"><i class="fa fa-pencil"></i></a></li>
                 </ul>
                 <div class="tab-content">
                     <dl class="dl-horizontal">
@@ -133,7 +132,6 @@
             <div class="nav-tabs-custom">
                 <ul class="nav nav-tabs">
                     <li class="header"><i class="fa fa-clock-o"></i>Latency</li>
-                    <li class="pull-right"><a href="#" onclick="$('#detais-edit').trigger('click');" class="text-muted"><i class="fa fa-pencil"></i></a></li>
                 </ul>
                 <div class="tab-content">
                     <dl class="dl-horizontal">
@@ -159,7 +157,7 @@
                 <div class="box-body table-responsive">
                     <div class="row">
                         <div class="col-xs-12">
-                              <button class="btn btn-primary pull-right">Create a new rule</button>
+                            <a class="btn btn-primary pull-right bold" href="{% url "rule_new" testplan.id %}" role="button">Create a new rule</a>
                         </div>
                     </div>
                     <div class="row top7">
@@ -191,10 +189,10 @@
                                         <tr>
                                             <td>{{ rule.id }}</td>
                                             <td><a href="{% url 'rule_details' testplan.id rule.id %}">view</a></td>
-                                            <td>{{ rule.type }}</td>
+                                            <td>{{ rule.ruleType }}</td>
                                             <td>{{ rule.filter }}</td>
                                             <td>{{ rule.action }}</td>
-                                            <td>{{ rule.enabled|boolicon|safe }}</td>
+                                            <td>{{ rule.enabled|bool_to_icon|safe }}</td>
                                         </tr>
                                     {% endfor %}
                                 </tbody>

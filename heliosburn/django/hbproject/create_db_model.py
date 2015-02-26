@@ -1,8 +1,18 @@
+import os
+import dotenv
+from configurations import importer
+import pymongo
+
+dotenv.read_dotenv()
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'hbproject.settings')
+os.environ.setdefault('DJANGO_CONFIGURATION', 'Development')
+
+importer.install()
+
+from hbproject import settings as s
+
+
 def main():
-    from hbproject import settings as s
-
-    import pymongo
-
     dbc = pymongo.Connection()
     for db in s.MONGODB_DATABASE.keys():
         print("Dropping database '%s': %s" % (db, s.MONGODB_DATABASE[db]))

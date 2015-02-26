@@ -13,16 +13,16 @@ def active(request, name):
         None
     return ''
 
-@register.filter(name='boolicon')
-def boolicon(value):
+@register.filter(name='bool_to_icon')
+def bool_to_icon(value):
     try:
         if type(value) is bool:
             style = 'glyphicon-ok green' if value else 'glyphicon-remove red'
             return '<span class="glyphicon glyphicon-2x %s" aria-hidden="true"></span>' % (style, )
         else:
-            return value
+            return 'N/A'
     except:
-        return ''
+        return 'N/A'
 
 @register.filter(name='enabler')
 def enabler(value):
@@ -35,7 +35,7 @@ def enabler(value):
         return 'Disabled'
 
 @register.filter(name='bool_to_int')
-def enabler(value):
+def bool_to_int(value):
     try:
         if type(value) is bool:
             return 1 if value else 0

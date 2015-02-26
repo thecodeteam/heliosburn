@@ -1,8 +1,25 @@
 import os
-import sys
 import cherrypy
 from cherrypy import wsgiserver
-from cherrypy.wsgiserver import ssl_builtin
+
+import dotenv
+dotenv.read_dotenv()
+
+ENVIRONMENT = os.getenv('ENVIRONMENT')
+
+if ENVIRONMENT == 'STAGING':
+    settings = 'staging'
+elif ENVIRONMENT == 'PRODUCTION':
+    settings = 'production'
+else:
+    settings = 'development'
+
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "hbproject.settings")
+os.environ.setdefault('DJANGO_CONFIGURATION', settings.title())
+
+from configurations import importer
+importer.install()
+
 from hbproject import wsgi as django_wsgi
 
 PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))

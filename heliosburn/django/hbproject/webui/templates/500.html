@@ -1,8 +1,32 @@
 {% extends "base.html" %}
 
+{% load staticfiles %}
 {% load django_bootstrap_breadcrumbs %}
 
 {% block breadcrumbs %}
     {{ block.super }}
-    {% breadcrumb "Internal error" "" %}
+    {% breadcrumb "Internal Error" "dashboard" %}
+{% endblock %}
+
+{% block title %}Internal Error{% endblock %}
+
+{% block content_header %}
+    Internal Error
+{% endblock %}
+
+{% block content_subheader %}{% endblock %}
+
+{% block content %}
+    <div class="error-page">
+        <h2 class="headline text-info"> 500</h2>
+        <div class="error-content">
+            <h3><i class="fa fa-warning text-yellow"></i> Oops! Something went wrong.</h3>
+            <p>
+                Please, contact an administrator.
+            </p>
+            {% if message %}
+                <p>{{ message }}</p>
+            {% endif %}
+        </div><!-- /.error-content -->
+    </div><!-- /.error-page -->
 {% endblock %}

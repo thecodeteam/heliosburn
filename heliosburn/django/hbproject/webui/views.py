@@ -1,50 +1,50 @@
 import json
-import re
 
-from django.http import HttpResponseRedirect, HttpResponse, HttpResponseBadRequest, JsonResponse
+from django.http import HttpResponseRedirect, HttpResponse, HttpResponseBadRequest, JsonResponse, HttpResponseNotFound
 from django.shortcuts import render, redirect
 from django.core.urlresolvers import reverse
 from django.contrib.staticfiles.templatetags.staticfiles import static
 from django.contrib.auth.decorators import login_required
 from django.contrib import auth, messages
 from django.conf import settings
+from django.utils.decorators import method_decorator
+from django.views.generic import View
 import requests
-from webui.forms import TestPlanForm, RuleRequestForm
+from webui.forms import TestPlanForm, RuleRequestForm, RuleForm, LoginForm
+from webui.models import TestPlan, Rule
+from webui.exceptions import UnauthorizedException, NotFoundException, BadRequestException
 
-
-MOCK_PROTOCOL = "http"
-MOCK_HOST = "127.0.0.1"
-MOCK_PORT = "8000"
 
 WIZARD_SESSION_KEY = 'session_id'
-
 WIZARD_STEPS = ['1', '2', '3', '4']
 
 
-def signin(request):
-    if not request.POST:
-        return render(request, 'signin.html')
+class LoginView(View):
+    form_class = LoginForm
+    template_name = 'signin.html'
 
-    username = request.POST.get('username', '')
-    password = request.POST.get('password', '')
+    def get(self, request):
+        form = self.form_class()
+        return render(request, self.template_name, {'form': form})
 
-    if not username or not password:
-        messages.error(request, 'Invalid login credentials')
-        return render(request, 'signin.html')
+    def post(self, request):
+        form = self.form_class(request.POST)
+        if not form.is_valid():
+            return render(request, self.template_name, {'form': form})
 
-    try:
-        user = auth.authenticate(username=username, password=password)
-    except Exception as inst:
-        messages.error(request, 'Something went wrong. %s' % (inst,))
-        return render(request, 'signin.html')
+        try:
+            user = auth.authenticate(username=form.cleaned_data['username'], password=form.cleaned_data['password'])
+        except Exception as inst:
+            messages.error(request, 'Something went wrong. %s' % (inst,))
+            return render(request, self.template_name, {'form': form})
 
-    if not user:
-        messages.error(request, 'Invalid login credentials')
-        return render(request, 'signin.html')
+        if not user:
+            messages.error(request, 'Invalid login credentials')
+            return render(request, self.template_name, {'form': form})
 
-    auth.login(request, user)
-    redirect_url = request.GET.get('next', reverse('dashboard'))
-    return HttpResponseRedirect(redirect_url)
+        auth.login(request, user)
+        redirect_url = request.GET.get('next', reverse('dashboard'))
+        return HttpResponseRedirect(redirect_url)
 
 
 def signout(request):
@@ -52,12 +52,13 @@ def signout(request):
     return redirect(reverse('signin'))
 
 
-@login_required
-def dashboard(request):
-    args = {}
-    args['maxRequests'] = 20
+class DashboardView(View):
+    template_name = 'dashboard.html'
 
-    return render(request, 'dashboard.html', args)
+    @method_decorator(login_required)
+    def get(self, request):
+        args = {'maxRequests': 20}
+        return render(request, self.template_name, args)
 
 
 @login_required
@@ -84,16 +85,11 @@ def session_new(request, step):
         payload = {'name': session_name, 'description': session_description}
         r = requests.post(url, headers=headers, data=json.dumps(payload))
         if 200 >= r.status_code < 300:
-            location = r.headers.get('location')
-            pattern = '.+session\/(?P<id>\d+)'
-            p = re.compile(pattern)
-            m = p.match(location)
-            try:
-                session_id = m.group('id')
+            session_id = get_resource_id_from_header('session', r)
+            if session_id:
                 request.session[WIZARD_SESSION_KEY] = session_id
-                return HttpResponseRedirect(reverse('session_new', args=('2',)))
-            except:
-                messages.error(request, 'Could not get Session ID.')
+                return HttpResponseRedirect(reverse('session_new', args=(str(session_id),)))
+            messages.error(request, 'Could not get Session ID.')
         else:
             messages.error(request, 'Could not save the Session. Server returned: %d %s' % (r.status_code, r.text))
 
@@ -163,71 +159,49 @@ def session_update(request):
 
 @login_required
 def testplan_list(request):
-    url = '%s/testplan/' % (settings.API_BASE_URL,)
-    headers = {'X-Auth-Token': request.user.password}
-    r = requests.get(url, headers=headers)
-
-    if r.status_code != requests.codes.ok:
+    try:
+        testplans = TestPlan(auth_token=request.user.password).get_all()
+    except UnauthorizedException:
         return signout(request)
-
-    testplans = json.loads(r.text)
+    except Exception as inst:
+        return render(request, '500.html', {'message': inst.message})
 
     return render(request, 'testplan/testplan_list.html', testplans)
 
 
 @login_required
-def testplan_details(request, id):
-    url = '%s/testplan/%s' % (settings.API_BASE_URL, id)
-    headers = {'X-Auth-Token': request.user.password}
-    r = requests.get(url, headers=headers)
-
-    if r.status_code == requests.codes.not_found:
+def testplan_details(request, testplan_id):
+    try:
+        testplan = TestPlan(auth_token=request.user.password).get(testplan_id)
+        # TODO: the Test Plan call should return the list of rules
+        # rules = Rule(testplan_id, auth_token=request.user.password).get_all()
+        rules = {'rules': []}  # TODO: remove it once API Rule's endpoint is fixed
+    except UnauthorizedException:
+        return signout(request)
+    except NotFoundException:
         return render(request, '404.html')
+    except Exception as inst:
+        messages.error(request, inst.message if inst.message else 'Unexpected error')
+        return HttpResponseRedirect(reverse('testplan_list'))
 
-    if r.status_code != requests.codes.ok:
-        # TODO: do not sign out always, only if HTTP Unauthorized
-        return signout(request)
-
-    data = {'testplan': json.loads(r.text)}
-
-    # Get Rules
-    # TODO: maybe the Test Plan call should return the list of rules
-    url = '%s/testplan/%s/rule' % (settings.API_BASE_URL, id)
-    r = requests.get(url, headers=headers)
-    if r.status_code != requests.codes.ok:
-        # TODO: do not sign out always, only if HTTP Unauthorized
-        return signout(request)
-
-    data['rules'] = json.loads(r.text)
-
-    sample_rule = {}
-    sample_rule['id'] = 1
-    sample_rule['type'] = "request"
-    sample_rule['filter'] = "GET /cool-url/?param=wow"
-    sample_rule['action'] = "GET -> POST"
-    sample_rule['enabled'] = True
-
-    data['rules']['rules'].append(sample_rule)
-
+    data = {'testplan': testplan, 'rules': rules}
     return render(request, 'testplan/testplan_details.html', data)
 
 
 @login_required
 def testplan_new(request):
-
     form = TestPlanForm(request.POST or None)
     if form.is_valid():
-        url = '%s/testplan/' % (settings.API_BASE_URL,)
-        headers = {'X-Auth-Token': request.user.password}
-        r = requests.post(url, headers=headers, data=json.dumps(form.cleaned_data))
-
-        if r.status_code < 200 or r.status_code >= 300:
+        try:
+            testplan_id = TestPlan(auth_token=request.user.password).create(form.cleaned_data)
+            return HttpResponseRedirect(reverse('testplan_details', args=(str(testplan_id),)))
+        except UnauthorizedException:
             return signout(request)
-
-        # TODO: get the Test Plan ID from the Location header (when enabled in the API)
-        json_body = json.loads(r.text)
-        testplan_id = json_body['id']
-        return HttpResponseRedirect(reverse('testplan_details', args=(str(testplan_id),)))
+        except NotFoundException:
+            return render(request, '404.html')
+        except Exception as inst:
+            messages.error(request, inst.message if inst.message else 'Unexpected error')
+            return HttpResponseRedirect(reverse('testplan_list'))
 
     return render(request, 'testplan/testplan_new.html', {'form': form})
 
@@ -247,13 +221,13 @@ def testplan_update(request):
 
     if name == 'latencyEnabled':
         value = True if value == '1' else False
+    elif name == 'clientLatency' or name == 'serverLatency':
+        value = int(value)
 
-    url = '%s/testplan/%s' % (settings.API_BASE_URL, pk)
-    headers = {'X-Auth-Token': request.user.password}
-    data = {name: value}
-    r = requests.put(url, headers=headers, data=json.dumps(data))
-    if r.status_code != requests.codes.ok:
-        return HttpResponse(status=r.status_code, content='Error updating the Test Plan. %s' % (r.text,))
+    try:
+        TestPlan(auth_token=request.user.password).update(pk, {name: value})
+    except Exception as inst:
+        return HttpResponseBadRequest(content='Error updating the Test Plan. {}'.format(inst.message))
     return HttpResponse()
 
 
@@ -262,18 +236,19 @@ def testplan_delete(request):
     if not request.POST:
         return HttpResponseRedirect(reverse('testplan_list'))
 
-    headers = {'X-Auth-Token': request.user.password}
     testplans = request.POST.getlist('testplans[]')
-
     # Workaround to support different kinds of form submission
     if testplans is None or len(testplans) == 0:
         testplans = request.POST.getlist('testplans')
-        
+
+    t = TestPlan(auth_token=request.user.password)
     for testplan_id in testplans:
-        url = '%s/testplan/%s' % (settings.API_BASE_URL, testplan_id)
-        r = requests.delete(url, headers=headers)
-        if r.status_code != requests.codes.ok:
-            return HttpResponse(status=r.status_code, content='Error deleting the Test Plan. %s' % (r.text,))
+        try:
+            t.delete(testplan_id)
+        except NotFoundException:
+            return HttpResponseNotFound()
+        except Exception as inst:
+            return HttpResponseBadRequest()
     return HttpResponse()
 
 
@@ -285,6 +260,42 @@ def execution_details(request, id):
 
 @login_required
 def rule_details(request, testplan_id, rule_id):
+    try:
+        testplan = TestPlan(auth_token=request.user.password).get(testplan_id)
+        rule = Rule(testplan_id, auth_token=request.user.password).get(rule_id)
+        # check if the Rule belongs to the Test Plan
+        if str(rule['testPlanId']) != testplan_id:
+            return render(request, '404.html')
+    except UnauthorizedException:
+        return signout(request)
+    except NotFoundException:
+        return render(request, '404.html')
+    except Exception as inst:
+        messages.error(request, inst.message if inst.message else 'Unexpected error')
+        return HttpResponseRedirect(reverse('testplan_list'))
+
+    data = {'testplan': testplan, 'rule': rule, 'form': RuleRequestForm()}
+    return render(request, 'rules/rule_details.html', data)
+
+
+@login_required
+def rule_new(request, testplan_id):
+    form = RuleForm(request.POST or None)
+
+    if form.is_valid():
+        url = '%s/testplan/%s/rule' % (settings.API_BASE_URL, str(testplan_id))
+        headers = {'X-Auth-Token': request.user.password}
+        r = requests.post(url, headers=headers, data=json.dumps(form.cleaned_data))
+        if r.status_code < 200 or r.status_code >= 300:
+            return signout(request)
+
+        rule_id = get_resource_id_from_header('rule', r)
+        if rule_id:
+            return HttpResponseRedirect(reverse('rule_details', args=(str(testplan_id), str(rule_id))))
+        else:
+            messages.warning(request, 'Rule was created successfully, but we could not retrieve its ID')
+            return HttpResponseRedirect(reverse('testplan_details', args=(str(testplan_id),)))
+
     url = '%s/testplan/%s' % (settings.API_BASE_URL, testplan_id)
     headers = {'X-Auth-Token': request.user.password}
     r = requests.get(url, headers=headers)
@@ -296,15 +307,11 @@ def rule_details(request, testplan_id, rule_id):
         # TODO: do not sign out always, only if HTTP Unauthorized
         return signout(request)
 
-    data = {'testplan': json.loads(r.text)}
+    data = {}
+    data['testplan'] = json.loads(r.text)
+    data['form'] = form
 
-    url = get_mock_url('rule-details.json')
-    r = requests.get(url)
-    rule = json.loads(r.text)
-    data['rule'] = rule
-    data['form'] = RuleRequestForm()
-
-    return render(request, 'testplan/rule_details.html', data)
+    return render(request, 'rules/rule_new.html', data)
 
 
 @login_required
