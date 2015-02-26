@@ -153,7 +153,37 @@ class TestplanViewTestCase(TestCase):
         import json
 
         def create(request):
-            request.body = json.dumps({"name": "CRUD test"})
+            request.body = json.dumps({
+                "name": "CRUD test with rule",
+                "rules": [
+                    {
+                        'ruleType': 'request',
+                        'filter': {
+                            'httpProtocol': 'HTTP/1.1',
+                            'method': 'GET',
+                            'headers': [
+                                {'key': 'foo'},
+                                {'key': 'fizz', 'value': 'buzz'},
+                            ],
+                        },
+                        'action': {
+                            'type': 'modify',
+                            'method': 'PUT',
+                            'url': 'www.newurl.com/foo/bar',
+                            'setHeaders': [
+                                {
+                                    'key': 'zaphod', 'value': 'beeblebrox',
+                                },
+                            ],
+                            'deleteHeaders': [
+                                {
+                                    'key': 'foo',
+                                },
+                            ],
+                        }
+                    },
+                    ],
+            })
             response = testplan.post(request)
             assert response.status_code == 200
             assert "location" in response._headers
@@ -166,7 +196,35 @@ class TestplanViewTestCase(TestCase):
             assert response.status_code == 200
 
         def update(request, testplan_id):
-            request.body = json.dumps({"name": "CRUD test updated"})
+            request.body = json.dumps({
+                "name": "CRUD test with rule, name updated",
+                "rules": [
+                    {
+                        'ruleType': 'request',
+                        'filter': {
+                            'httpProtocol': 'HTTP/1.1',
+                            'method': 'GET',
+                            'headers': [
+                                {'key': 'paul bunyon'},
+                                {'key': 'companion', 'value': 'blue oxe'},
+                            ],
+                        },
+                        'action': {
+                            'type': 'newResponse',
+                            'httpProtocol': 'CARRIERPIGEON/1.1',
+                            'statusCode': 403,
+                            'statusDescription': 'TOO RIDICULOUS',
+                            'headers': [
+                                {
+                                    'key': 'User-Agent',
+                                    'value': 'Broken Telescope 1.9'
+                                },
+                            ],
+                            'payload': 'The answer to life, the universe, and everything...is 42.',
+                        }
+                    },
+                    ],
+            })
             response = testplan.put(request, testplan_id)
             assert response.status_code == 200
 
@@ -298,109 +356,3 @@ class TrafficViewTestCase(TestCase):
 
         print("Testing READ in %s" % self.__class__)
         read(request)
-
-
-class RuleViewTestCase(TestCase):
-    """
-    Test views/rule.py CRUD
-    This test requires a valid user "admin" with password "admin".
-    """
-
-    def test_crud(self):
-        """
-        Tests CRUD for rule model.
-        """
-        from views import testplan, rule
-        import json
-
-        def create(request):
-            request.body = json.dumps({
-                "name": "Rule CRUD test",
-                "rules":
-                    [
-                        {
-                            "ruleType": "request",
-                            "action": {
-                                "type": "request",
-                                "headers": [['header1-name', 'header1-value'], ['header2-name', 'header2-value']],
-                                "request": {
-                                    "http_protocol": "HTTP/2.0",
-                                    "method": "UPDATE",
-                                    "url": "http://en.wikipedia.org/wiki/The_Hitchhiker%27s_Guide_to_the_Galaxy",
-                                    "payload": "MOSTLY HARMLESS",
-                                    }
-                                },
-                            "filter": {
-                                "method": "PUT",
-                                "statusCode": 200,
-                                "url": "http://test.com",
-                                "protocol": "HTTP/1.1",
-                                "headers": [['header1-name', 'header1-value'], ['header2-name', 'header2-value']],
-                                }
-                        },
-                    ]
-            })
-
-            response = testplan.post(request)
-            assert response.status_code == 200
-            assert "location" in response._headers
-            in_json = json.loads(response.content)
-            assert "id" in in_json
-            return in_json['id']  # Testplan ID
-
-        def read(request, testplan_id):
-            response = testplan.get(request, testplan_id)
-            assert response.status_code == 200
-            response_json = json.loads(response.content)
-            #assert "ruleType" in response_json
-            #assert response_json['ruleType'] == 'request'
-
-        # def update(request, rule_id):
-        #     request.body = json.dumps({
-        #         "ruleType": "response",
-        #         "action": {
-        #             "type": "response",
-        #             "headers": [['new-header1-name', 'new-header1-value'], ['new-header2-name', 'new-header2-value']],
-        #             "response": {
-        #                 "http_protocol": "HTTP/2.0",
-        #                 "status_code": 503,
-        #                 "status_description": "Service Unavailable",
-        #                 "payload": "FISHY",
-        #             },
-        #             "request": {
-        #                 "http_protocol": "HTTP/2.0",
-        #                 "method": "UPDATE",
-        #                 "url": "http://en.wikipedia.org/wiki/So_Long,_and_Thanks_for_All_the_Fish",
-        #                 "payload": "LESS FISHY",
-        #             }
-        #         },
-        #         "filter": {
-        #             "method": "GET",
-        #             "statusCode": 404,
-        #             "url": "http://newtest.com",
-        #             "protocol": "HTTPS",
-        #             "headers": [['new-header1-name', 'new-header1-value'], ['new-header2-name', 'new-header2-value']],
-        #         },
-        #     })
-        #     response = rule.put(request, rule_id)
-        #     assert response.status_code == 200
-
-        def delete(request, testplan_id):
-            response = testplan.delete(request, testplan_id)
-            assert response.status_code == 200
-
-        print("Creating authenticated request for CRUD tests in %s" % self.__class__)
-        request = create_authenticated_request("admin", "admin")
-        request.method = "POST"
-
-        print("Testing CREATE in %s" % self.__class__)
-        testplan_id = create(request)
-
-        print("Testing READ in %s" % self.__class__)
-        read(request, testplan_id)
-        #
-        # print("Testing UPDATE in %s" % self.__class__)
-        # update(request, rule_id)
-        #
-        # print("Testing DELETE in %s" % self.__class__)
-        delete(request, testplan_id)

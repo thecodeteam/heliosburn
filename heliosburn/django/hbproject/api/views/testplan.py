@@ -2,6 +2,7 @@ from django.http import JsonResponse, HttpResponseNotFound, HttpResponseBadReque
 from django.views.decorators.csrf import csrf_exempt
 from api.models import db_model
 from api.models.auth import RequireLogin
+from api.models import rule_model
 from pymongo.helpers import DuplicateKeyError
 from bson import ObjectId
 import json
@@ -77,11 +78,17 @@ def post(request):
     except AssertionError:
         return HttpResponseBadRequest("argument mismatch")
 
+    if 'rules' in new:
+        new['rules'] = [rule_model.validate(rule) for rule in new['rules']]
+        if None in new['rules']:  # Invalid rules are re-assigned to None
+            return HttpResponse("invalid rule(s) provided")
+
     dbc = db_model.connect()
-    try:
-        testplan_id = str(dbc.testplan.save(new))
-    except DuplicateKeyError:
-        return HttpResponseBadRequest("testplan name is not unique")
+    testplan = dbc.testplan.find_one({"name": new['name']})
+    if testplan is not None:
+        return HttpResponse("testplan named '%s' already exists" % new['name'])
+
+    testplan_id = str(dbc.testplan.save(new))
     r = JsonResponse({"id": testplan_id}, status=200)
     r['location'] = "/api/testplan/%s" % testplan_id
     return r
@@ -112,10 +119,14 @@ def put(request, testplan_id):
             testplan['clientLatency'] = in_json['clientLatency']
         if "serverLatency" in in_json:
             testplan['serverLatency'] = in_json['serverLatency']
+        if "rules" in in_json:
+            testplan['rules'] = [rule_model.validate(rule) for rule in in_json['rules']]
+            if None in in_json['rules']:
+                return HttpResponse("invalid rule(s) provided")
         try:
             dbc.testplan.save(testplan)
         except DuplicateKeyError:
-            return HttpResponseBadRequest("updated testplan name is not unique")
+            return HttpResponseBadRequest("testplan named '%s' already exists" % in_json['name'])
         return HttpResponse(status=200)
 
 
@@ -129,5 +140,5 @@ def delete(request, testplan_id):
     if testplan is None:
         return HttpResponseNotFound("")
     else:
-        dbc.testplan.remove(testplan)
+        dbc.testplan.remove({"_id": ObjectId(testplan_id)})
         return HttpResponse(status=200)
