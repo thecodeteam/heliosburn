@@ -1212,8 +1212,8 @@ The following table shows the different kind of elements that can be specified i
 | Filter | Context | Description |
 |---|---|---|
 | httpProtocol | both | Text that will be compared to the request or response HTTP protocol. |
-| method | request | Text that will be compared to the request method. |
-| url | request | Text that will be compared to the request URL. |
+| method | both | Text that will be compared to the request method. |
+| url | both | Text that will be compared to the request URL. |
 | statusCode | response | Integer to be compared with the status code returned by the server. |
 | headers | both | List of header filters to be compared to the HTTP headers in the request or response. A header filter can contain either only the header key or both the header key and value. If it only contains the header key, only the key will be compared to the given headers. If it contains both the key and the value, both elements will be compared. |
 
@@ -1301,6 +1301,72 @@ The following example will modify all requests that use an HTTP protocol `HTTP/1
         "deleteHeaders": [
             {
                 "key": "User-Agent"
+            }
+        ]
+    }
+}
+```
+
+The next example will intercept all requests to the URL "http://example.com/foo/bas", independently of the method used, and immediately respond with a "400 Bad Request" response containing two headers and a custom payload. Note that the server will not even receive the request.
+
+
+```json
+{
+    "id": "32j45kbk3245b3245kbn",
+    "createdAt": "2014-02-12 03:34:51",
+    "updatedAt": "2014-02-12 03:34:52",
+    "ruleType": "request",
+    "testplanId": "k980ufd9g34kbwejv243v5342",
+    "filter": {
+        "url": "http://example.com/foo/bas"
+    },
+    "action": {
+        "type": "newResponse",
+        "httpProtocol": "HTTP/1.1",
+        "statusCode": 400,
+        "statusDescription": "Bad Request"
+        "headers": [
+            {
+                "key": "E-Tag",
+                "value": "9384253245"
+            },
+            {
+                "key": "Server",
+                "value": "HeliosBurn"
+            }
+        ],
+        "payload": "Intercepted by HeliosBurn"
+    }
+}
+```
+
+
+The rule below is applied at the "response" context (i.e. after receiving the response from the server and before forwarding it to the client). The rule activates when receiving a `200 OK` response from the server to a PUT request to the URL "http://example.com/foo/bar". If the filter matches the request and response, HeliosBurn will change the status code to `500 Internal Server Error` and set two additional headers.
+
+```json
+{
+    "id": "32j45kbk3245b3245kbn",
+    "createdAt": "2014-02-12 03:34:51",
+    "updatedAt": "2014-02-12 03:34:52",
+    "ruleType": "response",
+    "testplanId": "k980ufd9g34kbwejv243v5342",
+    "filter": {
+        "statusCode": 200,
+        "method": "PUT",
+        "url": "http://example.com/foo/bar"
+    },
+    "action": {
+        "type": "modify",
+        "statusCode": 500,
+        "statusDescription": "Internal Server Error"
+        "setHeaders": [
+            {
+                "key": "E-Tag",
+                "value": "9384253245"
+            },
+            {
+                "key": "Server",
+                "value": "HeliosBurn"
             }
         ]
     }
