@@ -25,7 +25,7 @@ def testplan_list(request):
 def testplan_details(request, testplan_id):
     try:
         testplan = TestPlan(auth_token=request.user.password).get(testplan_id)
-        rules = Rule(testplan_id, auth_token=request.user.password).get_all()
+        # rules = Rule(testplan_id, auth_token=request.user.password).get_all()
     except UnauthorizedException:
         return signout(request)
     except NotFoundException:
@@ -34,7 +34,7 @@ def testplan_details(request, testplan_id):
         messages.error(request, inst.message if inst.message else 'Unexpected error')
         return HttpResponseRedirect(reverse('testplan_list'))
 
-    data = {'testplan': testplan, 'rules': rules}
+    data = {'testplan': testplan}
     return render(request, 'testplan/testplan_details.html', data)
 
 
