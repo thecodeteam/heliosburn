@@ -55,7 +55,7 @@ def post(request, testplan_id):
     """
     Create a new rule within a testplan based on testplan_id.
     """
-    if request.METHOD != 'POST':
+    if request.method != 'POST':
         return HttpResponseBadRequest("only POST supported")
 
     try:
@@ -95,13 +95,12 @@ def put(request, testplan_id, rule_id):
     """
     try:
         new = json.loads(request.body)
-        assert 'id' in new
     except ValueError:
         return HttpResponseBadRequest("invalid JSON")
     except AssertionError:
         return HttpResponseBadRequest("argument mismatch")
 
-
+    new['id'] = rule_id
     rule = rule_model.validate(new)
     if rule is None:
         return HttpResponseBadRequest("invalid rule")
@@ -111,9 +110,10 @@ def put(request, testplan_id, rule_id):
     if testplan is None:
         return HttpResponseNotFound("testplan '%s' not found" % testplan_id)
 
-    for r in testplan['rules']:
-        if r['id'] == rule_id:
-            r = rule
+    for ri in range(0, len(testplan['rules'])):
+        if testplan['rules'][ri]['id'] == rule_id:
+            testplan['rules'][ri] = rule
+            break
 
     dbc.testplan.save(testplan)
     r = HttpResponse(status=200)
@@ -138,3 +138,4 @@ def delete(request, testplan_id, rule_id):
 
     dbc.testplan.save(testplan)
     r = HttpResponse(status=200)
+    return r
