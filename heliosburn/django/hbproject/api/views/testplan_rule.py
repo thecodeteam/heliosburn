@@ -55,6 +55,9 @@ def post(request, testplan_id):
     """
     Create a new rule within a testplan based on testplan_id.
     """
+    if request.METHOD != 'POST':
+        return HttpResponseBadRequest("only POST supported")
+
     try:
         new = json.loads(request.body)
     except ValueError:
