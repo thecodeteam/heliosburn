@@ -1,5 +1,7 @@
 # Validation model for a 'Rule'
 
+from bson import ObjectId
+
 
 def validate(rule):
     """
@@ -13,6 +15,10 @@ def validate(rule):
             new_rule['createdAt'] = rule['createdAt']
         if 'updatedAt' in rule:
             new_rule['updatedAt'] = rule['updatedAt']
+        if 'id' in rule:
+            new_rule['id'] = rule['id']
+        else:
+            new_rule['id'] = str(ObjectId())
 
         assert 'ruleType' in rule
         assert rule['ruleType'] in ('request', 'response')
