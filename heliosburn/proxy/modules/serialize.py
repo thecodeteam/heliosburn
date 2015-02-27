@@ -1,21 +1,13 @@
-from proxy.modules import IModule
-from proxy.modules import AbstractModule
-from zope.interface import implements
-from twisted.plugin import IPlugin
+from module import AbstractModule
 import time
 
 current_milli_time = lambda: int(time.time() * 1000000)
 
 
 class redisDump(AbstractModule):
-    implements(IPlugin, IModule)
     """
     Extension of AbstractModule class used to serialize items to Redis.
     """
-
-    def get_name(self):
-        self.name = "redisDump"
-        return self.name
 
     def onRequest(self, **kwargs):
         pass
@@ -71,3 +63,5 @@ class redisDump(AbstractModule):
                          % (score,))
         else:
             self.log.msg('Could not send message (%d)' % (score,))
+
+redis_dump = redisDump()

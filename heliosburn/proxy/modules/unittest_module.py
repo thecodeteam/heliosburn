@@ -1,19 +1,11 @@
-from proxy.modules import IModule
-from proxy.modules import AbstractModule
-from zope.interface import implements
-from twisted.plugin import IPlugin
+from module import AbstractModule
 
 
 class UnitTestModule(AbstractModule):
-    implements(IPlugin, IModule)
     """
     This module injects specific header/body attributes that proxy_core
     unittests looks for.
     """
-
-    def get_name(self):
-        self.name = "UnitTestModule"
-        return self.name
 
     def onRequest(self, **kwargs):
         """
@@ -30,3 +22,6 @@ class UnitTestModule(AbstractModule):
         content = self.getContent()
         content += "\nunit testing body response"
         self.setContent(content)
+
+
+unit_test_module = UnitTestModule()

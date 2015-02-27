@@ -3,8 +3,9 @@ from zope.interface import implements
 from zope.interface import Interface
 from twisted.plugin import IPlugin
 from twisted.plugin import getPlugins
+from twisted.plugin import pluginPackagePaths
 from twisted.python import log
-
+import modules
 
 """
 Simple Interface to handling proxy requests and responses via class instances.
@@ -31,8 +32,6 @@ class IModule(Interface):
 
         @rtype: C{string}
         """
-
-        return self.name
 
     def onRequest(self, **keywords):
         """
@@ -86,7 +85,7 @@ class AbstractModule(object):
         Initialization of a proxy module instance
         """
 
-        self.name = "Interface Module"
+        self.name = self.__class__.__name__
         self.log = log
         self.run_contexts = run_contexts
         self.context = context
@@ -267,34 +266,38 @@ class Registry(object):
     def __init__(self, modules_list):
         self.modules_list = modules_list
         self.modules = {}
-        for module in getPlugins(IModule, "plugins"):
-            self.modules[module.name] = module
 
-        print (getPlugins(IModule, "plugins"))
-        print (self.modules)
+        for module in getPlugins(IModule, modules):
+            if module.get_name in modules_list:
+                self.modules[module.name] = module
 
-    def _get_class(self, mod_dict):
-        """
-        Simple function which returns a class dynamically
-        when passed a dictionary containing the appropriate
-        information about a proxy module
+        log.msg("loaded modules: %s" % self.modules)
+#        from IPython.core.debugger import Tracer
+#        Tracer()()
 
-        """
-        log.msg("mod_dict: %s" % mod_dict)
-        module_path = mod_dict['path']
-        class_name = mod_dict['name']
-        try:
-            module = __import__(module_path, fromlist=[class_name])
-        except ImportError:
-            raise ValueError("Module '%s' could not be imported" %
-                             (module_path,))
+#    def _get_class(self, mod_dict):
+#        """
+#        Simple function which returns a class dynamically
+#        when passed a dictionary containing the appropriate
+#        information about a proxy module
+#
+#        """
 
-        try:
-            class_ = getattr(module, class_name)
-        except AttributeError:
-            raise ValueError("Module '%s' has no class '%s'" % (module_path,
-                                                                class_name,))
-        return class_
+#        log.msg("mod_dict: %s" % mod_dict)
+#        module_path = mod_dict['path']
+#        class_name = mod_dict['name']
+#        try:
+#            module = __import__(module_path, fromlist=[class_name])
+#        except ImportError:
+#            raise ValueError("Module '%s' could not be imported" %
+#                             (module_path,))
+
+#        try:
+#            class_ = getattr(module, class_name)
+#        except AttributeError:
+#            raise ValueError("Module '%s' has no class '%s'" % (module_path,
+#                                                                class_name,))
+#        return class_
 
     def run_plugins(self, context, request_object=None):
 
@@ -302,11 +305,6 @@ class Registry(object):
         Runs all proxy modules in the order specified in config.yaml
 
         """
-#       for module_dict in self.modules:
-#           class_ = self._get_class(module_dict)
-#           instance_ = class_(context=context,
-#                              request_object=request_object,
-#                              run_contexts=module_dict['run_contexts'])
-#           instance_.run(**module_dict['kwargs'])
-
+        for module in self.modules.values():
+            module.run()
 

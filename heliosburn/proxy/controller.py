@@ -20,7 +20,7 @@ from twisted.web import proxy
 from twisted.web import server
 from twisted.python import log
 from txredis.client import RedisClientFactory
-from modules import Registry
+from module import Registry
 from protocols import HBProxyClient
 from protocols import HBProxyClientFactory
 from protocols import HBReverseProxyRequest
