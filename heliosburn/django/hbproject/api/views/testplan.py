@@ -1,9 +1,12 @@
 from django.http import JsonResponse, HttpResponseNotFound, HttpResponseBadRequest, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
-from api.models import legacy_db_model
+from api.models import db_model
 from api.models.auth import RequireLogin
-from sqlalchemy.exc import IntegrityError
+from api.models import rule_model
+from pymongo.helpers import DuplicateKeyError
+from bson import ObjectId
 import json
+from datetime import datetime
 
 
 @csrf_exempt
@@ -30,53 +33,41 @@ def rest(request, *pargs):
 
 
 @RequireLogin()
-def get(request, testplan_id=None, dbsession=None):
+def get(request, testplan_id=None):
     """
     Retrieve test plan based on testplan_id.
     """
     if testplan_id is None:
-        return get_all_testplans(request, dbsession=dbsession)
+        return get_all_testplans()
 
-    testplan = dbsession.query(legacy_db_model.TestPlan).filter_by(id=testplan_id).first()
+    dbc = db_model.connect()
+    testplan = dbc.testplan.find_one({"_id": ObjectId(testplan_id)}, {'_id': 0})
     if testplan is None:
         return HttpResponseNotFound("")
     else:
-        return JsonResponse({
-            'id': testplan.id,
-            'name': testplan.name,
-            'description': testplan.description,
-            'createdAt': testplan.created_at,
-            'updatedAt': testplan.updated_at,
-            'latencyEnabled': testplan.latency_enabled,
-            'clientLatency': testplan.client_latency,
-            'serverLatency': testplan.server_latency,
-            'rules': len(testplan.rules),
-            }, status=200)
+        testplan['id'] = testplan_id  # Replace ObjectId with str version
+        return JsonResponse(testplan, status=200)
 
 
-def get_all_testplans(request, dbsession=None):
+def get_all_testplans():
     """
     Retrieve all test plans.
     """
-    testplans = dbsession.query(legacy_db_model.TestPlan).all()
-    all_testplans = list()
-    for testplan in testplans:
-        all_testplans.append({
-            'id': testplan.id,
-            'name': testplan.name,
-            'description': testplan.description,
-            'createdAt': testplan.created_at,
-            'updatedAt': testplan.updated_at,
-            'latencyEnabled': testplan.latency_enabled,
-            'clientLatency': testplan.client_latency,
-            'serverLatency': testplan.server_latency,
-            'rules': len(testplan.rules),
-            })
-    return JsonResponse({"testplans": all_testplans}, status=200)
+    dbc = db_model.connect()
+    testplans = [t for t in dbc.testplan.find()]
+    for t in testplans:
+        # Find and append any sessions within each testplan
+        sessions = [s for s in dbc.session.find({"testplan": t['_id']})]
+
+        for s in sessions:  # Translate _id to id
+            s['id'] = str(s.pop('_id'))
+        t['id'] = str(t.pop('_id'))
+
+    return JsonResponse({"testplans": testplans}, status=200)
 
 
 @RequireLogin()
-def post(request, dbsession=None):
+def post(request):
     """
     Create new test plan.
     """
@@ -88,25 +79,26 @@ def post(request, dbsession=None):
     except AssertionError:
         return HttpResponseBadRequest("argument mismatch")
 
-    testplan = legacy_db_model.TestPlan(name=new['name'])
-    if "description" in new:
-        testplan.description = new['description']
-    if "latencyEnabled" in new:
-        testplan.latency_enabled = new['latencyEnabled']
-    if "clientLatency" in new:
-        testplan.client_latency = new['clientLatency']
-    if "serverLatency" in new:
-        testplan.server_latency = new['serverLatency']
+    if 'rules' in new:
+        new['rules'] = [rule_model.validate(rule) for rule in new['rules']]
+        if None in new['rules']:  # Invalid rules are re-assigned to None
+            return HttpResponse("invalid rule(s) provided")
 
-    dbsession.add(testplan)
-    dbsession.commit()
-    r = JsonResponse({"id": testplan.id}, status=200)
-    r['location'] = "/api/testplan/%d" % testplan.id
+    dbc = db_model.connect()
+    testplan = dbc.testplan.find_one({"name": new['name']})
+    if testplan is not None:
+        return HttpResponse("testplan named '%s' already exists" % new['name'])
+
+    new['createdAt'] = datetime.isoformat(datetime.now())
+    new['updatedAt'] = datetime.isoformat(datetime.now())
+    testplan_id = str(dbc.testplan.save(new))
+    r = JsonResponse({"id": testplan_id}, status=200)
+    r['location'] = "/api/testplan/%s" % testplan_id
     return r
 
 
 @RequireLogin()
-def put(request, testplan_id, dbsession=None):
+def put(request, testplan_id):
     """
     Update existing test plan based on testplan_id.
     """
@@ -115,42 +107,42 @@ def put(request, testplan_id, dbsession=None):
     except ValueError:
         return HttpResponseBadRequest("invalid JSON")
 
-    testplan = dbsession.query(legacy_db_model.TestPlan).filter_by(id=testplan_id).first()
+    dbc = db_model.connect()
+    testplan = dbc.testplan.find_one({"_id": ObjectId(testplan_id)})
     if testplan is None:
         return HttpResponseNotFound("")
     else:
         if "name" in in_json:
-            testplan.name = in_json['name']
+            testplan['name'] = in_json['name']
         if "description" in in_json:
-            testplan.description = in_json['description']
+            testplan['description'] = in_json['description']
         if "latencyEnabled" in in_json:
-            testplan.latency_enabled = in_json['latencyEnabled']
+            testplan['latencyEnabled'] = in_json['latencyEnabled']
         if "clientLatency" in in_json:
-            testplan.client_latency = in_json['clientLatency']
+            testplan['clientLatency'] = in_json['clientLatency']
         if "serverLatency" in in_json:
-            testplan.server_latency = in_json['serverLatency']
+            testplan['serverLatency'] = in_json['serverLatency']
+        if "rules" in in_json:
+            testplan['rules'] = [rule_model.validate(rule) for rule in in_json['rules']]
+            if None in in_json['rules']:
+                return HttpResponse("invalid rule(s) provided")
         try:
-            dbsession.commit()
-        except IntegrityError:
-            return HttpResponseBadRequest("constraint violated")
+            testplan['updatedAt'] = datetime.isoformat(datetime.now())
+            dbc.testplan.save(testplan)
+        except DuplicateKeyError:
+            return HttpResponseBadRequest("testplan named '%s' already exists" % in_json['name'])
         return HttpResponse(status=200)
 
 
 @RequireLogin()
-def delete(request, testplan_id, dbsession=None):
+def delete(request, testplan_id):
     """
     Delete test plan based on testplan_id.
     """
-    testplan = dbsession.query(legacy_db_model.TestPlan).filter_by(id=testplan_id).first()
+    dbc = db_model.connect()
+    testplan = dbc.testplan.find_one({"_id": ObjectId(testplan_id)})
     if testplan is None:
         return HttpResponseNotFound("")
     else:
-        dbsession.delete(testplan)
-        try:
-            dbsession.commit()
-        except IntegrityError:
-            return HttpResponseBadRequest("constraint violated")
+        dbc.testplan.remove({"_id": ObjectId(testplan_id)})
         return HttpResponse(status=200)
-
-
-

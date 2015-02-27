@@ -1,10 +1,24 @@
 #!/usr/bin/env python
 import os
 import sys
+import dotenv
+
+dotenv.read_dotenv()
 
 if __name__ == "__main__":
-    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "hbproject.settings")
 
-    from django.core.management import execute_from_command_line
+    ENVIRONMENT = os.getenv('ENVIRONMENT')
+
+    if ENVIRONMENT == 'STAGING':
+        settings = 'staging'
+    elif ENVIRONMENT == 'PRODUCTION':
+        settings = 'production'
+    else:
+        settings = 'development'
+
+    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "hbproject.settings")
+    os.environ.setdefault('DJANGO_CONFIGURATION', settings.title())
+
+    from configurations.management import execute_from_command_line
 
     execute_from_command_line(sys.argv)

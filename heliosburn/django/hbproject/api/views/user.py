@@ -1,11 +1,10 @@
 from django.http import JsonResponse, HttpResponseBadRequest, HttpResponseNotFound, HttpResponse, HttpResponseForbidden
 from django.views.decorators.csrf import csrf_exempt
-from sqlalchemy.exc import IntegrityError
-from api.models import legacy_db_model
 from api.models import auth
 from api.models.auth import RequireLogin
 import hashlib
 import json
+from datetime import datetime
 
 
 @csrf_exempt
@@ -38,7 +37,7 @@ def get(request, username=None):
     Retrieve user based on username.
     """
     if username is None:  # Retrieve all users
-        return get_all_users(request)
+        return get_all_users()
 
     # Users can only retrieve their own account, unless admin
     if (request.user['username'] != username) and (auth.is_admin(request.user) is False):
@@ -46,7 +45,7 @@ def get(request, username=None):
 
     from api.models import db_model
     dbc = db_model.connect()
-    user = dbc.user.find_one({"username": username}, {"_id": 0})
+    user = dbc.hbuser.find_one({"username": username}, {"_id": 0})
     if user is None:
         return HttpResponseNotFound(status=404)
     else:
@@ -54,17 +53,17 @@ def get(request, username=None):
 
 
 @RequireLogin(role='admin')
-def get_all_users(request):  # TODO: this should require admin
+def get_all_users(request):
     """
     Retrieve all users.
     """
     from api.models import db_model
     dbc = db_model.connect()
-    return JsonResponse({"users": [user for user in dbc.user.find({}, {"_id": 0})]}, status=200)
+    return JsonResponse({"users": [user for user in dbc.hbuser.find({}, {"_id": 0})]}, status=200)
 
 
 @RequireLogin(role='admin')
-def post(request, dbsession=None):
+def post(request):
     """
     Create a new user.
     """
@@ -80,16 +79,18 @@ def post(request, dbsession=None):
 
     from api.models import db_model
     dbc = db_model.connect()
-    user = dbc.user.find_one({"username": new['username']})
+    user = dbc.hbuser.find_one({"username": new['username']})
     if user is not None:
         return HttpResponseBadRequest("user already exists")
     else:
         m = hashlib.sha512()
         m.update(new['password'])
-        dbc.user.save({
+        dbc.hbuser.save({
             'username': new['username'],
             'email': new['email'],
-            'password': m.hexdigest()
+            'password': m.hexdigest(),
+            'createdAt': datetime.isoformat(datetime.now()),
+            'updatedAt': datetime.isoformat(datetime.now()),
         })
         r = HttpResponse(status=200)
         r['location'] = "/api/user/%s" % new['username']
@@ -112,22 +113,18 @@ def put(request, username):
 
     from api.models import db_model
     dbc = db_model.connect()
-    user = dbc.user.find_one({"username": username})
+    user = dbc.hbuser.find_one({"username": username})
     if user is None:
         return HttpResponseNotFound("")
     else:
-        if "username" in in_json:
-            user['username'] = in_json['username']
         if "password" in in_json:
             m = hashlib.sha512()
             m.update(in_json['password'])
             user['password'] = m.hexdigest()
         if "email" in in_json:
             user['email'] = in_json['email']
-        try:
-            dbc.user.save(user)
-        except IntegrityError:
-            return HttpResponseBadRequest("user already exists", status=409)
+        user['updatedAt'] = datetime.isoformat(datetime.now())
+        dbc.hbuser.save(user)
         return HttpResponse(status=200)
         
 
@@ -138,10 +135,9 @@ def delete(request, username):
     """
     from api.models import db_model
     dbc = db_model.connect()
-    user = dbc.user.find_one({"username": username})
+    user = dbc.hbuser.find_one({"username": username})
     if user is None:
         return HttpResponseNotFound("user not found", status=404)
     else:
-        dbc.user.remove(user)
+        dbc.hbuser.remove(user)
         return HttpResponse(status=200)
-

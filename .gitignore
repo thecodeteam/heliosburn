@@ -73,3 +73,8 @@ _trial_temp
 
 # iPython notebooks
 *.ipynb
+# django-dotenv
+.env
+
+# SQLite database
+*.sqlite3

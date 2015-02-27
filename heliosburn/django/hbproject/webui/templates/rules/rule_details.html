@@ -39,7 +39,7 @@
             $('#id_ruleName').editable({
                 url: '{% url 'rule_update' testplan.id rule.id %}',
                 type: 'text',
-                pk: {{ rule.id }},
+                pk: '{{ rule.id }}',
                 name: 'ruleName',
                 title: 'Rule name',
                 inputclass: 'title-input',
@@ -50,7 +50,7 @@
             $('#id_ruleDescription').editable({
                 url: '{% url 'rule_update' testplan.id rule.id %}',
                 type: 'textarea',
-                pk: {{ rule.id }},
+                pk: '{{ rule.id }}',
                 name: 'ruleDescription',
                 title: 'Rule description',
                 inputclass: 'description-input',
@@ -60,11 +60,11 @@
             $('#id_ruleType').editable({
                 url: '{% url 'rule_update' testplan.id rule.id %}',
                 type: 'select',
-                pk: {{ rule.id }},
+                pk: '{{ rule.id }}',
                 name: 'ruleType',
                 title: 'Rule type',
                 mode: 'popup',
-                value: '{{ rule.type }}',
+                value: '{{ rule.ruleType }}',
                 source: [{value: 'request', text: "Request"}, {value: 'response', text: "Response"}],
                 emptytext: "Empty",
                 params: '{csrfmiddlewaretoken:"{{csrf_token}}"}'
@@ -73,7 +73,7 @@
             $('#id_ruleEnabled').editable({
                 url: '{% url 'rule_update' testplan.id rule.id %}',
                 type: 'select',
-                pk: {{ rule.id }},
+                pk: '{{ rule.id }}',
                 name: 'ruleEnabled',
                 title: 'Enabled',
                 mode: 'popup',
@@ -245,7 +245,7 @@
                         <dt>Description</dt>
                         <dd><a href="#" id="id_ruleDescription">{{ rule.description }}</a></dd>
                         <dt>Type</dt>
-                        <dd><a href="#" id="id_ruleType">{{ rule.type }}</a></dd>
+                        <dd><a href="#" id="id_ruleType">{{ rule.ruleType }}</a></dd>
                         <dt>Enabled</dt>
                         <dd><a href="#" id="id_ruleEnabled">{{ rule.enabled }}</a></dd>
                         <dt>Created at</dt>

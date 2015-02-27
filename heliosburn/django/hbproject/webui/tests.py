@@ -65,8 +65,6 @@ class SigninTest(BaseTest):
 
 class WebuiSignedInTest(BaseTest):
     def setUp(self):
-        BaseTest.setUp(self)
-
         response = self.client.post('/webui/signin/', {'username': 'admin', 'password': 'admin'})
         self.assertRedirects(response, 'webui/')
 
