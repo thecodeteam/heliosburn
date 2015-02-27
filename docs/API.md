@@ -1857,9 +1857,9 @@ Server: Noelios-Restlet-Engine/1.1.5
 
 
 
-## Start a new recording
+## Start a recording
 
-To start a new recording an application must issue a HTTP POST request to the URL that represents the Recording.
+To start a recording an application must issue a HTTP POST request to the URL that represents the Recording.
 
 ### Request
 
