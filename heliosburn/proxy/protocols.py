@@ -20,14 +20,14 @@ class HBProxyClient(ProxyClient):
 
     """
     def __init__(self, command, rest, version, headers, data, father,
-                 plugin_registry):
+                 module_registry):
         """
         Override ProxyClient.__init__ to accept HBModuleRegistry
         as a parameter
 
         """
 
-        self.plugin_registry = plugin_registry
+        self.module_registry = module_registry
         ProxyClient.__init__(self, command, rest, version, headers, data,
                              father)
 
@@ -36,14 +36,12 @@ class HBProxyClient(ProxyClient):
         Invoked after a status code and message are received
         """
         ProxyClient.handleStatus(self, version, code, message)
-#        self.plugin_registry.run_plugins(context='response',
-#                                         request_object=self.father)
+        self.plugin_registry.handle_status()
 
-    def handleResponsePart(self, buffer):
+    def handleResponse(self, buffer):
 
-        self.father.response_content = BytesIO(buffer)
-        self.plugin_registry.run_plugins(context='response',
-                                         request_object=self.father)
+        self.module_registry.handle_response(BytesIO(buffer))
+#       self.father.response_content = BytesIO(buffer)
 
         self.father.headers['Content-Length'] = len(self.father.
                                                     content.getvalue())
@@ -55,6 +53,8 @@ class HBProxyClient(ProxyClient):
         """
         ProxyClient.handleHeader(self, key, value)
 
+        self.module_registry.handle_header()
+
 
 class HBProxyClientFactory(ProxyClientFactory):
     """
@@ -63,13 +63,13 @@ class HBProxyClientFactory(ProxyClientFactory):
     """
 
     def __init__(self, command, rest, version, headers, data, father,
-                 plugin_registry):
+                 module_registry):
         """
         Override ProxyClientFactory.__init__ to return HBProxyClient
 
         """
 
-        self.plugin_registry = plugin_registry
+        self.module_registry = module_registry
         ProxyClientFactory.__init__(self, command, rest, version, headers,
                                     data, father)
 
@@ -81,7 +81,7 @@ class HBProxyClientFactory(ProxyClientFactory):
 
         return HBProxyClient(self.command, self.rest, self.version,
                              self.headers, self.data, self.father,
-                             self.plugin_registry)
+                             self.module_registry)
 
 
 class HBReverseProxyRequest(ReverseProxyRequest):
@@ -94,9 +94,9 @@ class HBReverseProxyRequest(ReverseProxyRequest):
     proxyClientFactoryClass = HBProxyClientFactory
 
     def __init__(self, upstream_host, upstream_port, channel,
-                 queued, plugin_registry, reactor=reactor):
+                 queued, module_registry, reactor=reactor):
 
-        self.plugin_registry = plugin_registry
+        self.module_registry = module_registry
         self.upstream_host = upstream_host
         self.upstream_port = upstream_port
 
@@ -109,8 +109,7 @@ class HBReverseProxyRequest(ReverseProxyRequest):
         documentation.
         """
 
-        self.plugin_registry.run_plugins(context='request',
-                                         request_object=self)
+        self.module_registry.handle_request(request_object=self)
         log.msg("VERB: {}.method, URI: {}.uri, HEADERS: {}.requestHeaders".
                 format(self, self, self))
 
@@ -120,7 +119,7 @@ class HBReverseProxyRequest(ReverseProxyRequest):
                                                      self.getAllHeaders(),
                                                      self.content.read(),
                                                      self,
-                                                     self.plugin_registry)
+                                                     self.module_registry)
 
         self.reactor.connectTCP(self.upstream_host, self.upstream_port,
                                 clientFactory)
@@ -136,8 +135,8 @@ class HBReverseProxyResource(ReverseProxyResource):
     """
     proxyClientFactoryClass = HBProxyClientFactory
 
-    def __init__(self, host, port, path, plugin_registry, reactor=reactor):
-        self.plugin_registry = plugin_registry
+    def __init__(self, host, port, path, module_registry, reactor=reactor):
+        self.module_registry = module_registry
         ReverseProxyResource.__init__(self, host, port, path, reactor)
 
     def getChild(self, path, request):
@@ -149,7 +148,7 @@ class HBReverseProxyResource(ReverseProxyResource):
         return HBReverseProxyResource(
             self.host, self.port,
             self.path + '/' + urlquote(path, safe=""),
-            self.plugin_registry,
+            self.module_registry,
             self.reactor)
 
 

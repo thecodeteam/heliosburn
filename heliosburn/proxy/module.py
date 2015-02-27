@@ -29,26 +29,27 @@ class IModule(Interface):
     def get_name(self):
         """
         Returns the unique name of the module
-
         @rtype: C{string}
         """
 
-    def onRequest(self, **keywords):
+    def handle_request(self, **keywords):
         """
-        Called by .run() when instantiated with a run_context that includes
-        'request'.
-        """
-
-    def onStatus(self, **keywords):
-        """
-        Called by .run() when instantiated with a run_context that includes
-        'status'.
+        Called to handle proxy request event
         """
 
-    def onResponse(self, **keywords):
+    def handle_status(self, **keywords):
         """
-        Called by .run() when instantiated with a run_context that includes
-        'response'.
+        Called to handle proxy status event
+        """
+
+    def handle_response(self, **keywords):
+        """
+        Called to handle proxy response event
+        """
+
+    def handle_header(self, **keywords):
+        """
+        Called to handle proxy header event
         """
 
     def reset(self, **keywords):
@@ -56,13 +57,6 @@ class IModule(Interface):
         If the module maintains state, this method is called to reset
         the current state of the module
 
-        """
-
-    def run(self, **keywords):
-        """
-        Called by run_modules() after a module has been loaded (instantiated).
-        if a given (predefined) context is listed in 'run_contexts', the
-        respective method is called.
         """
 
 
@@ -72,52 +66,45 @@ class AbstractModule(object):
     """
     Base class used to implement a twisted plugin based IModule interface.
 
-    .run() is called in every (defined) context.
-
-    Currently implemented contexts:
-        'request'
-        'response'
     """
 
-    def __init__(self, run_contexts=[], context=None,
-                 request_object=None):
+    def __init__(self):
         """
         Initialization of a proxy module instance
         """
 
         self.name = self.__class__.__name__
         self.log = log
-        self.run_contexts = run_contexts
-        self.context = context
-        self.request_object = request_object
 
     def get_name(self):
         """
-        Returns the name of the module
+        Returns the unique name of the module
         """
-
         return self.name
 
-    def onRequest(self, **keywords):
+    def handle_request(self, **keywords):
         """
-        Called by .run() when instantiated with a run_context that includes
-        'request'.
+        Called by to handle proxy request event
         """
         self.log.msg("Request: %s" % keywords)
 
-    def onStatus(self, **keywords):
+    def handle_status(self, **keywords):
         """
-        Called by .run() when instantiated with a run_context that includes
-        'status'.
+        Called to handle proxy status event
         """
         self.log.msg("Status: %s" % keywords)
 
-    def onResponse(self, **keywords):
+    def handle_response(self, **keywords):
         """
-        Called by .run() when instantiated with a run_context that includes
-        'response'.
+        Called to handle proxy response event
         """
         self.log.msg("Response: %s" % keywords)
+
+    def handle_header(self, **keywords):
+        """
+        Called to handle proxy header event
+        """
+        self.log.msg("header: %s" % keywords)
 
     def reset(self, **keywords):
         """
@@ -125,22 +112,6 @@ class AbstractModule(object):
         the current state of the module
         """
         self.log.msg("Response: %s" % keywords)
-
-    def run(self, **keywords):
-        """
-        Called by run_modules() after a module has been loaded (instantiated).
-        if a given (predefined) context is listed in 'run_contexts', the
-        respective method is called.
-        """
-        options = {
-            'request': self.onRequest,
-            'status': self.onStatus,
-            'response': self.onResponse,
-        }
-        if self.context in self.run_contexts:
-            options[self.context](**keywords)
-        else:
-            self.log.msg("not my turn yet")
 
     def getProtocol(self):
         if self.context in ['request', 'response']:
@@ -272,39 +243,44 @@ class Registry(object):
                 self.modules[module.name] = module
 
         log.msg("loaded modules: %s" % self.modules)
-#        from IPython.core.debugger import Tracer
-#        Tracer()()
 
-#    def _get_class(self, mod_dict):
-#        """
-#        Simple function which returns a class dynamically
-#        when passed a dictionary containing the appropriate
-#        information about a proxy module
-#
-#        """
-
-#        log.msg("mod_dict: %s" % mod_dict)
-#        module_path = mod_dict['path']
-#        class_name = mod_dict['name']
-#        try:
-#            module = __import__(module_path, fromlist=[class_name])
-#        except ImportError:
-#            raise ValueError("Module '%s' could not be imported" %
-#                             (module_path,))
-
-#        try:
-#            class_ = getattr(module, class_name)
-#        except AttributeError:
-#            raise ValueError("Module '%s' has no class '%s'" % (module_path,
-#                                                                class_name,))
-#        return class_
-
-    def run_plugins(self, context, request_object=None):
+    def handle_request(self, request_object=None):
 
         """
-        Runs all proxy modules in the order specified in config.yaml
-
+        Executes the handle_request method of all currently active modules
         """
         for module in self.modules.values():
-            module.run()
+            module.handle_request(request_object)
+
+    def handle_response(self):
+
+        """
+        Executes the handle_response method of all currently active modules
+        """
+        for module in self.modules.values():
+            module.handle_response()
+
+    def handle_status(self):
+
+        """
+        Executes the handle_status method of all currently active modules
+        """
+        for module in self.modules.values():
+            module.handle_status()
+
+    def handle_header(self):
+
+        """
+        Executes the handle_header method of all currently active modules
+        """
+        for module in self.modules.values():
+            module.handle_header()
+
+    def reset(self):
+
+        """
+        Executes the reset method of all currently active modules
+        """
+        for module in self.modules.values():
+            module.reset()
 

@@ -408,10 +408,11 @@ class HBProxyController(object):
         response = redis.subscribe()
 
     def run(self):
-        self.module_registry.run_plugins(context='None')
 
         reactor.listenTCP(self.tcp_mgmt_port, self.mgmt_protocol_factory,
                           interface=self.tcp_mgmt_address)
+
+#        self.module_registry.run_plugins(context='None')
 
         self.start_proxy()
         self._start_logging()
