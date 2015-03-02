@@ -49,7 +49,6 @@ def get(request, testplan_id, rule_id):
         return JsonResponse(rule[0], status=200)
 
 
-@csrf_exempt
 @RequireLogin()
 def post(request, testplan_id):
     """
