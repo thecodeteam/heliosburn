@@ -412,7 +412,7 @@ An application can stop a running Session by issuing an HTTP POST request to the
 ### Request
 
 #### URL
-`/session/:id/stop`, for example, `/session/23/stop` to start the Session with ID 23.
+`/session/:id/stop`, for example, `/session/23/stop`.
 
 #### Method
 POST

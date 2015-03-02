@@ -98,7 +98,6 @@ To start a recording an application must issue a HTTP POST request to the URL th
 #### Method
 POST
 
-####
 
 ### Response
 
@@ -164,5 +163,82 @@ Server: Noelios-Restlet-Engine/1.1.5
     "status": "busy",
     "busySince": "2014-02-12 03:34:51",
     "busyWith": "http://api.heliosburn.com/session/23"
+}
+```
+
+
+
+
+
+## Stop a Recording
+
+An application can stop a running Recording by issuing an HTTP POST request to the URL that represents the stop of a Session.
+
+### Request
+
+#### URL
+`/recording/:id/stop`, for example, `/recording/23/stop`.
+
+#### Method
+POST
+
+#### Request example
+
+```
+POST https://api.heliosburn.com/session/23/stop HTTP/1.1
+User-Agent: Jakarta Commons-HttpClient/3.1
+Host: api.heliosburn.com
+Content-Length: 0
+```
+### Response
+
+#### Response Header
+The response header includes the following information:
+
+| Field | Description |
+|---|---|
+| Content-Type | The content type and character encoding of the response. |
+| Content-Length | The length of the content. |
+
+#### Response Body
+
+JSON input that contains the following elements.
+
+| Element | Description |
+|---|---|
+| id | An integer value that uniquely identifies the Session execution. |
+| sessionId | An integer value that uniquely identifies the Session. |
+| startedAt | A dateTime value that specifies the date and time the Session was started. |
+| stoppedAt | A dateTime value that specifies the date and time the Session was stopped. |
+| requests | An integer value containing the number of requests processed during the execution. |
+| matches | An integer value containing the number of requests that matched a rule. |
+
+#### Status Codes
+
+| Status Code | Description |
+|---|---|
+| 200-299 | The request was successful. The Session was successfully stopped. |
+| 400 | Bad request. Typically returned if required information was not provided as input. |
+| 404 | Not found. The resource was not found. |
+| 409 | Conflict. HeliosBurn cannot stop the Session due to a conflict. The Session may not be running. |
+| 500-599 | Server error. |
+
+#### Response Example
+
+```
+HTTP/1.1 200 OK
+Content-Type: application/octet-stream; charset=UTF-8
+Content-Length: 213
+Date: Wed, 14 Dec 2014 19:35:02 GMT
+Access-Control-Allow-Origin: *
+Server: Noelios-Restlet-Engine/1.1.5
+
+{
+    "id": 32,
+    "sessionId": 18,
+    "startedAt": "2014-02-12 03:34:51",
+    "stoppedAt": "2014-02-12 03:54:33",
+    "requests": 841,
+    "matches": 320
 }
 ```
