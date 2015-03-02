@@ -15,7 +15,7 @@ package { ['python-software-properties']:
   require => Exec['apt-get update'],
 }
 
-$sysPackages = ['git', 'curl', 'postgresql-server-dev-9.3', 'ipython-notebook']
+$sysPackages = ['git', 'curl', 'ipython-notebook']
 package { $sysPackages:
   ensure => "installed",
   require => Exec['apt-get update'],
@@ -38,17 +38,5 @@ class {'::mongodb::server':
   port    => 27017,
   verbose => true,
 }
-
-class { 'postgresql::server':
-  ip_mask_allow_all_users    => '0.0.0.0/0',
-  listen_addresses           => '*',
-  postgres_password          => 'postgres',
-}
-
-postgresql::server::db { 'heliosburn':
-  user     => 'heliosburn',
-  password => postgresql_password('heliosburn', 'heliosburn'),
-}
-
 
 include redis

@@ -17,7 +17,7 @@ from configurations import Configuration, values
 
 class Common(Configuration):
 
-    from mongoengine import *
+    from mongoengine import connect
     connect('heliosburn')
 
     BASE_DIR = os.path.dirname(os.path.dirname(__file__))

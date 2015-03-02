@@ -6,7 +6,6 @@ django-bootstrap-breadcrumbs
 redis
 PyYAML
 CherryPy
-SQLAlchemy
 selenium
 txredis
 django-bootstrap3
