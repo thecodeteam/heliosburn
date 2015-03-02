@@ -10,7 +10,7 @@ from datetime import datetime
 
 
 @csrf_exempt
-def rest(request, *pargs):
+def rest(request, *pargs, **kwargs):
     """
     Calls python function corresponding with HTTP METHOD name. 
     Calls with incomplete arguments will return HTTP 400
@@ -27,7 +27,7 @@ def rest(request, *pargs):
         return JsonResponse({"error": "HTTP METHOD UNKNOWN"})
 
     try:
-        return rest_function(request, *pargs)
+        return rest_function(request, *pargs, **kwargs)
     except TypeError:
         return HttpResponseBadRequest("argument mismatch")
 
@@ -49,7 +49,7 @@ def get(request, testplan_id, rule_id):
         return JsonResponse(rule[0], status=200)
 
 
-
+@csrf_exempt
 @RequireLogin()
 def post(request, testplan_id):
     """
