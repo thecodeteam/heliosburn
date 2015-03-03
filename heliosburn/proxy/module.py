@@ -1,6 +1,8 @@
 import io
+import sys
 from zope.interface import implements
 from zope.interface import Interface
+from twisted.internet import defer
 from twisted.plugin import IPlugin
 from twisted.plugin import getPlugins
 from twisted.plugin import pluginPackagePaths
@@ -82,29 +84,39 @@ class AbstractModule(object):
         """
         return self.name
 
-    def handle_request(self, **keywords):
+    def set_log(self, log):
+        self.log = log
+
+    def log(self):
+        return self.log
+
+    def handle_request(self, request, **keywords):
         """
         Called by to handle proxy request event
         """
         self.log.msg("Request: %s" % keywords)
+        return request
 
-    def handle_status(self, **keywords):
-        """
-        Called to handle proxy status event
-        """
-        self.log.msg("Status: %s" % keywords)
-
-    def handle_response(self, **keywords):
+    def handle_response(self, response,  **keywords):
         """
         Called to handle proxy response event
         """
         self.log.msg("Response: %s" % keywords)
+        return response
 
-    def handle_header(self, **keywords):
+    def handle_status(self, status, **keywords):
+        """
+        Called to handle proxy status event
+        """
+        self.log.msg("Status: %s" % keywords)
+        return status
+
+    def handle_header(self, header, **keywords):
         """
         Called to handle proxy header event
         """
         self.log.msg("header: %s" % keywords)
+        return header
 
     def reset(self, **keywords):
         """
@@ -236,45 +248,69 @@ class Registry(object):
 
     def __init__(self, modules_list):
         self.modules_list = modules_list
-        self.modules = {}
 
-        for module in getPlugins(IModule, modules):
-            if module.get_name in modules_list:
-                self.modules[module.name] = module
+        self.request = defer.Deferred()
+        self.response = defer.Deferred()
+        self.status = defer.Deferred()
+        self.header = defer.Deferred()
+
+        self.request.addCallback(self.handle_request)
+        self.response.addCallback(self.handle_response)
+        self.status.addCallback(self.handle_status)
+        self.header.addCallback(self.handle_header)
+
+        plugins = {plugin.get_name(): plugin for plugin in
+                   getPlugins(IModule, modules)}
+
+        self.modules = {}
+        for module in modules_list['modules']:
+            module_name = module['name']
+            plugin = plugins[module_name]
+            plugin.set_log(self.log)
+            self.modules[module_name] = plugin
+            self.request.addCallback(plugin.handle_request)
+            self.response.addCallback(plugin.handle_response)
+            self.status.addCallback(plugin.handle_status)
+            self.header.addCallback(plugin.handle_header)
 
         log.msg("loaded modules: %s" % self.modules)
 
-    def handle_request(self, request_object=None):
+    def handle_request(self, request):
 
         """
         Executes the handle_request method of all currently active modules
         """
-        for module in self.modules.values():
-            module.handle_request(request_object)
+        log.msg("Started handling of request: %s" % request)
 
-    def handle_response(self):
+        return request
+
+    def handle_response(self, response):
 
         """
         Executes the handle_response method of all currently active modules
         """
-        for module in self.modules.values():
-            module.handle_response()
+        log.msg("Started handling of response: %s" % response)
 
-    def handle_status(self):
+        return response
+
+    def handle_status(self, status):
 
         """
         Executes the handle_status method of all currently active modules
         """
-        for module in self.modules.values():
-            module.handle_status()
 
-    def handle_header(self):
+        log.msg("Started handling of status: %s" % status)
+
+        return status
+
+    def handle_header(self, header):
 
         """
         Executes the handle_header method of all currently active modules
         """
-        for module in self.modules.values():
-            module.handle_header()
+
+        log.msg("Started handling of header: %s" % header)
+        return header
 
     def reset(self):
 

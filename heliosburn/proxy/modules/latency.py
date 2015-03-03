@@ -1,9 +1,10 @@
 from module import AbstractModule
+from twisted.python import log
 
 
-class addLag(AbstractModule):
+class Latency(AbstractModule):
 
-    def onRequest(self, minimum=1, maximum=1, **keywords):
+    def handle_request(self, request, minimum=1, maximum=1, **keywords):
         import time
         import random
 
@@ -18,10 +19,9 @@ class addLag(AbstractModule):
             lagtime = random.randrange(minimum, maximum)
 
         if lagtime is not None:
-            print "sleeping for: %s (%s, %s)" % (lagtime, minimum, maximum)
+            log.msg("sleeping for: %s (%s, %s)" % (lagtime, minimum, maximum))
             time.sleep(lagtime)
-        else:
-            print "pretend we slept here"
 
+        return request
 
-add_lag = addLag()
+latency = Latency()

@@ -1,27 +1,25 @@
 from module import AbstractModule
 import time
+import json
+import redis
+import datetime
 
-current_milli_time = lambda: int(time.time() * 1000000)
 
-
-class redisDump(AbstractModule):
+class TrafficStream(AbstractModule):
     """
     Extension of AbstractModule class used to serialize items to Redis.
     """
 
-    def onRequest(self, **kwargs):
-        pass
+    def _get_current_time(self):
+        return int(time.time() * 1000000)
 
-    def onResponse(self, **kwargs):
+    def handle_response(self, response, **kwargs):
         """
         Default redis serializer.
 
         Processes both proxy request and client response objects after
         response is received
         """
-        import json
-        import redis
-        import datetime
 
         now = datetime.datetime.now()
 
@@ -49,7 +47,7 @@ class redisDump(AbstractModule):
                               port=kwargs['redis_port'],
                               db=kwargs['redis_db'])
 
-        score = current_milli_time()
+        score = self._get_current_time()
 
         # Remove traffic older than 1 second
         result = r.zremrangebyscore('heliosburn.traffic', '-inf',
@@ -64,4 +62,6 @@ class redisDump(AbstractModule):
         else:
             self.log.msg('Could not send message (%d)' % (score,))
 
-redis_dump = redisDump()
+        return response
+
+traffic_recorder = TrafficRecorder()

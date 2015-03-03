@@ -3,7 +3,7 @@ from module import AbstractModule
 
 class SampleModule(AbstractModule):
 
-    def onRequest(self, **kwargs):
+    def handle_request(self, request, **kwargs):
 
         headers = self.getAllHeaders()
         print headers
@@ -29,7 +29,7 @@ class SampleModule(AbstractModule):
         print content
         self.setContent('Content modified by HeliosBurn in REQUEST!')
 
-    def onResponse(self, **kwargs):
+    def handle_response(self, response, **kwargs):
         headers = self.getAllHeaders()
         print headers
         self.setHeader('Server', 'Proxied by Helios (Response)')

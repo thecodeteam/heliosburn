@@ -370,9 +370,9 @@ class HBProxyController(object):
                  response_channel, tcp_mgmt, tcp_mgmt_address, tcp_mgmt_port,
                  plugins):
 
-        # Set a marker for our code path
-        self.base_path = dirname(abspath(getsourcefile(lambda _: None)))
         self.bind_address = bind_address
+#       self.base_path = dirname(abspath(getsourcefile(lambda _: None)))
+        self._start_logging()
         self.protocols = protocols
         self.upstream_host = upstream_host
         self.upstream_port = upstream_port
@@ -412,10 +412,7 @@ class HBProxyController(object):
         reactor.listenTCP(self.tcp_mgmt_port, self.mgmt_protocol_factory,
                           interface=self.tcp_mgmt_address)
 
-#        self.module_registry.run_plugins(context='None')
-
         self.start_proxy()
-        self._start_logging()
         redis_endpoint = TCP4ClientEndpoint(reactor, self.redis_host,
                                             self.redis_port)
 
@@ -541,7 +538,6 @@ def main():
             response_channel = args.response_channel
 
     plugins = get_config("./modules.yaml")
-
     proxy_controller = HBProxyController(bind_address, protocols,
                                          upstream_host, upstream_port,
                                          args.redis_mgmt, redis_address,
