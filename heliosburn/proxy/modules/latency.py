@@ -8,6 +8,8 @@ class Latency(AbstractModule):
         import time
         import random
 
+        log.msg("Latency started handling of request: %s" % request)
+
         lagtime = None
 
         if 'minimum' in keywords:

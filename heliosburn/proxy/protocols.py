@@ -1,3 +1,4 @@
+import yaml
 from io import BytesIO
 from twisted.web.proxy import ProxyClient
 from twisted.web.proxy import ReverseProxyRequest
@@ -11,6 +12,7 @@ from txredis.client import RedisClientFactory
 from txredis.client import RedisSubscriber
 from django.utils.http import urlquote
 from twisted.internet import protocol
+from module import Registry
 
 
 class HBProxyClient(ProxyClient):
@@ -31,29 +33,16 @@ class HBProxyClient(ProxyClient):
         ProxyClient.__init__(self, command, rest, version, headers, data,
                              father)
 
-    def handleStatus(self, version, code, message):
-        """
-        Invoked after a status code and message are received
-        """
-        ProxyClient.handleStatus(self, version, code, message)
-        self.plugin_registry.handle_status()
+    def _forward_response(self, response):
 
-    def handleResponse(self, buffer):
-
-        self.module_registry.handle_response(BytesIO(buffer))
-#       self.father.response_content = BytesIO(buffer)
-
+        self.father.response_content = BytesIO(response)
         self.father.headers['Content-Length'] = len(self.father.
                                                     content.getvalue())
         ProxyClient.handleResponsePart(self, self.father.content.getvalue())
 
-    def handleHeader(self, key, value):
-        """
-        Invoked once for every Header received in a response
-        """
-        ProxyClient.handleHeader(self, key, value)
-
-        self.module_registry.handle_header()
+    def handleResponse(self, buffer):
+        self.module_registry.handle_response(BytesIO(buffer),
+                                             self._forward_response)
 
 
 class HBProxyClientFactory(ProxyClientFactory):
@@ -68,7 +57,6 @@ class HBProxyClientFactory(ProxyClientFactory):
         Override ProxyClientFactory.__init__ to return HBProxyClient
 
         """
-
         self.module_registry = module_registry
         ProxyClientFactory.__init__(self, command, rest, version, headers,
                                     data, father)
@@ -93,14 +81,36 @@ class HBReverseProxyRequest(ReverseProxyRequest):
 
     proxyClientFactoryClass = HBProxyClientFactory
 
-    def __init__(self, upstream_host, upstream_port, channel,
-                 queued, module_registry, reactor=reactor):
-
-        self.module_registry = module_registry
-        self.upstream_host = upstream_host
-        self.upstream_port = upstream_port
+    def __init__(self, channel, queued, reactor=reactor):
 
         ReverseProxyRequest.__init__(self, channel, queued, reactor)
+        # need to refactor this
+        plugins = self.get_config("./modules.yaml")
+        config = self.get_config("./config.yaml")
+        proxy_config = config['proxy']
+
+        self.module_registry = Registry(plugins)
+        self.upstream_host = proxy_config['upstream']['address']
+        self.upstream_port = proxy_config['upstream']['port']
+
+    def get_config(self, config_path):
+        with open(config_path, 'r+') as config_file:
+            config = yaml.load(config_file.read())
+
+        return config
+
+    def _forward_request(self, request):
+        log.msg("forwarding pipeline processed request: %s" % request)
+
+        clientFactory = self.proxyClientFactoryClass(self.method, self.uri,
+                                                     self.clientproto,
+                                                     self.getAllHeaders(),
+                                                     self.content.read(),
+                                                     request,
+                                                     self.module_registry)
+
+        self.reactor.connectTCP(self.upstream_host, self.upstream_port,
+                                clientFactory)
 
     def process(self):
         """
@@ -109,20 +119,9 @@ class HBReverseProxyRequest(ReverseProxyRequest):
         documentation.
         """
 
-        self.module_registry.handle_request(request_object=self)
-        log.msg("VERB: {}.method, URI: {}.uri, HEADERS: {}.requestHeaders".
-                format(self, self, self))
-
         self.requestHeaders.setRawHeaders(b"host", [self.upstream_host])
-        clientFactory = self.proxyClientFactoryClass(self.method, self.uri,
-                                                     self.clientproto,
-                                                     self.getAllHeaders(),
-                                                     self.content.read(),
-                                                     self,
-                                                     self.module_registry)
-
-        self.reactor.connectTCP(self.upstream_host, self.upstream_port,
-                                clientFactory)
+        log.msg("Started processing of request: %s" % self)
+        self.module_registry.handle_request(self, self._forward_request)
 
 
 class HBReverseProxyResource(ReverseProxyResource):

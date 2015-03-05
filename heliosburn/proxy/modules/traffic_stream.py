@@ -64,4 +64,5 @@ class TrafficStream(AbstractModule):
 
         return response
 
-traffic_recorder = TrafficRecorder()
+
+traffic_stream = TrafficStream()

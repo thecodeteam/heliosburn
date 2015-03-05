@@ -371,7 +371,6 @@ class HBProxyController(object):
                  plugins):
 
         self.bind_address = bind_address
-#       self.base_path = dirname(abspath(getsourcefile(lambda _: None)))
         self._start_logging()
         self.protocols = protocols
         self.upstream_host = upstream_host

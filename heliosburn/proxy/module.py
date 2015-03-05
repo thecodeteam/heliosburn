@@ -249,16 +249,6 @@ class Registry(object):
     def __init__(self, modules_list):
         self.modules_list = modules_list
 
-        self.request = defer.Deferred()
-        self.response = defer.Deferred()
-        self.status = defer.Deferred()
-        self.header = defer.Deferred()
-
-        self.request.addCallback(self.handle_request)
-        self.response.addCallback(self.handle_response)
-        self.status.addCallback(self.handle_status)
-        self.header.addCallback(self.handle_header)
-
         plugins = {plugin.get_name(): plugin for plugin in
                    getPlugins(IModule, modules)}
 
@@ -266,51 +256,48 @@ class Registry(object):
         for module in modules_list['modules']:
             module_name = module['name']
             plugin = plugins[module_name]
-            plugin.set_log(self.log)
             self.modules[module_name] = plugin
-            self.request.addCallback(plugin.handle_request)
-            self.response.addCallback(plugin.handle_response)
-            self.status.addCallback(plugin.handle_status)
-            self.header.addCallback(plugin.handle_header)
 
         log.msg("loaded modules: %s" % self.modules)
 
-    def handle_request(self, request):
+    def _get_request_pipline(self):
+
+        pipeline = defer.Deferred()
+        for key in self.modules:
+            pipeline.addCallback(self.modules[key].handle_request)
+
+        return pipeline
+
+    def _get_response_pipeline(self):
+
+        pipeline = defer.Deferred()
+        for key in self.modules:
+            pipeline.addCallback(self.modules[key].handle_response)
+
+        return pipeline
+
+    def handle_request(self, request, callback):
 
         """
         Executes the handle_request method of all currently active modules
         """
-        log.msg("Started handling of request: %s" % request)
+        pipeline = self._get_request_pipline()
+        pipeline.addCallback(callback)
 
-        return request
+        log.msg("Registry started handling of request: %s" % request)
+        pipeline.callback(request)
 
-    def handle_response(self, response):
+    def handle_response(self, response, callback):
 
         """
         Executes the handle_response method of all currently active modules
         """
+        pipeline = self._get_response_pipline()
+        pipeline.addCallback(callback)
+
         log.msg("Started handling of response: %s" % response)
+        pipeline.callback(response)
 
-        return response
-
-    def handle_status(self, status):
-
-        """
-        Executes the handle_status method of all currently active modules
-        """
-
-        log.msg("Started handling of status: %s" % status)
-
-        return status
-
-    def handle_header(self, header):
-
-        """
-        Executes the handle_header method of all currently active modules
-        """
-
-        log.msg("Started handling of header: %s" % header)
-        return header
 
     def reset(self):
 
