@@ -27,6 +27,7 @@ class RuleForm(forms.Form):
 
 
 class RuleRequestForm(forms.Form):
+
     method_choices = (
         ('', 'Select a method'),
         ('GET', 'GET'),
@@ -41,10 +42,10 @@ class RuleRequestForm(forms.Form):
     )
 
     action_type_choices = (
-        ('modify_request', 'Modify the request'),
-        ('new_response', 'Respond on behalf'),
-        ('drop_connection', 'Drop connection'),
-        ('delay', 'Delay'),
+        ('modify', 'Modify the request'),
+        ('newResponse', 'Respond on behalf'),
+        ('drop', 'Drop connection'),
+        ('reset', 'Reset connection'),
     )
 
     filterProtocol = forms.CharField(label='HTTP Protocol', max_length=100,
@@ -62,3 +63,59 @@ class RuleRequestForm(forms.Form):
     actionStatusCode = forms.CharField(label='Status code', max_length=200, required=False)
     actionStatusDescription = forms.CharField(label='Status description', max_length=200, required=False)
     actionPayload = forms.CharField(label='Payload', widget=forms.Textarea, required=False)
+
+    def clean(self):
+        cleaned_data = super(RuleRequestForm, self).clean()
+        rule = self._post_data_to_rule(cleaned_data)
+        return rule
+
+    def _post_data_to_rule(self, cleaned_data):
+        rule = {'ruleType': 'request', 'filter': {}, 'action': {}}
+
+        # Filter Protocol
+        rule['filter']['httpProtocol'] = cleaned_data['filterProtocol']
+
+        # Filter Method
+        rule['filter']['method'] = cleaned_data['filterMethod']
+
+        # Filter URL
+        rule['filter']['url'] = cleaned_data['filterUrl']
+
+        # Get Filter Headers
+        rule['filter']['headers'] = []
+        filter_header_keys = self.data.getlist('filterHeaderKeys[]')
+        filter_header_values = self.data.getlist('filterHeaderValues[]')
+        if filter_header_keys:
+            for index, key in enumerate(filter_header_keys):
+                value = filter_header_values[index]
+                rule['filter']['headers'].append({'key': key, 'value': value})
+
+        # Action
+        # Action type
+        rule['action']['type'] = cleaned_data['actionType']
+
+        if cleaned_data['actionType'] == 'drop' or cleaned_data['actionType'] == 'reset':
+            return rule
+
+        if cleaned_data['actionType'] == 'modify':
+            rule['action']['protocol'] = cleaned_data['actionProtocol']
+            rule['action']['method'] = cleaned_data['actionMethod']
+            rule['action']['url'] = cleaned_data['actionUrl']
+
+        if cleaned_data['actionType'] == 'newResponse':
+            rule['action']['protocol'] = cleaned_data['actionProtocol']
+            rule['action']['statusCode'] = cleaned_data['actionStatusCode']
+            rule['action']['statusDescription'] = cleaned_data['actionStatusDescription']
+
+        # Get Action Headers
+        rule['action']['setHeaders'] = []
+        action_header_keys = self.data.getlist('actionHeaderKeys[]')
+        action_header_values = self.data.getlist('actionHeaderValues[]')
+        if action_header_keys:
+            for index, key in enumerate(action_header_keys):
+                value = action_header_values[index]
+                rule['action']['setHeaders'].append({'key': key, 'value': value})
+
+        return rule
+
+
