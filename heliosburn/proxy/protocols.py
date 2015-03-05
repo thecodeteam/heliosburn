@@ -35,12 +35,13 @@ class HBProxyClient(ProxyClient):
 
     def _forward_response(self, response):
 
-        self.father.response_content = BytesIO(response)
+        self.father.response_content = response
         self.father.headers['Content-Length'] = len(self.father.
                                                     content.getvalue())
         ProxyClient.handleResponsePart(self, self.father.content.getvalue())
 
-    def handleResponse(self, buffer):
+    def handleResponsePart(self, buffer):
+        print("hello world")
         self.module_registry.handle_response(BytesIO(buffer),
                                              self._forward_response)
 

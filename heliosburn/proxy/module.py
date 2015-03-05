@@ -292,7 +292,7 @@ class Registry(object):
         """
         Executes the handle_response method of all currently active modules
         """
-        pipeline = self._get_response_pipline()
+        pipeline = self._get_response_pipeline()
         pipeline.addCallback(callback)
 
         log.msg("Started handling of response: %s" % response)

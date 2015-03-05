@@ -13,7 +13,7 @@ class TrafficStream(AbstractModule):
     def _get_current_time(self):
         return int(time.time() * 1000000)
 
-    def handle_response(self, response, **kwargs):
+    def handle_response(self, response):
         """
         Default redis serializer.
 
@@ -43,9 +43,9 @@ class TrafficStream(AbstractModule):
             request['response']['headers'][key] = value
         response_json = json.dumps(request)
 
-        r = redis.StrictRedis(host=kwargs['redis_host'],
-                              port=kwargs['redis_port'],
-                              db=kwargs['redis_db'])
+        r = redis.StrictRedis(host='127.0.0.1',
+                              port=6379,
+                              db=0)
 
         score = self._get_current_time()
 
