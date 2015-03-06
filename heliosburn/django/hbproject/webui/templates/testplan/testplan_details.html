@@ -185,7 +185,7 @@
                                 </tfoot>
                                 <tbody>
 
-                                    {% for rule in rules.rules %}
+                                    {% for rule in testplan.rules %}
                                         <tr>
                                             <td>{{ rule.id }}</td>
                                             <td><a href="{% url 'rule_details' testplan.id rule.id %}">view</a></td>

@@ -220,3 +220,13 @@ class TestPlanTest(WebuiSignedInTest):
         data['testplans'] = [testplan_id]
         response = self.client.post('/webui/testplans/delete/', data)
         self.assertEqual(response.status_code, 200)
+
+
+class RecordingTest(WebuiSignedInTest):
+    def test_recording_url_fix_redirect(self):
+        response = self.client.get('/webui/recording')
+        self.assertRedirects(response, '/webui/recording/', status_code=301)
+
+    def test_recording_list_uses_template(self):
+        response = self.client.get('/webui/recording/')
+        self.assertTemplateUsed(response, 'recording/recording_list.html')

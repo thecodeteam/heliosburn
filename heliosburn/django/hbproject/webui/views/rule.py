@@ -26,7 +26,20 @@ def rule_details(request, testplan_id, rule_id):
         messages.error(request, inst.message if inst.message else 'Unexpected error')
         return HttpResponseRedirect(reverse('testplan_list'))
 
-    data = {'testplan': testplan, 'rule': rule, 'form': RuleRequestForm()}
+    initial_data = _rule_to_post_data(rule)
+
+    form = RuleRequestForm(request.POST or None, initial=initial_data)
+    if form.is_valid():
+        try:
+            Rule(testplan_id, auth_token=request.user.password).update(rule['id'], form.cleaned_data)
+            return HttpResponseRedirect(reverse('rule_details', args=(str(testplan_id), str(rule_id))))
+        except UnauthorizedException:
+            return signout(request)
+        except Exception as inst:
+            messages.error(request, inst.message if inst.message else 'Unexpected error')
+            return HttpResponseRedirect(reverse('rule_new', args=(str(testplan_id),)))
+
+    data = {'testplan': testplan, 'rule': rule, 'form': form}
     return render(request, 'rules/rule_details.html', data)
 
 
@@ -74,3 +87,31 @@ def rule_update(request, testplan_id, rule_id):
     except Exception as inst:
         return HttpResponseBadRequest(content='Error updating the Test Plan. {}'.format(inst.message))
     return HttpResponse()
+
+
+def _rule_to_post_data(rule):
+    post_data = {}
+    if 'filter' in rule:
+        filter = rule['filter']
+        if 'httpProtocol' in filter:
+            post_data['filterProtocol'] = filter['httpProtocol']
+        if 'method' in filter:
+            post_data['filterMethod'] = filter['method']
+        if 'url' in filter:
+            post_data['filterUrl'] = filter['url']
+
+    if 'action' in rule:
+        action = rule['action']
+        if 'type' in action:
+            post_data['actionType'] = action['type']
+        if 'httpProtocol' in action:
+            post_data['actionProtocol'] = action['httpProtocol']
+        if 'method' in action:
+            post_data['actionMethod'] = action['method']
+        if 'url' in action:
+            post_data['actionUrl'] = action['url']
+        if 'statusCode' in action:
+            post_data['actionStatusCode'] = action['statusCode']
+        if 'statusCode' in action:
+            post_data['actionStatusDescription'] = action['statusDescription']
+    return post_data
