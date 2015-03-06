@@ -32,7 +32,7 @@ def get_resource_id_or_raise_exception(resource_name, response):
         exception.message = response.text
         raise exception
     location = response.headers.get('location')
-    pattern = '.+{}\/(?P<id>\d+)'.format(resource_name)
+    pattern = '.+{}\/(?P<id>\w+)'.format(resource_name)
     p = re.compile(pattern)
     m = p.match(location)
     try:

@@ -91,7 +91,7 @@
             function enableFields(action_type_id) {
 
                 //alert( this.value ); // or $(this).val()
-                if (action_type_id == 'modify_request') {
+                if (action_type_id == 'modify') {
                     // hide drop connection alert
                     $('#drop-connection-alert').hide();
                     // hide protocol
@@ -111,7 +111,7 @@
                     // hide Payload
                     $('#{{ form.actionPayload.id_for_label }}').parent().hide();
                 }
-                else if (action_type_id == 'new_response') {
+                else if (action_type_id == 'newResponse') {
                     // hide drop connection alert
                     $('#drop-connection-alert').hide();
                     // hide protocol
@@ -131,7 +131,7 @@
                     // show Payload
                     $('#{{ form.actionPayload.id_for_label }}').parent().show();
                 }
-                else if (action_type_id == 'drop_connection') {
+                else if (action_type_id == 'drop') {
                     // hide drop connection alert
                     $('#drop-connection-alert').show();
                     // hide protocol
@@ -270,7 +270,7 @@
                         {% bootstrap_field form.filterMethod %}
                         {% bootstrap_field form.filterUrl %}
 
-                        <div class="form-group">
+                        <div class="form-group hidden">
                             <label class="control-label">Cookies</label>
                             <table id="filterCookies" class="table table-bordered">
                                 <thead>
@@ -298,6 +298,15 @@
                                 </tr>
                                 </thead>
                                 <tbody>
+                                    {% if rule.filter.headers %}
+                                        {% for header in rule.filter.headers %}
+                                            <tr>
+                                                <td><input type="text" class="form-control input-sm" placeholder="Header name" name="filterHeaderKeys[]" value="{{ header.key }}" /></td>
+                                                <td><input type="text" class="form-control input-sm" placeholder="Header value" name="filterHeaderValues[]" value="{{ header.value }}" /></td>
+                                                <td><a class="btn btn-default btn-sm filter_deleteHeader" role="button"><span class="glyphicon glyphicon-trash" aria-hidden="true"></span></a></td>
+                                            </tr>
+                                        {% endfor %}
+                                    {% endif %}
                                 </tbody>
                             </table>
                             <a id="filter_addHeaderButton" class="btn btn-default btn-sm bold"
@@ -327,7 +336,7 @@
                         {% bootstrap_field form.actionStatusCode %}
                         {% bootstrap_field form.actionStatusDescription %}
 
-                        <div class="form-group">
+                        <div class="form-group hidden">
                             <label class="control-label">Cookies</label>
                             <table id="actionCookies" class="table table-bordered">
                                 <thead>

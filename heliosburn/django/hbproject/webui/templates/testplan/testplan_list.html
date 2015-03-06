@@ -139,7 +139,11 @@
                                             <td>{{ testplan.name }}</td>
                                             <td><a href="{% url 'testplan_details' testplan.id %}">{{ testplan.name }}</a></td>
                                             <td>{{ testplan.description }}</td>
-                                            <td>{{ testplan.rules }}</td>
+                                            {% if testplan.rules %}
+                                                <td>{{ testplan.rules|length }}</td>
+                                            {% else %}
+                                                <td>No rules</td>
+                                            {% endif %}
                                         </tr>
                                     {% endfor %}
                                 </tbody>

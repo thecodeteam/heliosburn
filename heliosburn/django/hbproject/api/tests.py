@@ -456,3 +456,129 @@ class RuleViewTestCase(TestCase):
 
         print("Testing DELETE in %s" % self.__class__)
         delete(request, rule_id)
+
+
+class TestplanRuleViewTestCase(TestCase):
+    """
+    Test views/testplan_rule.py CRUD
+    This test requires a valid user "admin" with password "admin".
+    """
+
+    def test_crud(self):
+        """
+        Tests CRUD for testplan model.
+        """
+        from views import testplan, testplan_rule
+        import json
+
+        def create_testplan(request):
+            request.body = json.dumps({"name": "CRUD test for testplan_rule"})
+            response = testplan.post(request)
+            assert response.status_code == 200
+            assert "location" in response._headers
+            in_json = json.loads(response.content)
+            assert "id" in in_json
+            return in_json['id']
+
+        def delete_testplan(request, testplan_id):
+            response = testplan.delete(request, testplan_id)
+            assert response.status_code == 200
+
+        def create(request, testplan_id):
+            request.body = json.dumps({
+                'ruleType': 'request',
+                'filter': {
+                    'httpProtocol': 'HTTP/1.1',
+                    'method': 'GET',
+                    'headers': [
+                        {'key': 'foo'},
+                        {'key': 'fizz', 'value': 'buzz'},
+                    ],
+                },
+                'action': {
+                    'type': 'modify',
+                    'method': 'PUT',
+                    'url': 'www.newurl.com/foo/bar',
+                    'setHeaders': [
+                        {
+                            'key': 'zaphod', 'value': 'beeblebrox',
+                        },
+                    ],
+                    'deleteHeaders': [
+                        {
+                            'key': 'foo',
+                        },
+                    ],
+                }
+            })
+            response = testplan_rule.post(request, testplan_id)
+            assert response.status_code == 200
+            assert "location" in response._headers
+            in_json = json.loads(response.content)
+            assert "id" in in_json
+            return in_json['id']
+
+        def read(request, testplan_id, rule_id):
+            response = testplan_rule.get(request, testplan_id, rule_id)
+            assert response.status_code == 200
+
+        def update(request, testplan_id, rule_id):
+            request.body = json.dumps({
+                'ruleType': 'request',
+                'filter': {
+                    'httpProtocol': 'HTTP/1.1',
+                    'method': 'GET',
+                    'headers': [
+                        {'key': 'folk hero'},
+                        {'key': 'instrument', 'value': 'violin'},
+                    ],
+                },
+                'action': {
+                    'type': 'newResponse',
+                    'httpProtocol': 'CARRIERFLAMINGO/1.1',
+                    'statusCode': 403,
+                    'statusDescription': 'TOO FEATHERY',
+                    'headers': [
+                        {
+                            'key': 'User-Agent',
+                            'value': 'Broken Looking Glass 1.9'
+                        },
+                    ],
+                    'payload': 'The answer to life, the universe, and everything...is----NO CARRIER.',
+                }
+
+            })
+            response = testplan_rule.put(request, testplan_id, rule_id)
+            assert response.status_code == 200
+
+        def delete(request, testplan_id, rule_id):
+            response = testplan_rule.delete(request, testplan_id, rule_id)
+            assert response.status_code == 200
+
+        print("Creating authenticated request for CRUD tests in %s" % self.__class__)
+        request = create_authenticated_request("admin", "admin")
+        request.method = "POST"
+
+        print("Creating temporary testplan for use within %s" % self.__class__)
+        testplan_id = create_testplan(request)
+
+        print("Testing CREATE #1 in %s" % self.__class__)
+        rule1_id = create(request, testplan_id)
+
+        print("Testing CREATE #2 in %s" % self.__class__)
+        rule2_id = create(request, testplan_id)
+
+        print("Testing READ in %s" % self.__class__)
+        read(request, testplan_id, rule1_id)
+
+        print("Testing UPDATE in %s" % self.__class__)
+        update(request, testplan_id, rule1_id)
+
+        print("Testing DELETE #1 in %s" % self.__class__)
+        delete(request, testplan_id, rule1_id)
+
+        print("Testing DELETE #2 in %s" % self.__class__)
+        delete(request, testplan_id, rule2_id)
+
+        print("Removing temporary testplan for use within %s" % self.__class__)
+        delete_testplan(request, testplan_id)
