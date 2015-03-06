@@ -98,23 +98,24 @@ class RuleRequestForm(forms.Form):
             return rule
 
         if cleaned_data['actionType'] == 'modify':
-            rule['action']['protocol'] = cleaned_data['actionProtocol']
+            rule['action']['httpProtocol'] = cleaned_data['actionProtocol']
             rule['action']['method'] = cleaned_data['actionMethod']
             rule['action']['url'] = cleaned_data['actionUrl']
 
         if cleaned_data['actionType'] == 'newResponse':
-            rule['action']['protocol'] = cleaned_data['actionProtocol']
+            rule['action']['httpProtocol'] = cleaned_data['actionProtocol']
             rule['action']['statusCode'] = cleaned_data['actionStatusCode']
             rule['action']['statusDescription'] = cleaned_data['actionStatusDescription']
+            rule['action']['payload'] = cleaned_data['actionPayload']
 
         # Get Action Headers
-        rule['action']['setHeaders'] = []
+        rule['action']['headers'] = []
         action_header_keys = self.data.getlist('actionHeaderKeys[]')
         action_header_values = self.data.getlist('actionHeaderValues[]')
         if action_header_keys:
             for index, key in enumerate(action_header_keys):
                 value = action_header_values[index]
-                rule['action']['setHeaders'].append({'key': key, 'value': value})
+                rule['action']['headers'].append({'key': key, 'value': value})
 
         return rule
 
