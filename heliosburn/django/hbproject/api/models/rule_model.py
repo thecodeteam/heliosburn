@@ -75,7 +75,7 @@ def validate(rule):
                 else:  # Assume that an omitted statusCode should be rewritten as 200 OK
                     new_rule['action']['statusCode'] = 200
                 if 'statusDescription' in rule['action']:
-                    new_rule['action']['statusDescrption'] = str(rule['action']['statusDescription'])
+                    new_rule['action']['statusDescription'] = str(rule['action']['statusDescription'])
                 if ('headers' in rule['action']) and (type(rule['action']['headers']) is list):
                     new_rule['action']['headers'] = rule['action']['headers']
                 if 'payload' in rule['action']:  # payload is NOT typecasted to str, to allow non-str(eg binary) payloads
