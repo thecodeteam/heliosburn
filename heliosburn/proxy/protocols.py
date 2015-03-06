@@ -1,4 +1,5 @@
 import yaml
+import time
 from io import BytesIO
 from twisted.web.proxy import ProxyClient
 from twisted.web.proxy import ReverseProxyRequest
@@ -29,9 +30,10 @@ class HBProxyClient(ProxyClient):
 
         """
 
-        self.module_registry = module_registry
         ProxyClient.__init__(self, command, rest, version, headers, data,
                              father)
+        self.module_registry = module_registry
+        self.buffer = ""
 
     def _forward_response(self, response):
 
@@ -41,8 +43,10 @@ class HBProxyClient(ProxyClient):
         ProxyClient.handleResponsePart(self, self.father.content.getvalue())
 
     def handleResponsePart(self, buffer):
-        print("hello world")
-        self.module_registry.handle_response(BytesIO(buffer),
+        self.buffer += buffer
+
+    def handleResponseEnd(self):
+        self.module_registry.handle_response(self.buffer,
                                              self._forward_response)
 
 
@@ -85,6 +89,8 @@ class HBReverseProxyRequest(ReverseProxyRequest):
     def __init__(self, channel, queued, reactor=reactor):
 
         ReverseProxyRequest.__init__(self, channel, queued, reactor)
+        self.createdAt = int(time.time() * 1000000)
+
         # need to refactor this
         plugins = self.get_config("./modules.yaml")
         config = self.get_config("./config.yaml")
@@ -93,6 +99,15 @@ class HBReverseProxyRequest(ReverseProxyRequest):
         self.module_registry = Registry(plugins)
         self.upstream_host = proxy_config['upstream']['address']
         self.upstream_port = proxy_config['upstream']['port']
+
+    def __repr__(self):
+        request = {}
+        request['createdAt'] = self.createdAt
+        request['httpProtocol'] = self.clientproto
+        request['method'] = self.method
+        request['url'] = self.uri
+        request['headers'] = self.getAllHeaders()
+        return str(request)
 
     def get_config(self, config_path):
         with open(config_path, 'r+') as config_file:

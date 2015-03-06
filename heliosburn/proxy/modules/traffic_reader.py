@@ -18,7 +18,7 @@ class TrafficReader(AbstractModule):
                               port=6379,
                               db=0)
 
-        r.publish('traffic.request', request.__dict__)
+        r.publish('traffic.request', request)
 
         return request
 
