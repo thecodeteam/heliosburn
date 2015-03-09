@@ -4,7 +4,8 @@
   - [Create a new Rule](#create-a-new-rule)
   - [Update Rule details](#update-rule-details)
   - [Delete a Rule](#delete-a-rule)
-  
+- [Examples](#example-rules)
+
 # Rule
 
 Rules will determine how the traffic is altered and, therefore, they are the most important part of the traffic injection engine. Rules can be either `request` or `response` types, the type determines when the rule is applied in the whole process. `request` rules are evaluated when HeliosBurn receives an HTTP request from the client and before forwarding it to the server. Whereas `response` rules are evaluated once HeliosBurn has received the response from the server and before forwarding it to the client.
@@ -180,14 +181,14 @@ The rule below is applied at the "response" context (i.e. after receiving the re
 ```
 
 
-## Get a list of Rules in a Test Plan
+## Get a list of Rules
 
-To retrieve a list of Test Plan Rules, an application submits an HTTP GET request to the URL that represents the Rule resource for a Test Plan.
+To retrieve a list of Rules, an application submits an HTTP GET request to the URL that represents the Rule resource.
 
 ### Request
 
 #### URL
-`/testplan/:testplan_id/rule/`
+`/rule/`
 
 #### Method
 GET
@@ -204,15 +205,7 @@ The response header includes the following information:
 
 #### Response Body
 
-The response body contains a `rules` key containing a list with the following elements in JSON format:
-
-| Element | Description |
-|---|---|
-| id | An alphanumeric value that uniquely identifies the Rule. |
-| createdAt | A dateTime value that specifies the date and time the session was created. |
-| updatedAt | A dateTime value that specifies the date and time the session was last modified. |
-| ruleType | A string value that specifies `request` or `response`.|
-| testplanId | An ID identifying the testplan_id a Rule belongs to. |
+The response body contains a `rules` key containing a list of available rules.
 
 #### Status Codes
 
@@ -232,7 +225,6 @@ The response body contains a `rules` key containing a list with the following el
             "createdAt": "2014-02-12 03:34:51",
             "updatedAt": "2014-02-12 03:34:52",
             "ruleType": "request",
-            "testplanId": "k980ufd9g34kbwejv243v5342",
             "filter": {
                 "method": "GET",
                 "headers": [
@@ -266,7 +258,6 @@ The response body contains a `rules` key containing a list with the following el
             "createdAt": "2014-02-12 03:34:51",
             "updatedAt": "2014-02-12 03:34:52",
             "ruleType": "response",
-            "testplanId": "91ho4ilqebhdib34kre",
             "filter": {
                 "statusCode": 200
             },
@@ -286,7 +277,7 @@ To retrieve information about a Rule, an application submits an HTTP GET request
 ### Request
 
 #### URL
-`/testplan/:testplan_id/rule/:rule_id`, for example, `/testplan/89345hb342hb5bdfsg3/rule/j34k2b5l3425bl3425l03`.
+`/rule/:rule_id`, for example, `/rule/j34k2b5l3425bl3425l03`.
 
 #### Method
 GET
@@ -303,17 +294,7 @@ The response header includes the following information:
 
 #### Response Body
 
-The response body contains a list containing the following elements in JSON format:
-
-| Element | Description |
-|---|---|
-| id | An alphanumeric value that uniquely identifies the Rule. |
-| createdAt | A dateTime value that specifies the date and time the session was created. |
-| updatedAt | A dateTime value that specifies the date and time the session was last modified. |
-| ruleType | A string value that specifies `request` or `response`.|
-| testplanId | An ID identifying the testplan_id a rule belongs to. |
-| filter | The filter that will be applied to determine whether or not the rule matches a given request or response. See the `Filter` resource. |
-| action | The action that will be applied when the filter matches the given request or response. |
+The response body contains a Rule represented in JSON format.
 
 #### Status Codes
 
@@ -332,7 +313,6 @@ The response body contains a list containing the following elements in JSON form
 	"createdAt": "2014-02-12 03:34:51",
 	"updatedAt": "2014-02-12 03:34:52",
 	"ruleType": "request",
-	"testplanId": "j34k2b5l3425bl3425l03",
     "filter": {
         "method": "GET",
         "headers": [
@@ -366,12 +346,11 @@ The response body contains a list containing the following elements in JSON form
 
 ## Create a new Rule
 
-An application can create a Rule by issuing an HTTP POST request to the URL of the containing Test Plan resource
-
+An application can create a Rule by issuing an HTTP POST request to the following endpoint.
 ### Request
 
 #### URL
-`/testplan/:testplan_id/rule`
+`/rule`
 
 #### Method
 POST
@@ -386,23 +365,41 @@ The request header includes the following information:
 
 #### Request Body
 
-JSON input that contains a Test Plan representation with the following elements:
-
-| Element | Description |
-|---|---|
-| ruleType | A string value that specifies `request` or `response`.|
+JSON input that contains a Rule, as specified in [Rule](#Rule):
 
 #### Request example
 
 ```
-POST https://api.heliosburn.com/testplan/1/rule HTTP/1.1
+POST https://api.heliosburn.com/rule HTTP/1.1
 User-Agent: Jakarta Commons-HttpClient/3.1
 Host: api.heliosburn.com
 Content-Length: 294
 Content-Type: application/json; charset=UTF-8
 
 {
-    "ruleType": "response",
+  'ruleType': 'request',
+  'filter': {
+      'httpProtocol': 'HTTP/1.1',
+      'method': 'GET',
+      'headers': [
+          {'key': 'User-Agent'},
+          {'key': 'X-Middleman', 'value': 'MS ISA'},
+      ],
+  },
+  'action': {
+      'type': 'modify',
+      'method': 'PUT',
+      'setHeaders': [
+          {
+              'key': 'User-Agent', 'value': 'lynx',
+          },
+      ],
+      'deleteHeaders': [
+          {
+              'key': 'X-Middleman',
+          },
+      ],
+  }
 }
 ```
 ### Response
@@ -414,13 +411,13 @@ The response header includes the following information:
 |---|---|
 | Content-Type | The content type and character encoding of the response. |
 | Content-Length | The length of the content. |
-| Location | The location of the newly created Test Plan. |
+| Location | The location of the newly created Rule. |
 
 #### Status Codes
 
 | Status Code | Description |
 |---|---|
-| 200-299 | The request was successful. The Test Plan was successfully created. |
+| 200-299 | The request was successful. The Rule was successfully created. |
 | 400 | Bad request. Typically returned if required information was not provided as input. |
 | 500-599 | Server error. |
 
@@ -431,12 +428,12 @@ HTTP/1.1 201 Created
 Content-Type: application/octet-stream; charset=UTF-8
 Content-Length: 0
 Date: Wed, 14 Dec 2014 19:35:02 GMT
-Location: http://api.heliosburn.com/rule/1
+Location: http://api.heliosburn.com/rule/fea393x900a1b
 Access-Control-Allow-Origin: *
 Server: Noelios-Restlet-Engine/1.1.5
 
 {
-	"id": 1
+	"id": "fea393x900a1b"
 }
  ```
 
@@ -449,7 +446,7 @@ In addition, the app needs to provide as input, JSON that identifies the new att
 ### Request
 
 #### URL
-`/testplan/:testplan_id/rule/:rule_id`, for example, `/testplan/9/rule/1` to update the Rule with ID 1 within Test Plan 9.
+`/rule/:rule_id`, for example, `/rule/foo` to update the Rule with ID 'foo'.
 
 #### Method
 PUT
@@ -464,25 +461,42 @@ The request header includes the following information:
 
 #### Request Body
 
-JSON input that contains a Rule representation with the elements to be modified:
-
-| Element | Description |
-|---|---|
-| ruleType | A string value that specifies `request` or `response`.|
-| testPlanId | An ID identifying the testplan_id a rule belongs to.|
+JSON input that contains a Rule representation with the elements to be modified, and must conform to the specifications listed in [Rule](#rule).
 
  #### Request example
 
 ```
-PUT https://api.heliosburn.com/testplan/9.rule/1 HTTP/1.1
+PUT https://api.heliosburn.com/rule/foo HTTP/1.1
 User-Agent: Jakarta Commons-HttpClient/3.1
 Host: api.heliosburn.com
 Content-Length: 294
 Content-Type: application/json; charset=UTF-8
 
 {
-    "ruleType": "request",
- }
+  'ruleType': 'request',
+  'filter': {
+      'httpProtocol': 'HTTP/1.1',
+      'method': 'GET',
+      'headers': [
+          {'key': 'User-Agent'},
+          {'key': 'X-Proxy', 'value': 'Squid'},
+      ],
+  },
+  'action': {
+      'type': 'modify',
+      'method': 'GET',
+      'setHeaders': [
+          {
+              'key': 'User-Agent', 'value': 'curl',
+          },
+      ],
+      'deleteHeaders': [
+          {
+              'key': 'X-Proxy',
+          },
+      ],
+  }
+}
 ```
 ### Response
 
@@ -498,7 +512,7 @@ The response header includes the following information:
 
 | Status Code | Description |
 |---|---|
-| 200-299 | The request was successful. The Test Plan was successfully updated. |
+| 200-299 | The request was successful. The Rule was successfully updated. |
 | 400 | Bad request. Typically returned if required information was not provided as input. |
 | 404 | Not found. The resource was not found. |
 | 500-599 | Server error. |
@@ -522,7 +536,7 @@ An application can permanently delete a Rule by issuing an HTTP DELETE request t
 ### Request
 
 #### URL
-`/testplan/:testplan_id/rule/:rule_id`, for example, `/testplan/1/rule/19` to delete the Rule with ID 19 within Test Plan 1.
+`/rule/:rule_id`, for example, `/rule/foo` to delete the Rule with ID 'foo'.
 
 #### Method
 DELETE
@@ -538,7 +552,7 @@ The request header includes the following information:
 #### Request example
 
 ```
-DELETE https://api.heliosburn.com/testplan/1/rule/19 HTTP/1.1
+DELETE https://api.heliosburn.com/rule/foo HTTP/1.1
 User-Agent: Jakarta Commons-HttpClient/3.1
 Host: api.heliosburn.com
 Content-Length: 0
@@ -558,7 +572,7 @@ The response header includes the following information:
 
 | Status Code | Description |
 |---|---|
-| 200-299 | The request was successful. The Test Plan was successfully deleted. |
+| 200-299 | The request was successful. The Rule was successfully deleted. |
 | 400 | Bad request. Typically returned if required information was not provided as input. |
 | 404 | Not found. The resource was not found. |
 | 500-599 | Server error. |
@@ -572,4 +586,37 @@ Content-Length: 0
 Date: Wed, 14 Dec 2014 19:35:02 GMT
 Access-Control-Allow-Origin: *
 Server: Noelios-Restlet-Engine/1.1.5
+```
+
+# Example Rules
+
+Rules have a very detailed specification(as seen in [Rule](#rule)). Creating these can be tricky, so the following JSON examples are provided to help guide you in creating your own Rules.
+
+#### Match GET requests from User-Agent 'Firefox'
+
+```
+{
+  'ruleType': 'request',
+  'filter': {
+    'method': 'GET',
+    'headers': [{'key': 'User-Agent', 'values': '.*Firefox.*'}]
+  }
+}
+```
+
+The above rule matches requests that use the method `GET`, and specifically looks for `User-Agent` header that matches the regular expression `.*Firefox.*`. There is no action associated with this rule. If we wanted to drop traffic that matched this rule, we would include an `action` within the rule. Below is the same filter, with the `action` to drop the request.
+
+#### Drop GET requests from User-Agent 'Firefox'
+
+```
+{
+  'ruleType': 'request',
+  'filter': {
+    'method': 'GET',
+    'headers': [{'key': 'User-Agent', 'values': '.*Firefox.*'}]
+  }
+  'action': {
+    'type': 'drop'
+  }
+}
 ```
