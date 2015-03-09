@@ -19,86 +19,92 @@ def validate(rule):
             new_rule['id'] = rule['id']
         else:
             new_rule['id'] = str(ObjectId())
-
-        assert 'ruleType' in rule
-        assert rule['ruleType'] in ('request', 'response')
-        new_rule['ruleType'] = rule['ruleType']
+            
+        # String constants for key names
+        c_ruletype = "ruleType"
+        c_filter = "filter"
+        c_action = "action"
+        c_type = "type"
+        
+        
+        assert c_ruletype in rule
+        assert rule[c_ruletype] in ('request', 'response')
+        new_rule[c_ruletype] = rule[c_ruletype]
 
         # Validate filter
-        if 'filter' in rule:
-            assert 'filter' in rule
-            assert type(rule['filter']) is dict
-            new_rule['filter'] = {}
+        if c_filter in rule:
+            assert c_filter in rule
+            assert type(rule[c_filter]) is dict
+            new_rule[c_filter] = {}
 
-            if rule['ruleType'] == 'request':  # members specific to 'request' filter
-                if 'method' in rule['filter']:
-                    new_rule['filter']['method'] = str(rule['filter']['method'])
-                if 'url' in rule['filter']:
-                    new_rule['filter']['url'] = str(rule['filter']['url'])
-            elif rule['ruleType'] == 'response':  # members specific to 'response' filter
-                if 'statusCode' in rule['filter']:
-                    new_rule['statusCode'] = int(rule['filter']['statusCode'])
+            if rule[c_ruletype] == 'request':  # members specific to 'request' filter
+                if 'method' in rule[c_filter]:
+                    new_rule[c_filter]['method'] = str(rule[c_filter]['method'])
+                if 'url' in rule[c_filter]:
+                    new_rule[c_filter]['url'] = str(rule[c_filter]['url'])
+            elif rule[c_ruletype] == 'response':  # members specific to 'response' filter
+                if 'statusCode' in rule[c_filter]:
+                    new_rule['statusCode'] = int(rule[c_filter]['statusCode'])
 
             # members in both 'request' or 'response' filters
-            if 'httpProtocol' in rule['filter']:
-                new_rule['filter']['httpProtocol'] = str(rule['filter']['httpProtocol'])
-            if ('headers' in rule['filter']) and (type(rule['filter']['headers']) is list):
-                new_rule['filter']['headers'] = rule['filter']['headers']
+            if 'httpProtocol' in rule[c_filter]:
+                new_rule[c_filter]['httpProtocol'] = str(rule[c_filter]['httpProtocol'])
+            if ('headers' in rule[c_filter]) and (type(rule[c_filter]['headers']) is list):
+                new_rule[c_filter]['headers'] = rule[c_filter]['headers']
 
         # Validate action
-        if 'action' in rule:
-            assert 'action' in rule
-            assert 'type' in rule['action']
-            assert rule['action']['type'] in ('modify', 'newResponse', 'newRequest', 'drop', 'reset')
-            new_rule['action'] = {'type': rule['action']['type']}
+        if c_action in rule:
+            assert c_type in rule[c_action]
+            assert rule[c_action][c_type] in ('modify', 'newResponse', 'newRequest', 'drop', 'reset')
+            new_rule[c_action] = {c_type: rule[c_action][c_type]}
 
-            if rule['action']['type'] == 'modify':
-                if 'method' in rule['action']:
-                    new_rule['action']['method'] = str(rule['action']['method'])
-                if 'url' in rule['action']:
-                    new_rule['action']['url'] = str(rule['action']['url'])
-                if 'statusCode' in rule['action']:
-                    new_rule['action']['statusCode'] = int(rule['action']['statusCode'])
-                if 'statusDescription' in rule['action']:
-                    new_rule['action']['statusDescription'] = str(rule['action']['statusDescription'])
-                if 'httpProtocol' in rule['action']:
-                    new_rule['action']['httpProtocol'] = str(rule['action']['httpProtocol'])
-                if ('setHeaders' in rule['action']) and (type(rule['action']['setHeaders']) is list):
-                    new_rule['action']['setHeaders'] = rule['action']['setHeaders']
-                if ('deleteHeaders' in rule['action']) and (type(rule['action']['deleteHeaders']) is list):
-                    new_rule['action']['deleteHeaders'] = rule['action']['deleteHeaders']
-            elif rule['action']['type'] == 'newResponse':
-                if 'httpProtocol' in rule['action']:
-                    new_rule['action']['httpProtocol'] = str(rule['action']['httpProtocol'])
-                if 'statusCode' in rule['action']:
-                    new_rule['action']['statusCode'] = int(rule['action']['statusCode'])
+            if rule[c_action][c_type] == 'modify':
+                if 'method' in rule[c_action]:
+                    new_rule[c_action]['method'] = str(rule[c_action]['method'])
+                if 'url' in rule[c_action]:
+                    new_rule[c_action]['url'] = str(rule[c_action]['url'])
+                if 'statusCode' in rule[c_action]:
+                    new_rule[c_action]['statusCode'] = int(rule[c_action]['statusCode'])
+                if 'statusDescription' in rule[c_action]:
+                    new_rule[c_action]['statusDescription'] = str(rule[c_action]['statusDescription'])
+                if 'httpProtocol' in rule[c_action]:
+                    new_rule[c_action]['httpProtocol'] = str(rule[c_action]['httpProtocol'])
+                if ('setHeaders' in rule[c_action]) and (type(rule[c_action]['setHeaders']) is list):
+                    new_rule[c_action]['setHeaders'] = rule[c_action]['setHeaders']
+                if ('deleteHeaders' in rule[c_action]) and (type(rule[c_action]['deleteHeaders']) is list):
+                    new_rule[c_action]['deleteHeaders'] = rule[c_action]['deleteHeaders']
+            elif rule[c_action][c_type] == 'newResponse':
+                if 'httpProtocol' in rule[c_action]:
+                    new_rule[c_action]['httpProtocol'] = str(rule[c_action]['httpProtocol'])
+                if 'statusCode' in rule[c_action]:
+                    new_rule[c_action]['statusCode'] = int(rule[c_action]['statusCode'])
                 else:  # Assume that an omitted statusCode should be rewritten as 200 OK
-                    new_rule['action']['statusCode'] = 200
-                if 'statusDescription' in rule['action']:
-                    new_rule['action']['statusDescription'] = str(rule['action']['statusDescription'])
-                if ('headers' in rule['action']) and (type(rule['action']['headers']) is list):
-                    new_rule['action']['headers'] = rule['action']['headers']
-                if 'payload' in rule['action']:  # payload is NOT typecasted to str, to allow non-str(eg binary) payloads
-                    new_rule['action']['payload'] = rule['action']['payload']
-            elif rule['action']['type'] == 'newRequest':
-                if 'httpProtocol' in rule['action']:
-                    new_rule['action']['httpProtocol'] = str(rule['action']['httpProtocol'])
-                if 'method' in rule['action']:
-                    new_rule['action']['method'] = str(rule['action']['method'])
-                if 'url' in rule['action']:
-                    new_rule['action']['url'] = str(rule['action']['url'])
-                if ('headers' in rule['action']) and (type(rule['action']['headers']) is list):
-                    new_rule['action']['headers'] = rule['action']['headers']
-                if 'payload' in rule['action']:  # payload is NOT typecasted to str, to allow non-str(eg binary) payloads
-                    new_rule['action']['payload'] = rule['action']['payload']
+                    new_rule[c_action]['statusCode'] = 200
+                if 'statusDescription' in rule[c_action]:
+                    new_rule[c_action]['statusDescription'] = str(rule[c_action]['statusDescription'])
+                if ('headers' in rule[c_action]) and (type(rule[c_action]['headers']) is list):
+                    new_rule[c_action]['headers'] = rule[c_action]['headers']
+                if 'payload' in rule[c_action]:  # payload is NOT typecasted to str, to allow non-str(eg binary) payloads
+                    new_rule[c_action]['payload'] = rule[c_action]['payload']
+            elif rule[c_action][c_type] == 'newRequest':
+                if 'httpProtocol' in rule[c_action]:
+                    new_rule[c_action]['httpProtocol'] = str(rule[c_action]['httpProtocol'])
+                if 'method' in rule[c_action]:
+                    new_rule[c_action]['method'] = str(rule[c_action]['method'])
+                if 'url' in rule[c_action]:
+                    new_rule[c_action]['url'] = str(rule[c_action]['url'])
+                if ('headers' in rule[c_action]) and (type(rule[c_action]['headers']) is list):
+                    new_rule[c_action]['headers'] = rule[c_action]['headers']
+                if 'payload' in rule[c_action]:  # payload is NOT typecasted to str, to allow non-str(eg binary) payloads
+                    new_rule[c_action]['payload'] = rule[c_action]['payload']
 
         return new_rule
     except (KeyError, TypeError, AssertionError):
         return None
 
 test_rule = {
-    'ruleType': 'request',
-    'filter': {
+    "ruleType": 'request',
+    "filter": {
         'httpProtocol': 'HTTP/1.1',
         'method': 'GET',
         'headers': [
@@ -106,8 +112,8 @@ test_rule = {
             {'key': 'fizz', 'value': 'buzz'},
         ],
     },
-    'action': {
-        'type': 'modify',
+    "action": {
+        "type": 'modify',
         'method': 'PUT',
         'setHeaders': [
             {
