@@ -25,8 +25,7 @@ def validate(rule):
         c_filter = "filter"
         c_action = "action"
         c_type = "type"
-        
-        
+
         assert c_ruletype in rule
         assert rule[c_ruletype] in ('request', 'response')
         new_rule[c_ruletype] = rule[c_ruletype]
