@@ -1,3 +1,4 @@
+from bson.errors import InvalidId
 from django.http import JsonResponse, HttpResponseBadRequest, HttpResponseNotFound, HttpResponse, \
     HttpResponseForbidden
 from django.views.decorators.csrf import csrf_exempt
@@ -41,13 +42,16 @@ def get(request, session_id=None):
         return get_all_sessions(request)
 
     dbc = db_model.connect()
-    session = dbc.session.find_one({"_id": ObjectId(session_id)})
+    try:
+        session = dbc.session.find_one({"_id": ObjectId(session_id)})
+    except InvalidId:
+        return HttpResponseNotFound()
     if session is None:
-        return HttpResponseNotFound("", status=404)
+        return HttpResponseNotFound()
 
     # Users cannot retrieve sessions they do not own, unless admin
     elif (session['username'] != request.user['username']) and (auth.is_admin(request.user) is False):
-        return HttpResponseForbidden(status=401)
+        return HttpResponseForbidden()
     else:
         session['id'] = str(session.pop('_id'))
         return JsonResponse(session)
@@ -65,7 +69,7 @@ def get_all_sessions(request):
 
     for s in sessions:
         s['id'] = str(s.pop('_id'))
-    return JsonResponse({"sessions": sessions}, status=200)
+    return JsonResponse({"sessions": sessions})
 
 
 @RequireLogin()
@@ -78,9 +82,9 @@ def post(request):
         assert "name" in new
         assert "description" in new
     except AssertionError:
-        return HttpResponseBadRequest("argument mismatch", status=400)
+        return HttpResponseBadRequest("argument mismatch")
     except ValueError:
-        return HttpResponseBadRequest("invalid JSON", status=400)
+        return HttpResponseBadRequest("invalid JSON")
 
     dbc = db_model.connect()
 
@@ -103,8 +107,8 @@ def post(request):
     try:
         session_id = str(dbc.session.save(session))
     except DuplicateKeyError:
-        return HttpResponseBadRequest("session name is not unique", status=409)
-    r = JsonResponse({"id": session_id}, status=200)
+        return HttpResponseBadRequest("session name is not unique")
+    r = JsonResponse({"id": session_id})
     r['location'] = "/api/session/%s" % session_id
     return r
 
@@ -117,16 +121,19 @@ def put(request, session_id):
     try:
         new = json.loads(request.body)
     except ValueError:
-        return HttpResponseBadRequest("invalid JSON", status=400)
+        return HttpResponseBadRequest("invalid JSON")
 
     dbc = db_model.connect()
-    session = dbc.session.find_one({"_id": ObjectId(session_id)})
+    try:
+        session = dbc.session.find_one({"_id": ObjectId(session_id)})
+    except InvalidId:
+        return HttpResponseNotFound()
     if session is None:
-        return HttpResponseNotFound(status=404)
+        return HttpResponseNotFound()
 
     # Users can only update their own sessions, unless admin
     elif (session['username'] != request.user['username']) and (auth.is_admin(request.user) is False):
-        return HttpResponseForbidden(status=401)
+        return HttpResponseForbidden()
     else:
         if "name" in new:
             session['name'] = new['name']
@@ -144,8 +151,8 @@ def put(request, session_id):
             session['updatedAt'] = datetime.isoformat(datetime.now())
             dbc.session.save(session)
         except DuplicateKeyError:
-            return HttpResponseBadRequest("session name is not unique", status=409)
-        return HttpResponse(status=200)
+            return HttpResponseBadRequest("session name is not unique")
+        return HttpResponse()
 
 
 @RequireLogin()
@@ -154,15 +161,16 @@ def delete(request, session_id):
     Delete session based on session_id.
     """
     dbc = db_model.connect()
-    session = dbc.session.find_one({"_id": ObjectId(session_id)})
+    try:
+        session = dbc.session.find_one({"_id": ObjectId(session_id)})
+    except InvalidId:
+        return HttpResponseNotFound()
     if session is None:
-        r = JsonResponse({"error": "session_id not found"})
-        r.status_code = 404
-        return r
+        return HttpResponseNotFound()
 
     # Users can only delete their own sessions, unless admin
     elif (session['username'] != request.user['username']) and (auth.is_admin(request.user) is False):
-        return HttpResponseForbidden(status=401)
+        return HttpResponseForbidden()
     else:
         dbc.session.remove(session)
-        return HttpResponse(status=200)
+        return HttpResponse()
