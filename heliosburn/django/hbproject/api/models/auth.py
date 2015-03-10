@@ -1,4 +1,5 @@
 # Model to contain authentication and authorization related assets
+from django.http import HttpResponse, HttpResponseBadRequest
 
 
 def is_admin(user):
@@ -45,16 +46,15 @@ class RequireLogin(object):
                 if self.valid_token():
                     user = self.fetch_user()
                     if user is None:  # The user matching the token has been deleted
-                        return HttpResponseForbidden(status=401)
+                        return HttpResponseBadRequest("Could not obtain user information")
                     if (self.required_role is not None) and (self.required_role not in user['roles']):
-                        return HttpResponseForbidden(status=401)
+                        return HttpResponseForbidden()
                     request.user = user
                     request.token_string = self.token_string
                     return self.f(request, *pargs, **kwargs)
 
             # 401 Unauthorized if you reach this point
-
-            return HttpResponseForbidden(status=401)
+            return HttpResponse(status=401)
         return wrapped_f
 
     def fetch_user(self):
