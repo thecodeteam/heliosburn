@@ -24,7 +24,7 @@ class TrafficReader(AbstractModule):
 
     def handle_response(self, response):
 
-        log.msg("TrafficeReader started handling of response: %s" % response)
+#        log.msg("TrafficeReader started handling of response: %s" % response)
         r = redis.StrictRedis(host='127.0.0.1',
                               port=6379,
                               db=0)

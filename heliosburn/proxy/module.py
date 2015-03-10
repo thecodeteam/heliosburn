@@ -295,9 +295,8 @@ class Registry(object):
         pipeline = self._get_response_pipeline()
         pipeline.addCallback(callback)
 
-        log.msg("Started handling of response: %s" % response)
+#        log.msg("Started handling of response: %s" % response)
         pipeline.callback(response)
-
 
     def reset(self):
 

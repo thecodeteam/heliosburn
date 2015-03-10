@@ -1,5 +1,6 @@
 import yaml
 import time
+import uuid
 from io import BytesIO
 from twisted.web.proxy import ProxyClient
 from twisted.web.proxy import ReverseProxyRequest
@@ -23,7 +24,7 @@ class HBProxyClient(ProxyClient):
 
     """
     def __init__(self, command, rest, version, headers, data, father,
-                 module_registry):
+                 module_registry, transaction_id):
         """
         Override ProxyClient.__init__ to accept HBModuleRegistry
         as a parameter
@@ -34,6 +35,8 @@ class HBProxyClient(ProxyClient):
                              father)
         self.module_registry = module_registry
         self.buffer = ""
+        self.header = {}
+        self.header['transaction_id'] = transaction_id
 
     def _forward_response(self, response):
 
@@ -41,13 +44,20 @@ class HBProxyClient(ProxyClient):
         self.father.headers['Content-Length'] = len(self.father.
                                                     content.getvalue())
         ProxyClient.handleResponsePart(self, self.father.content.getvalue())
+        ProxyClient.handleResponseEnd(self)
 
     def handleResponsePart(self, buffer):
         self.buffer += buffer
 
     def handleResponseEnd(self):
-        self.module_registry.handle_response(self.buffer,
+        self.module_registry.handle_response(self.header,
                                              self._forward_response)
+
+    def handleHeader(self, key, val):
+        self.header[key] = val
+
+    def handleEndHeaders(self):
+        print(self.header)
 
 
 class HBProxyClientFactory(ProxyClientFactory):
@@ -90,6 +100,7 @@ class HBReverseProxyRequest(ReverseProxyRequest):
 
         ReverseProxyRequest.__init__(self, channel, queued, reactor)
         self.createdAt = int(time.time() * 1000000)
+        self.transactionID = uuid.uuid1()
 
         # need to refactor this
         plugins = self.get_config("./modules.yaml")
