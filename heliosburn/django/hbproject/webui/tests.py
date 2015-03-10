@@ -174,7 +174,7 @@ class TestPlanTest(WebuiSignedInTest):
         response = self.client.post('/webui/testplans/new/', form_data)
 
         location = response.url
-        pattern = '.+testplans\/(?P<id>\d+)'
+        pattern = '.+testplans\/(?P<id>\w+)'
         p = re.compile(pattern)
         m = p.match(location)
         testplan_id = m.group('id')
@@ -211,10 +211,11 @@ class TestPlanTest(WebuiSignedInTest):
         response = self.client.post('/webui/testplans/new/', form_data)
 
         location = response.url
-        pattern = '.+testplans\/(?P<id>\d+)'
+        pattern = '.+testplans\/(?P<id>\w+)'
         p = re.compile(pattern)
         m = p.match(location)
         testplan_id = m.group('id')
+        self.assertRedirects(response, '/webui/testplans/%s' % (testplan_id,))
 
         data = {}
         data['testplans'] = [testplan_id]
@@ -224,9 +225,9 @@ class TestPlanTest(WebuiSignedInTest):
 
 class RecordingTest(WebuiSignedInTest):
     def test_recording_url_fix_redirect(self):
-        response = self.client.get('/webui/recording')
-        self.assertRedirects(response, '/webui/recording/', status_code=301)
+        response = self.client.get('/webui/recordings')
+        self.assertRedirects(response, '/webui/recordings/', status_code=301)
 
     def test_recording_list_uses_template(self):
-        response = self.client.get('/webui/recording/')
+        response = self.client.get('/webui/recordings/')
         self.assertTemplateUsed(response, 'recording/recording_list.html')

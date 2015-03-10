@@ -112,6 +112,8 @@ def _rule_to_post_data(rule):
             post_data['actionUrl'] = action['url']
         if 'statusCode' in action:
             post_data['actionStatusCode'] = action['statusCode']
-        if 'statusCode' in action:
+        if 'statusDescription' in action:
             post_data['actionStatusDescription'] = action['statusDescription']
+        if 'payload' in action:
+            post_data['actionPayload'] = action['payload']
     return post_data

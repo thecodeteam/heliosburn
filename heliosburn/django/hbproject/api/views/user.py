@@ -1,3 +1,4 @@
+from bson.errors import InvalidId
 from django.http import JsonResponse, HttpResponseBadRequest, HttpResponseNotFound, HttpResponse, HttpResponseForbidden
 from django.views.decorators.csrf import csrf_exempt
 from api.models import auth
@@ -41,15 +42,15 @@ def get(request, username=None):
 
     # Users can only retrieve their own account, unless admin
     if (request.user['username'] != username) and (auth.is_admin(request.user) is False):
-        return HttpResponseForbidden(status=401)
+        return HttpResponseForbidden()
 
     from api.models import db_model
     dbc = db_model.connect()
     user = dbc.hbuser.find_one({"username": username}, {"_id": 0})
     if user is None:
-        return HttpResponseNotFound(status=404)
+        return HttpResponseNotFound()
     else:
-        return JsonResponse(user, status=200)
+        return JsonResponse(user)
 
 
 @RequireLogin(role='admin')
@@ -59,7 +60,7 @@ def get_all_users(request):
     """
     from api.models import db_model
     dbc = db_model.connect()
-    return JsonResponse({"users": [user for user in dbc.hbuser.find({}, {"_id": 0})]}, status=200)
+    return JsonResponse({"users": [user for user in dbc.hbuser.find({}, {"_id": 0})]})
 
 
 @RequireLogin(role='admin')
@@ -73,9 +74,9 @@ def post(request):
         assert "password" in new
         assert "email" in new
     except AssertionError:
-        return HttpResponseBadRequest("argument mismatch", status=400)
+        return HttpResponseBadRequest("argument mismatch")
     except ValueError:
-        return HttpResponseBadRequest("invalid JSON", status=400)
+        return HttpResponseBadRequest("invalid JSON")
 
     from api.models import db_model
     dbc = db_model.connect()
@@ -104,18 +105,18 @@ def put(request, username):
     """
     # Users can only update their own account, unless admin
     if (request.user['username'] != username) and (auth.is_admin(request.user) is False):
-        return HttpResponseForbidden(status=401)
+        return HttpResponseForbidden()
 
     try:
         in_json = json.loads(request.body)
     except ValueError:
-        return HttpResponseBadRequest("invalid JSON", status=400)
+        return HttpResponseBadRequest("invalid JSON")
 
     from api.models import db_model
     dbc = db_model.connect()
     user = dbc.hbuser.find_one({"username": username})
     if user is None:
-        return HttpResponseNotFound("")
+        return HttpResponseNotFound()
     else:
         if "password" in in_json:
             m = hashlib.sha512()
@@ -125,7 +126,7 @@ def put(request, username):
             user['email'] = in_json['email']
         user['updatedAt'] = datetime.isoformat(datetime.now())
         dbc.hbuser.save(user)
-        return HttpResponse(status=200)
+        return HttpResponse()
         
 
 @RequireLogin(role='admin')
@@ -137,7 +138,7 @@ def delete(request, username):
     dbc = db_model.connect()
     user = dbc.hbuser.find_one({"username": username})
     if user is None:
-        return HttpResponseNotFound("user not found", status=404)
+        return HttpResponseNotFound("user not found")
     else:
         dbc.hbuser.remove(user)
-        return HttpResponse(status=200)
+        return HttpResponse()

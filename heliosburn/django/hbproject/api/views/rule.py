@@ -1,3 +1,4 @@
+from bson.errors import InvalidId
 from django.http import JsonResponse, HttpResponseNotFound, HttpResponseBadRequest, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from api.models import legacy_db_model
@@ -42,12 +43,15 @@ def get(request, rule_id=None):
     if rule_id is None:
         return get_all_rules()
     dbc = db_model.connect()
-    rule = dbc.rule.find_one({"_id": ObjectId(rule_id)})
+    try:
+        rule = dbc.rule.find_one({"_id": ObjectId(rule_id)})
+    except InvalidId:
+        return HttpResponseNotFound()
     if rule is None:
         return HttpResponseNotFound()
     else:
         rule['id'] = str(rule.pop('_id'))
-        return JsonResponse(rule, status=200)
+        return JsonResponse(rule)
 
 
 def get_all_rules():
@@ -95,9 +99,12 @@ def put(request, rule_id):
         return HttpResponseBadRequest("invalid JSON")
 
     dbc = db_model.connect()
-    rule = dbc.rule.find_one({"_id": ObjectId(rule_id)})
+    try:
+        rule = dbc.rule.find_one({"_id": ObjectId(rule_id)})
+    except InvalidId:
+        return HttpResponseNotFound()
     if rule is None:
-        return HttpResponseNotFound(status=404)
+        return HttpResponseNotFound()
     else:
         in_json['createdAt'] = rule['createdAt']
         rule = rule_model.validate(in_json)
@@ -120,9 +127,12 @@ def delete(request, rule_id):
     Delete rule based on rule_id.
     """
     dbc = db_model.connect()
-    rule = dbc.rule.find_one({'_id': ObjectId(rule_id)})
+    try:
+        rule = dbc.rule.find_one({'_id': ObjectId(rule_id)})
+    except InvalidId:
+        return HttpResponseNotFound()
     if rule is None:
         return HttpResponseNotFound()
     else:
         dbc.rule.remove({"_id": ObjectId(rule_id)})
-        return HttpResponse(status=200)
+        return HttpResponse()
