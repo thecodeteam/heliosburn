@@ -91,7 +91,7 @@ def post(request):
     dbc = db_model.connect()
     testplan = dbc.testplan.find_one({"name": new['name']})
     if testplan is not None:
-        return HttpResponse("testplan named '%s' already exists" % new['name'])
+        return HttpResponseBadRequest("testplan named '%s' already exists" % new['name'])
 
     new['createdAt'] = datetime.isoformat(datetime.now())
     new['updatedAt'] = datetime.isoformat(datetime.now())
