@@ -73,19 +73,22 @@ class RuleRequestForm(forms.Form):
         rule = {'ruleType': 'request', 'filter': {}, 'action': {}}
 
         # Filter Protocol
-        rule['filter']['httpProtocol'] = cleaned_data['filterProtocol']
+        if cleaned_data['filterProtocol']:
+            rule['filter']['httpProtocol'] = cleaned_data['filterProtocol']
 
         # Filter Method
-        rule['filter']['method'] = cleaned_data['filterMethod']
+        if cleaned_data['filterMethod']:
+            rule['filter']['method'] = cleaned_data['filterMethod']
 
         # Filter URL
-        rule['filter']['url'] = cleaned_data['filterUrl']
+        if cleaned_data['filterUrl']:
+            rule['filter']['url'] = cleaned_data['filterUrl']
 
         # Get Filter Headers
-        rule['filter']['headers'] = []
         filter_header_keys = self.data.getlist('filterHeaderKeys[]')
         filter_header_values = self.data.getlist('filterHeaderValues[]')
         if filter_header_keys:
+            rule['filter']['headers'] = []
             for index, key in enumerate(filter_header_keys):
                 value = filter_header_values[index]
                 rule['filter']['headers'].append({'key': key, 'value': value})
@@ -98,23 +101,35 @@ class RuleRequestForm(forms.Form):
             return rule
 
         if cleaned_data['actionType'] == 'modify':
-            rule['action']['httpProtocol'] = cleaned_data['actionProtocol']
-            rule['action']['method'] = cleaned_data['actionMethod']
-            rule['action']['url'] = cleaned_data['actionUrl']
+            if cleaned_data['actionProtocol']:
+                rule['action']['httpProtocol'] = cleaned_data['actionProtocol']
+            if cleaned_data['actionMethod']:
+                rule['action']['method'] = cleaned_data['actionMethod']
+            if cleaned_data['actionUrl']:
+                rule['action']['url'] = cleaned_data['actionUrl']
+            action_header_keys = self.data.getlist('actionHeaderKeys[]')
+            action_header_values = self.data.getlist('actionHeaderValues[]')
+            if action_header_keys:
+                rule['action']['setHeaders'] = []
+                for index, key in enumerate(action_header_keys):
+                    value = action_header_values[index]
+                    rule['action']['setHeaders'].append({'key': key, 'value': value})
 
         if cleaned_data['actionType'] == 'newResponse':
-            rule['action']['httpProtocol'] = cleaned_data['actionProtocol']
-            rule['action']['statusCode'] = cleaned_data['actionStatusCode']
-            rule['action']['statusDescription'] = cleaned_data['actionStatusDescription']
-            rule['action']['payload'] = cleaned_data['actionPayload']
-
-        # Get Action Headers
-        rule['action']['headers'] = []
-        action_header_keys = self.data.getlist('actionHeaderKeys[]')
-        action_header_values = self.data.getlist('actionHeaderValues[]')
-        if action_header_keys:
-            for index, key in enumerate(action_header_keys):
-                value = action_header_values[index]
-                rule['action']['headers'].append({'key': key, 'value': value})
+            if cleaned_data['actionProtocol']:
+                rule['action']['httpProtocol'] = cleaned_data['actionProtocol']
+            if cleaned_data['actionStatusCode']:
+                rule['action']['statusCode'] = cleaned_data['actionStatusCode']
+            if cleaned_data['actionStatusDescription']:
+                rule['action']['statusDescription'] = cleaned_data['actionStatusDescription']
+            if cleaned_data['actionPayload']:
+                rule['action']['payload'] = cleaned_data['actionPayload']
+            action_header_keys = self.data.getlist('actionHeaderKeys[]')
+            action_header_values = self.data.getlist('actionHeaderValues[]')
+            if action_header_keys:
+                rule['action']['headers'] = []
+                for index, key in enumerate(action_header_keys):
+                    value = action_header_values[index]
+                    rule['action']['headers'].append({'key': key, 'value': value})
 
         return rule
