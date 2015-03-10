@@ -71,7 +71,10 @@ def validate(rule):
                 if 'httpProtocol' in rule['action']:
                     new_rule['action']['httpProtocol'] = str(rule['action']['httpProtocol'])
                 if 'statusCode' in rule['action']:
-                    new_rule['action']['statusCode'] = int(rule['action']['statusCode'])
+                    try:
+                        new_rule['action']['statusCode'] = int(rule['action']['statusCode'])
+                    except:
+                        new_rule['action']['statusCode'] = 200
                 else:  # Assume that an omitted statusCode should be rewritten as 200 OK
                     new_rule['action']['statusCode'] = 200
                 if 'statusDescription' in rule['action']:
