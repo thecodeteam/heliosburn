@@ -118,5 +118,3 @@ class RuleRequestForm(forms.Form):
                 rule['action']['headers'].append({'key': key, 'value': value})
 
         return rule
-
-
