@@ -43,7 +43,7 @@ class AuthViewTestCase(TestCase):
         request.method = "POST"
         request.body = json.dumps(dict(username="admin", password="admin"))
         response = auth.login(request)
-        assert "x-auth-token" in response._headers
+        self.assertIn("x-auth-token", response._headers)
 
 
 class SessionViewTestCase(TestCase):
@@ -65,44 +65,44 @@ class SessionViewTestCase(TestCase):
                 'description': 'CRUD test',
                 })
             response = session.post(request)
-            assert response.status_code == 200
-            assert "location" in response._headers
+            self.assertEqual(response.status_code, 200)
+            self.assertIn("location", response._headers)
             in_json = json.loads(response.content)
-            assert "id" in in_json
+            self.assertIn("id", in_json)
             session_id = in_json['id']
             return session_id
 
         def read(request, session_id):
             response = session.get(request, session_id)
-            assert response.status_code == 200
+            self.assertEqual(response.status_code, 200)
 
             response = session.get(create_authenticated_request("test1", "test1"), session_id)
-            assert response.status_code == 401
+            self.assertEqual(response.status_code, 403)
 
         def update(request, session_id):
             request.body = json.dumps({'name': 'CRUD test updated'})
             response = session.put(request, session_id)
-            assert response.status_code == 200
+            self.assertEqual(response.status_code, 200)
 
             user1_request = create_authenticated_request("test1", "test1")
             user1_request.body = json.dumps({'name': 'CRUD test updated'})
             response = session.put(user1_request, session_id)
-            assert response.status_code == 401
+            self.assertEqual(response.status_code, 403)
 
         def delete(request, session_id):
             response = session.delete(create_authenticated_request("test1", "test1"), session_id)
-            assert response.status_code == 401
+            self.assertEqual(response.status_code, 403)
 
             response = session.delete(request, session_id)
-            assert response.status_code == 200
+            self.assertEqual(response.status_code, 200)
 
         def linked_crud(request):
             # Create a testplan
             request.body = json.dumps({"name": "crud testplan"})
             response = testplan.post(request)
-            assert response.status_code == 200
-            testplan_id = json.loads(response.content)['id']
+            self.assertEqual(response.status_code, 200)
 
+            testplan_id = json.loads(response.content)['id']
             # Create a session linked to testplan
             request.body = json.dumps({
                 'name': 'crud session',
@@ -110,14 +110,14 @@ class SessionViewTestCase(TestCase):
                 'testplan': testplan_id,
             })
             response = session.post(request)
-            assert response.status_code == 200
+            self.assertEqual(response.status_code, 200)
             session_id = json.loads(response.content)['id']
 
             # Delete session and testplan
             response = session.delete(request, session_id)
-            assert response.status_code == 200
+            self.assertEqual(response.status_code, 200)
             response = testplan.delete(request, testplan_id)
-            assert response.status_code == 200
+            self.assertEqual(response.status_code, 200)
 
         print("Creating authenticated request for CRUD tests in %s" % self.__class__)
         request = create_authenticated_request("admin", "admin")
@@ -185,15 +185,15 @@ class TestplanViewTestCase(TestCase):
                     ],
             })
             response = testplan.post(request)
-            assert response.status_code == 200
-            assert "location" in response._headers
+            self.assertEqual(response.status_code, 200)
+            self.assertIn("location", response._headers)
             in_json = json.loads(response.content)
-            assert "id" in in_json
+            self.assertIn("id", in_json)
             return in_json['id']
 
         def read(request, testplan_id):
             response = testplan.get(request, testplan_id)
-            assert response.status_code == 200
+            self.assertEqual(response.status_code, 200)
 
         def update(request, testplan_id):
             request.body = json.dumps({
@@ -226,11 +226,11 @@ class TestplanViewTestCase(TestCase):
                     ],
             })
             response = testplan.put(request, testplan_id)
-            assert response.status_code == 200
+            self.assertEqual(response.status_code, 200)
 
         def delete(request, testplan_id):
             response = testplan.delete(request, testplan_id)
-            assert response.status_code == 200
+            self.assertEqual(response.status_code, 200)
 
         print("Creating authenticated request for CRUD tests in %s" % self.__class__)
         request = create_authenticated_request("admin", "admin")
@@ -270,39 +270,39 @@ class UserViewTestCase(TestCase):
                 "email": "test@test",
             })
             response = user.post(request)
-            assert response.status_code == 200
-            assert "location" in response._headers
+            self.assertEqual(response.status_code, 200)
+            self.assertIn("location", response._headers)
 
             response = user.post(create_authenticated_request("test1", "test1"))
-            assert response.status_code == 401
+            self.assertEqual(response.status_code, 403)
 
             return username
 
         def read(request, username):
             response = user.get(request, username)
-            assert response.status_code == 200
+            self.assertEqual(response.status_code, 200)
 
             response = user.get_all_users(request)
-            assert response.status_code == 200
+            self.assertEqual(response.status_code, 200)
 
             response = user.get_all_users(create_authenticated_request("test1", "test1"))
-            assert response.status_code == 401
+            self.assertEqual(response.status_code, 403)
 
         def update(request, username):
             request.body = json.dumps({"email": "test1@test1"})
             response = user.put(request, username)
-            assert response.status_code == 200
+            self.assertEqual(response.status_code, 200)
 
             response = user.put(create_authenticated_request("test1", "test1"), username)
-            assert response.status_code == 401
+            self.assertEqual(response.status_code, 403)
 
         def delete(request, username):
 
             response = user.delete(create_authenticated_request("test1", "test1"), username)
-            assert response.status_code == 401
+            self.assertEqual(response.status_code, 403)
 
             response = user.delete(request, username)
-            assert response.status_code == 200
+            self.assertEqual(response.status_code, 200)
 
         print("Creating authenticated request for CRUD tests in %s" % self.__class__)
         request = create_authenticated_request("admin", "admin")
@@ -339,7 +339,7 @@ class TrafficViewTestCase(TestCase):
 
         def read(request):
             response = traffic.get(request)
-            assert response.status_code == 200
+            self.assertEqual(response.status_code, 200)
 
         def update(request, username):
             pass
@@ -399,15 +399,15 @@ class RuleViewTestCase(TestCase):
                 }
             })
             response = rule.post(request)
-            assert response.status_code == 200
-            assert "location" in response._headers
+            self.assertEqual(response.status_code, 200)
+            self.assertIn("location", response._headers)
             in_json = json.loads(response.content)
-            assert "id" in in_json
+            self.assertIn("id", in_json)
             return in_json['id']
 
         def read(request, rule_id):
             response = rule.get(request, rule_id)
-            assert response.status_code == 200
+            self.assertEqual(response.status_code, 200)
 
         def update(request, rule_id):
             request.body = json.dumps({
@@ -435,11 +435,11 @@ class RuleViewTestCase(TestCase):
                 },
             })
             response = rule.put(request, rule_id)
-            assert response.status_code == 200
+            self.assertEqual(response.status_code, 200)
 
         def delete(request, rule_id):
             response = rule.delete(request, rule_id)
-            assert response.status_code == 200
+            self.assertEqual(response.status_code, 200)
 
         print("Creating authenticated request for CRUD tests in %s" % self.__class__)
         request = create_authenticated_request("admin", "admin")
@@ -474,15 +474,15 @@ class TestplanRuleViewTestCase(TestCase):
         def create_testplan(request):
             request.body = json.dumps({"name": "CRUD test for testplan_rule"})
             response = testplan.post(request)
-            assert response.status_code == 200
-            assert "location" in response._headers
+            self.assertEqual(response.status_code, 200)
+            self.assertIn("location", response._headers)
             in_json = json.loads(response.content)
-            assert "id" in in_json
+            self.assertIn("id", in_json)
             return in_json['id']
 
         def delete_testplan(request, testplan_id):
             response = testplan.delete(request, testplan_id)
-            assert response.status_code == 200
+            self.assertEqual(response.status_code, 200)
 
         def create(request, testplan_id):
             request.body = json.dumps({
@@ -512,15 +512,15 @@ class TestplanRuleViewTestCase(TestCase):
                 }
             })
             response = testplan_rule.post(request, testplan_id)
-            assert response.status_code == 200
-            assert "location" in response._headers
+            self.assertEqual(response.status_code, 200)
+            self.assertIn("location", response._headers)
             in_json = json.loads(response.content)
-            assert "id" in in_json
+            self.assertIn("id", in_json)
             return in_json['id']
 
         def read(request, testplan_id, rule_id):
             response = testplan_rule.get(request, testplan_id, rule_id)
-            assert response.status_code == 200
+            self.assertEqual(response.status_code, 200)
 
         def update(request, testplan_id, rule_id):
             request.body = json.dumps({
@@ -549,11 +549,11 @@ class TestplanRuleViewTestCase(TestCase):
 
             })
             response = testplan_rule.put(request, testplan_id, rule_id)
-            assert response.status_code == 200
+            self.assertEqual(response.status_code, 200)
 
         def delete(request, testplan_id, rule_id):
             response = testplan_rule.delete(request, testplan_id, rule_id)
-            assert response.status_code == 200
+            self.assertEqual(response.status_code, 200)
 
         print("Creating authenticated request for CRUD tests in %s" % self.__class__)
         request = create_authenticated_request("admin", "admin")
