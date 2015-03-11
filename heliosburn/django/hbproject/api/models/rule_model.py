@@ -21,10 +21,18 @@ def validate(rule):
             new_rule['id'] = str(ObjectId())
             
         # String constants for key names
+        c_name = "name"
+        c_description = "description"
         c_ruletype = "ruleType"
         c_filter = "filter"
         c_action = "action"
         c_type = "type"
+
+        assert c_name in rule
+        new_rule[c_name] = rule[c_name]
+
+        if c_description in rule:
+            new_rule[c_description] = rule[c_description]
 
         assert c_ruletype in rule
         assert rule[c_ruletype] in ('request', 'response')
