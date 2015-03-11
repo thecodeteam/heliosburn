@@ -27,9 +27,13 @@ def validate(rule):
         c_filter = "filter"
         c_action = "action"
         c_type = "type"
+        c_enabled = "enabled"
 
         assert c_name in rule
         new_rule[c_name] = rule[c_name]
+
+        assert c_enabled in rule
+        new_rule[c_enabled] = bool(rule[c_enabled])
 
         if c_description in rule:
             new_rule[c_description] = rule[c_description]
