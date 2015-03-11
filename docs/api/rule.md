@@ -1,4 +1,9 @@
 - [Rule](#rule)
+  - [Components of a Rule](#components-of-a-rule)
+    - ['name' and 'description'](#name-and-description)
+    - ['ruleType'](#ruletype)
+    - ['filter'](#filter)
+    - ['action'](#action)
   - [Get a list of Rules](#get-a-list-of-rules)
   - [Get Rule details](#get-rule-details)
   - [Create a new Rule](#create-a-new-rule)
@@ -10,7 +15,25 @@
 
 Rules will determine how the traffic is altered and, therefore, they are the most important part of the traffic injection engine. Rules can be either `request` or `response` types, the type determines when the rule is applied in the whole process. `request` rules are evaluated when HeliosBurn receives an HTTP request from the client and before forwarding it to the server. Whereas `response` rules are evaluated once HeliosBurn has received the response from the server and before forwarding it to the client.
 
-A rule is made up of an `filter` and a `action`.
+## Components of a Rule
+
+A rule is made up of the following top-level components:
+
+1. `name`
+2. `description`
+3. `ruleType`
+4. `filter`
+5. `action`
+
+### The 'name' and 'description' components
+
+The `name` and `description` components are self-explanatory. Giving appropriate names and descriptions to your rules will make them more readable. Consider a Test Plan with hundreds of rules - without proper names and descriptions the end user is lost trying to infer all their meanings.
+
+### The 'ruleType' component
+
+A rule's `ruleType` field specifies whether a rule applies to a HTTP *request* or *response*.
+
+### The 'filter' component
 
 The filter determines whether or not the rule matches a given request or response. A filter includes information about the different aspects of HTTP traffic that will be used to compare it with the real traffic. Filter elements vary depending on the type of rule (i.e. `request` or `response`).
 
@@ -25,6 +48,8 @@ The following table shows the different kind of elements that can be specified i
 | headers | both | List of header filters to be compared to the HTTP headers in the request or response. A header filter can contain either only the header key or both the header key and value. If it only contains the header key, only the key will be compared to the given headers. If it contains both the key and the value, both elements will be compared. |
 
 > **Note**: All text filters are evaluated using regular expressions.
+
+### The 'action' component
 
 The action determines how the given request or response is altered. An action is only applied if the filter fully matches the evaluated request or response. Actions vary depending on the type of rule (i.e. `request` or `response`).
 
@@ -79,6 +104,8 @@ The following example will modify all requests that use an HTTP protocol `HTTP/1
 ```json
 {
     "id": "32j45kbk3245b3245kbn",
+    "name": "Auth token match",
+    "description": "Matches X-Auth-Token request headers",
     "createdAt": "2014-02-12 03:34:51",
     "updatedAt": "2014-02-12 03:34:52",
     "ruleType": "request",
@@ -120,6 +147,8 @@ The next example will intercept all requests to the URL "http://example.com/foo/
 ```json
 {
     "id": "32j45kbk3245b3245kbn",
+    "name": "example.com/foo/bas request HTTP 400",
+    "description": "matches requests to example.com/foo/bas",
     "createdAt": "2014-02-12 03:34:51",
     "updatedAt": "2014-02-12 03:34:52",
     "ruleType": "request",
@@ -153,6 +182,8 @@ The rule below is applied at the "response" context (i.e. after receiving the re
 ```json
 {
     "id": "32j45kbk3245b3245kbn",
+    "name": "example.com/foo/bar PUT error inject",
+    "description": "match PUT to example.com/foo/bar",
     "createdAt": "2014-02-12 03:34:51",
     "updatedAt": "2014-02-12 03:34:52",
     "ruleType": "response",
@@ -222,6 +253,8 @@ The response body contains a `rules` key containing a list of available rules.
     "rules": [
         {
             "id": "32j45kbk3245b3245kbn",
+            "name": "auth token header match",
+            "description": "matches headers container x-auth-token",
             "createdAt": "2014-02-12 03:34:51",
             "updatedAt": "2014-02-12 03:34:52",
             "ruleType": "request",
@@ -309,7 +342,9 @@ The response body contains a Rule represented in JSON format.
 
 ```json
 {
-   	"id": "j34k2b5l3425bl3425l03",
+  "id": "j34k2b5l3425bl3425l03",
+  "name": "header mods on X-Auth-Token",
+  "description": "injects new X-Auth-Token values on GET",
 	"createdAt": "2014-02-12 03:34:51",
 	"updatedAt": "2014-02-12 03:34:52",
 	"ruleType": "request",
@@ -377,6 +412,8 @@ Content-Length: 294
 Content-Type: application/json; charset=UTF-8
 
 {
+  'name': 'User-Agent swap',
+  'description': 'swaps user agent to lynx',
   'ruleType': 'request',
   'filter': {
       'httpProtocol': 'HTTP/1.1',
@@ -473,6 +510,8 @@ Content-Length: 294
 Content-Type: application/json; charset=UTF-8
 
 {
+  'name': 'squid-to-curl',
+  'description': 'rewrites user-agent headers matching squid to curl',
   'ruleType': 'request',
   'filter': {
       'httpProtocol': 'HTTP/1.1',
@@ -596,6 +635,8 @@ Rules have a very detailed specification(as seen in [Rule](#rule)). Creating the
 
 ```
 {
+  'name': 'identify firefox requests',
+  'description': 'matches user-agent requests from firefox',
   'ruleType': 'request',
   'filter': {
     'method': 'GET',
@@ -610,6 +651,8 @@ The above rule matches requests that use the method `GET`, and specifically look
 
 ```
 {
+  'name': 'firefox traffic drop',
+  'description': 'drops requests sent from firefox',
   'ruleType': 'request',
   'filter': {
     'method': 'GET',
