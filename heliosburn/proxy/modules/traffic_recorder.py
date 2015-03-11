@@ -12,7 +12,7 @@ class RequestTrafficHandler(HBRedisMessageHandler):
     def execute(self):
         mongo = pymongo.MongoClient()
 #        mongo.test.test_collection.save(dict(self.message))
-#        print(self.message)
+        print(self.message)
 
 
 class ResponseTrafficHandler(HBRedisMessageHandler):
@@ -20,7 +20,7 @@ class ResponseTrafficHandler(HBRedisMessageHandler):
     def execute(self):
         mongo = pymongo.MongoClient()
 #        mongo.test.test_collection.save(self.message)
-#        print(self.message)
+        print(self.message)
 
 
 class TrafficRecorder(AbstractModule):

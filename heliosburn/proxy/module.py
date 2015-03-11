@@ -94,28 +94,24 @@ class AbstractModule(object):
         """
         Called by to handle proxy request event
         """
-        self.log.msg("Request: %s" % keywords)
         return request
 
     def handle_response(self, response,  **keywords):
         """
         Called to handle proxy response event
         """
-        self.log.msg("Response: %s" % keywords)
         return response
 
     def handle_status(self, status, **keywords):
         """
         Called to handle proxy status event
         """
-        self.log.msg("Status: %s" % keywords)
         return status
 
     def handle_header(self, header, **keywords):
         """
         Called to handle proxy header event
         """
-        self.log.msg("header: %s" % keywords)
         return header
 
     def reset(self, **keywords):
@@ -123,7 +119,6 @@ class AbstractModule(object):
         If the module maintains state, this method is called to reset
         the current state of the module
         """
-        self.log.msg("Response: %s" % keywords)
 
     def getProtocol(self):
         if self.context in ['request', 'response']:
@@ -284,7 +279,6 @@ class Registry(object):
         pipeline = self._get_request_pipline()
         pipeline.addCallback(callback)
 
-        log.msg("Registry started handling of request: %s" % request)
         pipeline.callback(request)
 
     def handle_response(self, response, callback):

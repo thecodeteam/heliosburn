@@ -30,7 +30,8 @@ class TrafficStream(AbstractModule):
         request['method'] = self.getMethod()
         request['url'] = self.getURI()
         request['headers'] = {}
-        for key, value in self.request_object.requestHeaders.getAllRawHeaders():
+        headers = self.request_object.requestHeaders.getAllRawHeaders()
+        for key, value in headers:
             request['headers'][key] = value
         request['response'] = {}
         # TODO: get the real response date
@@ -52,15 +53,15 @@ class TrafficStream(AbstractModule):
         # Remove traffic older than 1 second
         result = r.zremrangebyscore('heliosburn.traffic', '-inf',
                                     score - 1 * 1000000)
-        self.log.msg('* Cleaned %d messages' % (result,))
+#        self.log.msg('* Cleaned %d messages' % (result,))
 
         # Add request to set
         result = r.zadd('heliosburn.traffic', score, response_json)
-        if result:
-            self.log.msg('* Message with score %d sent successfully'
-                         % (score,))
-        else:
-            self.log.msg('Could not send message (%d)' % (score,))
+#        if result:
+#            self.log.msg('* Message with score %d sent successfully'
+#                         % (score,))
+#        else:
+#            self.log.msg('Could not send message (%d)' % (score,))
 
         return response
 
