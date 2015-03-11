@@ -1,6 +1,6 @@
 import yaml
-import time
 import uuid
+import datetime
 from io import BytesIO
 from twisted.web.proxy import ProxyClient
 from twisted.web.proxy import ReverseProxyRequest
@@ -38,10 +38,11 @@ class HBProxyClient(ProxyClient):
         self.module_registry = request.module_registry
         self.buffer = ""
         self.header = {}
-        self.father.response_createdAt = int(time.time() * 1000000)
+        now = datetime.datetime.now()
+        self.father.response_createdAt = now.strftime('%Y-%m-%d %H:%M:%S')
 
     def _forward_response(self, response):
-        ProxyClient.handleResponsePart( self, self.father.response_content)
+        ProxyClient.handleResponsePart(self, self.father.response_content)
         ProxyClient.handleResponseEnd(self)
 
     def handleResponsePart(self, buffer):
@@ -62,7 +63,7 @@ class HBProxyClient(ProxyClient):
         for k, v in self.header.iteritems():
             if not isinstance(v, list):
                 v = [v]
-            self.father.responseHeaders.setRawHeaders(k,v)
+            self.father.responseHeaders.setRawHeaders(k, v)
 
 
 class HBProxyClientFactory(ProxyClientFactory):
@@ -101,7 +102,8 @@ class HBReverseProxyRequest(ReverseProxyRequest):
     def __init__(self, channel, queued, reactor=reactor):
 
         ReverseProxyRequest.__init__(self, channel, queued, reactor)
-        self.createdAt = int(time.time() * 1000000)
+        now = datetime.datetime.now()
+        self.createdAt = now.strftime('%Y-%m-%d %H:%M:%S')
         self.transaction_id = uuid.uuid1()
         self.request_id = uuid.uuid1()
         self.response_id = uuid.uuid1()
@@ -148,7 +150,7 @@ class HBReverseProxyRequest(ReverseProxyRequest):
         documentation.
         """
 
-        self.requestHeaders.setRawHeaders(b"host", [self.upstream_host])
+        self.requestHeaders.setRawHeaders("host", [self.upstream_host])
         self.module_registry.handle_request(self, self._forward_request)
 
 

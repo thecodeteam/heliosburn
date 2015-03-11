@@ -1,4 +1,6 @@
 import pymongo
+import json
+import uuid
 from module import AbstractModule
 from twisted.internet.endpoints import TCP4ClientEndpoint
 from twisted.internet import reactor
@@ -7,20 +9,32 @@ from redis_subscriber import HBRedisMessageHandlerFactory
 from redis_subscriber import HBRedisMessageHandler
 
 
-class RequestTrafficHandler(HBRedisMessageHandler):
+class TrafficRecorderHandlerFactory(HBRedisMessageHandlerFactory):
+
+    def __init__(self, recording_id, message_handler=None):
+        HBRedisMessageHandlerFactory.__init__(self, message_handler)
+        self.recording_id = recording_id
+
+    def get_handler(self, message):
+        message = json.loads(message)
+        recording = {}
+        recording['_id'] = self.recording_id
+        recording['traffic'] = {'recording': dict(message)}
+
+        return self.message_handler(recording)
+
+    def set_recording_id(self, recording_id):
+        self.recording_id = recording_id
+
+
+class TrafficHandler(HBRedisMessageHandler):
 
     def execute(self):
-        mongo = pymongo.MongoClient()
-#        mongo.test.test_collection.save(dict(self.message))
-        print(self.message)
-
-
-class ResponseTrafficHandler(HBRedisMessageHandler):
-
-    def execute(self):
-        mongo = pymongo.MongoClient()
-#        mongo.test.test_collection.save(self.message)
-        print(self.message)
+        conn = pymongo.MongoClient()
+        db = conn.proxy
+        db.traffic.update({'_id': self.message['_id']},
+                          {"$push": self.message['traffic']},
+                          upsert=True)
 
 
 class TrafficRecorder(AbstractModule):
@@ -28,18 +42,15 @@ class TrafficRecorder(AbstractModule):
     def __init__(self):
         AbstractModule.__init__(self)
         redis_endpoint = TCP4ClientEndpoint(reactor, '127.0.0.1', 6379)
+        recording_id = uuid.uuid1()
 
-        handler_factory = HBRedisMessageHandlerFactory(RequestTrafficHandler)
-        redis_req = redis_endpoint.connect(
-            HBRedisSubscriberFactory('traffic.request',
-                                     handler_factory))
-        handler_factory = HBRedisMessageHandlerFactory(ResponseTrafficHandler)
-        redis_res = redis_endpoint.connect(
-            HBRedisSubscriberFactory('traffic.response',
-                                     handler_factory))
+        self.handler_factory = TrafficRecorderHandlerFactory(recording_id,
+                                                             TrafficHandler)
+        redis = redis_endpoint.connect(
+            HBRedisSubscriberFactory('heliosburn.traffic',
+                                     self.handler_factory))
 
-        redis_req.addCallback(self._subscribe)
-        redis_res.addCallback(self._subscribe)
+        redis.addCallback(self._subscribe)
 
     def _subscribe(self, redis):
         self.redis = redis
@@ -47,10 +58,12 @@ class TrafficRecorder(AbstractModule):
 
     def start(self):
         if self.redis:
+            self.handler_factory.set_recording_id(uuid.uuid1())
             self.redis.subscribe()
 
     def stop(self):
         if self.redis:
+            self.handler_factory.recording_id = ""
             self.redis.unsubscribe()
 
 

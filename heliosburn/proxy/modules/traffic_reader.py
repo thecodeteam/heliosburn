@@ -11,10 +11,9 @@ class TrafficReader(AbstractModule):
     Extension of AbstractModule class used to serialize items to Redis.
     """
 
-
     def _get_request_message(self, http_message):
 
-        request_headers = { k: v for (k, v) in http_message.requestHeaders.
+        request_headers = {k: v for (k, v) in http_message.requestHeaders.
                            getAllRawHeaders()}
 
         message = {}
@@ -25,13 +24,13 @@ class TrafficReader(AbstractModule):
         message['path'] = http_message.path
         message['args'] = http_message.args
         message['headers'] = request_headers
-        message['content'] = http_message.content.getvalue()
+#        message['content'] = http_message.content.getvalue()
 
         return message
 
     def _get_response_message(self, http_message):
-        response_headers = { k: v for (k, v) in http_message.responseHeaders.
-                           getAllRawHeaders()}
+        response_headers = {k: v for (k, v) in http_message.responseHeaders.
+                            getAllRawHeaders()}
 
         message = {}
         message['createdAt'] = http_message.response_createdAt
@@ -39,7 +38,7 @@ class TrafficReader(AbstractModule):
         message['statusCode'] = http_message.code
         message['statusDescription'] = http_message.code_message
         message['headers'] = response_headers
-        message['response_content'] = http_message.response_content
+#        message['response_content'] = http_message.response_content
 
         return message
 
@@ -59,7 +58,7 @@ class TrafficReader(AbstractModule):
         message = self._get_traffic_message(request)
         message['request'] = self._get_request_message(request)
 
-        r.publish('traffic.request', str(message))
+        r.publish('heliosburn.traffic', json.dumps(message))
         return request
 
     def handle_response(self, response):
@@ -72,7 +71,7 @@ class TrafficReader(AbstractModule):
         message['request'] = self._get_request_message(response)
         message['response'] = self._get_response_message(response)
 
-        r.publish('traffic.response', json.dumps(message))
+        r.publish('heliosburn.traffic', json.dumps(message))
         return response
 
 traffic_reader = TrafficReader()
