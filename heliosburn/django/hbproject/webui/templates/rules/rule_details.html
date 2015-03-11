@@ -131,7 +131,7 @@
                     // show Payload
                     $('#{{ form.actionPayload.id_for_label }}').parent().show();
                 }
-                else if (action_type_id == 'drop') {
+                else if (action_type_id == 'drop' || action_type_id == 'reset') {
                     // hide drop connection alert
                     $('#drop-connection-alert').show();
                     // hide protocol
@@ -364,6 +364,15 @@
                                 </tr>
                                 </thead>
                                 <tbody>
+                                    {% if rule.action.headers %}
+                                        {% for header in rule.action.headers %}
+                                            <tr>
+                                                <td><input type="text" class="form-control input-sm" placeholder="Header name" name="actionHeaderKeys[]" value="{{ header.key }}" /></td>
+                                                <td><input type="text" class="form-control input-sm" placeholder="Header value" name="actionHeaderValues[]" value="{{ header.value }}" /></td>
+                                                <td><a class="btn btn-default btn-sm action_deleteHeader" role="button"><span class="glyphicon glyphicon-trash" aria-hidden="true"></span></a></td>
+                                            </tr>
+                                        {% endfor %}
+                                    {% endif %}
                                 </tbody>
                             </table>
                             <a id="action_addHeaderButton" class="btn btn-default btn-sm bold"

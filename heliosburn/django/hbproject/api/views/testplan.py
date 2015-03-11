@@ -1,3 +1,4 @@
+from bson.errors import InvalidId
 from django.http import JsonResponse, HttpResponseNotFound, HttpResponseBadRequest, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from api.models import db_model
@@ -41,9 +42,12 @@ def get(request, testplan_id=None):
         return get_all_testplans()
 
     dbc = db_model.connect()
-    testplan = dbc.testplan.find_one({"_id": ObjectId(testplan_id)}, {'_id': 0})
+    try:
+        testplan = dbc.testplan.find_one({"_id": ObjectId(testplan_id)}, {'_id': 0})
+    except InvalidId:
+        return HttpResponseNotFound()
     if testplan is None:
-        return HttpResponseNotFound("")
+        return HttpResponseNotFound()
     else:
         testplan['id'] = testplan_id  # Replace ObjectId with str version
         return JsonResponse(testplan, status=200)
@@ -87,7 +91,7 @@ def post(request):
     dbc = db_model.connect()
     testplan = dbc.testplan.find_one({"name": new['name']})
     if testplan is not None:
-        return HttpResponse("testplan named '%s' already exists" % new['name'])
+        return HttpResponseBadRequest("testplan named '%s' already exists" % new['name'])
 
     new['createdAt'] = datetime.isoformat(datetime.now())
     new['updatedAt'] = datetime.isoformat(datetime.now())
@@ -108,9 +112,12 @@ def put(request, testplan_id):
         return HttpResponseBadRequest("invalid JSON")
 
     dbc = db_model.connect()
-    testplan = dbc.testplan.find_one({"_id": ObjectId(testplan_id)})
+    try:
+        testplan = dbc.testplan.find_one({"_id": ObjectId(testplan_id)})
+    except InvalidId:
+        return HttpResponseNotFound()
     if testplan is None:
-        return HttpResponseNotFound("")
+        return HttpResponseNotFound()
     else:
         if "name" in in_json:
             testplan['name'] = in_json['name']
@@ -140,9 +147,12 @@ def delete(request, testplan_id):
     Delete test plan based on testplan_id.
     """
     dbc = db_model.connect()
-    testplan = dbc.testplan.find_one({"_id": ObjectId(testplan_id)})
+    try:
+        testplan = dbc.testplan.find_one({"_id": ObjectId(testplan_id)})
+    except InvalidId:
+        return HttpResponseNotFound()
     if testplan is None:
-        return HttpResponseNotFound("")
+        return HttpResponseNotFound()
     else:
         dbc.testplan.remove({"_id": ObjectId(testplan_id)})
         return HttpResponse(status=200)

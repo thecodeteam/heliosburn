@@ -1,12 +1,13 @@
+from bson import ObjectId
+import json
+
+from bson.errors import InvalidId
 from django.http import JsonResponse, HttpResponseNotFound, HttpResponseBadRequest, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
+
 from api.models import db_model
 from api.models.auth import RequireLogin
 from api.models import rule_model
-from pymongo.helpers import DuplicateKeyError
-from bson import ObjectId
-import json
-from datetime import datetime
 
 
 @csrf_exempt
@@ -38,15 +39,18 @@ def get(request, testplan_id, rule_id):
     Retrieve rule within testplan based on the testplan_id and rule_id.
     """
     dbc = db_model.connect()
-    testplan = dbc.testplan.find_one({"_id": ObjectId(testplan_id)}, {'_id': 0})
+    try:
+        testplan = dbc.testplan.find_one({"_id": ObjectId(testplan_id)}, {'_id': 0})
+    except InvalidId:
+        return HttpResponseNotFound()
     if testplan is None:
-        return HttpResponseNotFound("test plan not found")
+        return HttpResponseNotFound()
 
     rule = filter(lambda r: r['id'] == rule_id, testplan['rules'])
     if len(rule) == 0:
         return HttpResponseBadRequest("rule not found within test plan")
     else:
-        return JsonResponse(rule[0], status=200)
+        return JsonResponse(rule[0])
 
 
 @RequireLogin()
@@ -72,7 +76,10 @@ def post(request, testplan_id):
         return HttpResponseBadRequest("invalid rule")
 
     dbc = db_model.connect()
-    testplan = dbc.testplan.find_one({"_id": ObjectId(testplan_id)})
+    try:
+        testplan = dbc.testplan.find_one({"_id": ObjectId(testplan_id)})
+    except InvalidId:
+        return HttpResponseNotFound("testplan '%s' not found" % testplan_id)
     if testplan is None:
         return HttpResponseNotFound("testplan '%s' not found" % testplan_id)
 
@@ -105,7 +112,10 @@ def put(request, testplan_id, rule_id):
         return HttpResponseBadRequest("invalid rule")
 
     dbc = db_model.connect()
-    testplan = dbc.testplan.find_one({"_id": ObjectId(testplan_id)})
+    try:
+        testplan = dbc.testplan.find_one({"_id": ObjectId(testplan_id)})
+    except InvalidId:
+        return HttpResponseNotFound("testplan '%s' not found" % testplan_id)
     if testplan is None:
         return HttpResponseNotFound("testplan '%s' not found" % testplan_id)
 
@@ -126,7 +136,10 @@ def delete(request, testplan_id, rule_id):
     Delete test plan based on testplan_id.
     """
     dbc = db_model.connect()
-    testplan = dbc.testplan.find_one({"_id": ObjectId(testplan_id)})
+    try:
+        testplan = dbc.testplan.find_one({"_id": ObjectId(testplan_id)})
+    except InvalidId:
+        return HttpResponseNotFound("testplan '%s' not found" % testplan_id)
     if testplan is None:
         return HttpResponseNotFound("testplan '%s' not found" % testplan_id)
 
@@ -136,5 +149,4 @@ def delete(request, testplan_id, rule_id):
             break
 
     dbc.testplan.save(testplan)
-    r = HttpResponse(status=200)
-    return r
+    return HttpResponse()
