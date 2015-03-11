@@ -57,19 +57,6 @@
                 params: '{csrfmiddlewaretoken:"{{csrf_token}}"}'
             });
 
-            $('#id_ruleType').editable({
-                url: '{% url 'rule_update' testplan.id rule.id %}',
-                type: 'select',
-                pk: '{{ rule.id }}',
-                name: 'ruleType',
-                title: 'Rule type',
-                mode: 'popup',
-                value: '{{ rule.ruleType }}',
-                source: [{value: 'request', text: "Request"}, {value: 'response', text: "Response"}],
-                emptytext: "Empty",
-                params: '{csrfmiddlewaretoken:"{{csrf_token}}"}'
-            });
-
             $('#id_ruleEnabled').editable({
                 url: '{% url 'rule_update' testplan.id rule.id %}',
                 type: 'select',
@@ -84,76 +71,63 @@
             });
 
 
-            $('#{{ form.actionType.id_for_label }}').on('change', function () {
-                enableFields(this.value);
+            $('#{{ form.ruleType.id_for_label }}').on('change', function () {
+                onRuleTypeChanged(this.value);
             });
 
-            function enableFields(action_type_id) {
+            $('#{{ form.actionType.id_for_label }}').on('change', function () {
+                enableActionFields(this.value);
+            });
+
+
+            function onRuleTypeChanged(rule_type) {
+                if (rule_type == 'request') {
+                    $('#{{ form.filterStatusCode.id_for_label }}').parent().hide();
+                } else if (rule_type == 'response') {
+                    $('#{{ form.filterStatusCode.id_for_label }}').parent().show();
+                }
+            }
+
+            function enableActionFields(action_type_id) {
 
                 //alert( this.value ); // or $(this).val()
                 if (action_type_id == 'modify') {
-                    // hide drop connection alert
                     $('#drop-connection-alert').hide();
-                    // hide protocol
                     $('#{{ form.actionProtocol.id_for_label }}').parent().show();
-                    // show method
                     $('#{{ form.actionMethod.id_for_label }}').parent().show();
-                    // show URL
                     $('#{{ form.actionUrl.id_for_label }}').parent().show();
-                    // hide Status Code
                     $('#{{ form.actionStatusCode.id_for_label }}').parent().hide();
-                    // hide Status Description
                     $('#{{ form.actionStatusDescription.id_for_label }}').parent().hide();
-                    // hide Cookies
-                    $('#actionCookies').parent().show();
-                    // hide Headers
                     $('#actionHeaders').parent().show();
-                    // hide Payload
+                    $('#actionDeleteHeaders').parent().show();
                     $('#{{ form.actionPayload.id_for_label }}').parent().hide();
                 }
                 else if (action_type_id == 'newResponse') {
-                    // hide drop connection alert
                     $('#drop-connection-alert').hide();
-                    // hide protocol
                     $('#{{ form.actionProtocol.id_for_label }}').parent().show();
-                    // hide method
                     $('#{{ form.actionMethod.id_for_label }}').parent().hide();
-                    // hide URL
                     $('#{{ form.actionUrl.id_for_label }}').parent().hide();
-                    // show Status Code
                     $('#{{ form.actionStatusCode.id_for_label }}').parent().show();
-                    // show Status Description
                     $('#{{ form.actionStatusDescription.id_for_label }}').parent().show();
-                    // hide Cookies
-                    $('#actionCookies').parent().show();
-                    // hide Headers
                     $('#actionHeaders').parent().show();
-                    // show Payload
+                    $('#actionDeleteHeaders').parent().hide();
                     $('#{{ form.actionPayload.id_for_label }}').parent().show();
                 }
                 else if (action_type_id == 'drop' || action_type_id == 'reset') {
-                    // hide drop connection alert
                     $('#drop-connection-alert').show();
-                    // hide protocol
                     $('#{{ form.actionProtocol.id_for_label }}').parent().hide();
-                    // hide method
                     $('#{{ form.actionMethod.id_for_label }}').parent().hide();
-                    // hide URL
                     $('#{{ form.actionUrl.id_for_label }}').parent().hide();
-                    // show Status Code
                     $('#{{ form.actionStatusCode.id_for_label }}').parent().hide();
-                    // show Status Description
                     $('#{{ form.actionStatusDescription.id_for_label }}').parent().hide();
-                    // hide Cookies
-                    $('#actionCookies').parent().hide();
-                    // hide Headers
                     $('#actionHeaders').parent().hide();
-                    // show Payload
+                    $('#actionDeleteHeaders').parent().hide();
                     $('#{{ form.actionPayload.id_for_label }}').parent().hide();
                 }
             }
 
-            enableFields($('#{{ form.actionType.id_for_label }}').val());
+            onRuleTypeChanged($('#{{ form.ruleType.id_for_label }}').val());
+            enableActionFields($('#{{ form.actionType.id_for_label }}').val());
 
             $('#filter_addHeaderButton').on('click', function () {
                $('#filterHeaders > tbody:last').append('<tr><td>' +
@@ -165,24 +139,6 @@
                '</td></tr>');
 
                 $( ".filter_deleteHeader" ).bind( "click", function() {
-                    var tr = $(this).closest('tr');
-                    tr.fadeOut(400, 0, function(){
-                        tr.remove();
-                    });
-                    return false;
-                });
-            });
-
-            $('#filter_addCookieButton').on('click', function () {
-               $('#filterCookies > tbody:last').append('<tr><td>' +
-               '<input type="text" class="form-control input-sm" placeholder="Cookie name" name="filterCookieKeys[]" />' +
-               '</td><td>' +
-               '<input type="text" class="form-control input-sm" placeholder="Cookie value" name="filterCookieValues[]" />' +
-               '</td><td>' +
-               '<a class="btn btn-default btn-sm filter_deleteCookie" role="button"><span class="glyphicon glyphicon-trash" aria-hidden="true"></span></a>' +
-               '</td></tr>');
-
-                $( ".filter_deleteCookie" ).bind( "click", function() {
                     var tr = $(this).closest('tr');
                     tr.fadeOut(400, 0, function(){
                         tr.remove();
@@ -209,16 +165,16 @@
                 });
             });
 
-            $('#action_addCookieButton').on('click', function () {
-               $('#actionCookies > tbody:last').append('<tr><td>' +
-               '<input type="text" class="form-control input-sm" placeholder="Cookie name" name="actionCookieKeys[]" />' +
+            $('#action_addDeleteHeaderButton').on('click', function () {
+               $('#actionDeleteHeaders > tbody:last').append('<tr><td>' +
+               '<input type="text" class="form-control input-sm" placeholder="Header name" name="actionDeleteHeaderKeys[]" />' +
                '</td><td>' +
-               '<input type="text" class="form-control input-sm" placeholder="Cookie value" name="actionCookieValues[]" />' +
+               '<input type="text" class="form-control input-sm" placeholder="Header value" name="actionDeleteHeaderValues[]" />' +
                '</td><td>' +
-               '<a class="btn btn-default btn-sm action_deleteCookie" role="button"><span class="glyphicon glyphicon-trash" aria-hidden="true"></span></a>' +
+               '<a class="btn btn-default btn-sm action_deleteDeleteHeader" role="button"><span class="glyphicon glyphicon-trash" aria-hidden="true"></span></a>' +
                '</td></tr>');
 
-                $( ".action_deleteCookie" ).bind( "click", function() {
+                $( ".action_deleteDeleteHeader" ).bind( "click", function() {
                     var tr = $(this).closest('tr');
                     tr.fadeOut(400, 0, function(){
                         tr.remove();
@@ -233,32 +189,32 @@
 {% block content %}
 
     <div class="row">
-        <div class="col-md-12">
-            <div class="nav-tabs-custom">
-                <ul class="nav nav-tabs">
-                    <li class="header"><i class="fa fa-info-circle"></i>Rule details</li>
-                </ul>
-                <div class="tab-content">
-                    <dl class="dl-horizontal">
-                        <dt>Name</dt>
-                        <dd><a href="#" id="id_ruleName">{{ rule.name }}</a></dd>
-                        <dt>Description</dt>
-                        <dd><a href="#" id="id_ruleDescription">{{ rule.description }}</a></dd>
-                        <dt>Type</dt>
-                        <dd><a href="#" id="id_ruleType">{{ rule.ruleType }}</a></dd>
-                        <dt>Enabled</dt>
-                        <dd><a href="#" id="id_ruleEnabled">{{ rule.enabled }}</a></dd>
-                        <dt>Created at</dt>
-                        <dd>{{ testplan.createdAt }}</dd>
-                        <dt>Last updated</dt>
-                        <dd>{{ testplan.updatedAt }}</dd>
-                    </dl>
-                </div>
-                <!-- /.tab-content -->
-            </div>
-        </div>
         <form method="post" action="{% url 'rule_details' testplan.id rule.id %}">
             {% csrf_token %}
+            <div class="col-md-12">
+                <div class="nav-tabs-custom">
+                    <ul class="nav nav-tabs">
+                        <li class="header"><i class="fa fa-info-circle"></i>Rule details</li>
+                    </ul>
+                    <div class="tab-content">
+                        <dl class="dl-horizontal">
+                            <dt>Name</dt>
+                            <dd><a href="#" id="id_ruleName">{{ rule.name }}</a></dd>
+                            <dt>Description</dt>
+                            <dd><a href="#" id="id_ruleDescription">{{ rule.description }}</a></dd>
+                            <dt>Type</dt>
+                            <dd>{{ form.ruleType }}</dd>
+                            <dt>Enabled</dt>
+                            <dd><a href="#" id="id_ruleEnabled">{{ rule.enabled }}</a></dd>
+                            <dt>Created at</dt>
+                            <dd>{{ testplan.createdAt }}</dd>
+                            <dt>Last updated</dt>
+                            <dd>{{ testplan.updatedAt }}</dd>
+                        </dl>
+                    </div>
+                    <!-- /.tab-content -->
+                </div>
+            </div>
             <div class="col-md-6">
                 <div class="nav-tabs-custom">
                     <ul class="nav nav-tabs">
@@ -269,23 +225,7 @@
                         {% bootstrap_field form.filterProtocol %}
                         {% bootstrap_field form.filterMethod %}
                         {% bootstrap_field form.filterUrl %}
-
-                        <div class="form-group hidden">
-                            <label class="control-label">Cookies</label>
-                            <table id="filterCookies" class="table table-bordered">
-                                <thead>
-                                <tr>
-                                    <th>Name</th>
-                                    <th>Value</th>
-                                    <th></th>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                </tbody>
-                            </table>
-                            <a id="filter_addCookieButton" class="btn btn-default btn-sm bold"
-                               role="button"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> Add Cookie</a>
-                        </div>
+                        {% bootstrap_field form.filterStatusCode %}
 
                         <div class="form-group">
                             <label class="control-label">Headers</label>
@@ -336,23 +276,6 @@
                         {% bootstrap_field form.actionStatusCode %}
                         {% bootstrap_field form.actionStatusDescription %}
 
-                        <div class="form-group hidden">
-                            <label class="control-label">Cookies</label>
-                            <table id="actionCookies" class="table table-bordered">
-                                <thead>
-                                <tr>
-                                    <th>Name</th>
-                                    <th>Value</th>
-                                    <th></th>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                </tbody>
-                            </table>
-                            <a id="action_addCookieButton" class="btn btn-default btn-sm bold"
-                               role="button"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> Add Cookie</a>
-                        </div>
-
                         <div class="form-group">
                             <label class="control-label">Headers</label>
                             <table id="actionHeaders" class="table table-bordered">
@@ -376,6 +299,32 @@
                                 </tbody>
                             </table>
                             <a id="action_addHeaderButton" class="btn btn-default btn-sm bold"
+                               role="button"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> Add header</a>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="control-label">Delete headers</label>
+                            <table id="actionDeleteHeaders" class="table table-bordered">
+                                <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Value</th>
+                                    <th></th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                    {% if rule.action.deleteHeaders %}
+                                        {% for header in rule.action.deleteHeaders %}
+                                            <tr>
+                                                <td><input type="text" class="form-control input-sm" placeholder="Header name" name="actionDeleteHeaderKeys[]" value="{{ header.key }}" /></td>
+                                                <td><input type="text" class="form-control input-sm" placeholder="Header value" name="actionDeleteHeaderValues[]" value="{{ header.value }}" /></td>
+                                                <td><a class="btn btn-default btn-sm action_deleteDeleteHeader" role="button"><span class="glyphicon glyphicon-trash" aria-hidden="true"></span></a></td>
+                                            </tr>
+                                        {% endfor %}
+                                    {% endif %}
+                                </tbody>
+                            </table>
+                            <a id="action_addDeleteHeaderButton" class="btn btn-default btn-sm bold"
                                role="button"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> Add header</a>
                         </div>
 

@@ -27,7 +27,6 @@ class RuleForm(forms.Form):
 
 
 class RuleRequestForm(forms.Form):
-
     method_choices = (
         ('', 'Select a method'),
         ('GET', 'GET'),
@@ -48,6 +47,9 @@ class RuleRequestForm(forms.Form):
         ('reset', 'Reset connection'),
     )
 
+    ruleType = forms.ChoiceField(label='Rule type', choices=(('request', 'Request'), ('response', 'Response')),
+                                 required=True)
+
     filterProtocol = forms.CharField(label='HTTP Protocol', max_length=100,
                                      help_text='HTTP protocol used in the connection. The most commonly used HTTP protocol nowadays is <strong>HTTP/1.1</strong>. Leave this field empty if you are unsure of its purpose.',
                                      required=False)
@@ -55,6 +57,7 @@ class RuleRequestForm(forms.Form):
                                      help_text='HTTP methods to indicate the desired action to be performed on the identified resource.',
                                      required=False)
     filterUrl = forms.CharField(label='URL', max_length=200, required=False)
+    filterStatusCode = forms.IntegerField(label='Status Code', required=False)
 
     actionType = forms.ChoiceField(label='Type', choices=action_type_choices)
     actionProtocol = forms.CharField(label='HTTP Protocol', max_length=100, required=False)
@@ -69,6 +72,7 @@ class RuleRequestForm(forms.Form):
         rule = self._post_data_to_rule(cleaned_data)
         return rule
 
+    # noinspection PyPep8Naming
     def _post_data_to_rule(self, cleaned_data):
         rule = {'ruleType': 'request', 'filter': {}, 'action': {}}
 
@@ -90,8 +94,9 @@ class RuleRequestForm(forms.Form):
         if filter_header_keys:
             rule['filter']['headers'] = []
             for index, key in enumerate(filter_header_keys):
-                value = filter_header_values[index]
-                rule['filter']['headers'].append({'key': key, 'value': value})
+                if key:
+                    value = filter_header_values[index]
+                    rule['filter']['headers'].append({'key': key, 'value': value})
 
         # Action
         # Action type
@@ -112,8 +117,17 @@ class RuleRequestForm(forms.Form):
             if action_header_keys:
                 rule['action']['setHeaders'] = []
                 for index, key in enumerate(action_header_keys):
-                    value = action_header_values[index]
-                    rule['action']['setHeaders'].append({'key': key, 'value': value})
+                    if key:
+                        value = action_header_values[index]
+                        rule['action']['setHeaders'].append({'key': key, 'value': value})
+            action_deleteHeader_keys = self.data.getlist('actionDeleteHeaderKeys[]')
+            action_deleteHeader_values = self.data.getlist('actionDeleteHeaderValues[]')
+            if action_deleteHeader_keys:
+                rule['action']['deleteHeaders'] = []
+                for index, key in enumerate(action_deleteHeader_keys):
+                    if key:
+                        value = action_deleteHeader_values[index]
+                        rule['action']['deleteHeaders'].append({'key': key, 'value': value})
 
         if cleaned_data['actionType'] == 'newResponse':
             if cleaned_data['actionProtocol']:
@@ -129,7 +143,8 @@ class RuleRequestForm(forms.Form):
             if action_header_keys:
                 rule['action']['headers'] = []
                 for index, key in enumerate(action_header_keys):
-                    value = action_header_values[index]
-                    rule['action']['headers'].append({'key': key, 'value': value})
+                    if key:
+                        value = action_header_values[index]
+                        rule['action']['headers'].append({'key': key, 'value': value})
 
         return rule
