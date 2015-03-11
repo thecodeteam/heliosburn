@@ -74,7 +74,10 @@ class RuleRequestForm(forms.Form):
 
     # noinspection PyPep8Naming
     def _post_data_to_rule(self, cleaned_data):
-        rule = {'ruleType': 'request', 'filter': {}, 'action': {}}
+        rule = {'filter': {}, 'action': {}}
+
+        rule['ruleType'] = cleaned_data['ruleType']
+        rule['name'] = 'Rule A'
 
         # Filter Protocol
         if cleaned_data['filterProtocol']:
@@ -88,15 +91,30 @@ class RuleRequestForm(forms.Form):
         if cleaned_data['filterUrl']:
             rule['filter']['url'] = cleaned_data['filterUrl']
 
-        # Get Filter Headers
-        filter_header_keys = self.data.getlist('filterHeaderKeys[]')
-        filter_header_values = self.data.getlist('filterHeaderValues[]')
-        if filter_header_keys:
-            rule['filter']['headers'] = []
-            for index, key in enumerate(filter_header_keys):
+        # Get Filter Request Headers
+        filter_requestHeader_keys = self.data.getlist('filterRequestHeaderKeys[]')
+        filter_requestHeader_values = self.data.getlist('filterRequestHeaderValues[]')
+        if filter_requestHeader_keys:
+            rule['filter']['requestHeaders'] = []
+            for index, key in enumerate(filter_requestHeader_keys):
                 if key:
-                    value = filter_header_values[index]
-                    rule['filter']['headers'].append({'key': key, 'value': value})
+                    value = filter_requestHeader_values[index]
+                    rule['filter']['requestHeaders'].append({'key': key, 'value': value})
+
+        if cleaned_data['ruleType'] == 'response':
+            # Filter Status Code
+            rule['filter']['statusCode'] = cleaned_data['filterStatusCode']
+
+            # Get Filter Response Headers
+            filter_responseHeader_keys = self.data.getlist('filterResponseHeaderKeys[]')
+            filter_responseHeader_values = self.data.getlist('filterResponseHeaderValues[]')
+            if filter_requestHeader_keys:
+                rule['filter']['responseHeaders'] = []
+                for index, key in enumerate(filter_responseHeader_keys):
+                    if key:
+                        value = filter_responseHeader_values[index]
+                        rule['filter']['responseHeaders'].append({'key': key, 'value': value})
+
 
         # Action
         # Action type

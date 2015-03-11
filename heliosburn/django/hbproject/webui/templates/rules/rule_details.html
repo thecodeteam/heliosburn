@@ -83,8 +83,10 @@
             function onRuleTypeChanged(rule_type) {
                 if (rule_type == 'request') {
                     $('#{{ form.filterStatusCode.id_for_label }}').parent().hide();
+                    $('#filterResponseHeaders').parent().hide();
                 } else if (rule_type == 'response') {
                     $('#{{ form.filterStatusCode.id_for_label }}').parent().show();
+                    $('#filterResponseHeaders').parent().show();
                 }
             }
 
@@ -129,11 +131,29 @@
             onRuleTypeChanged($('#{{ form.ruleType.id_for_label }}').val());
             enableActionFields($('#{{ form.actionType.id_for_label }}').val());
 
-            $('#filter_addHeaderButton').on('click', function () {
-               $('#filterHeaders > tbody:last').append('<tr><td>' +
-               '<input type="text" class="form-control input-sm" placeholder="Header name" name="filterHeaderKeys[]" />' +
+            $('#filter_addRequestHeaderButton').on('click', function () {
+               $('#filterRequestHeaders > tbody:last').append('<tr><td>' +
+               '<input type="text" class="form-control input-sm" placeholder="Header name" name="filterRequestHeaderKeys[]" />' +
                '</td><td>' +
-               '<input type="text" class="form-control input-sm" placeholder="Header value" name="filterHeaderValues[]" />' +
+               '<input type="text" class="form-control input-sm" placeholder="Header value" name="filterRequestHeaderValues[]" />' +
+               '</td><td>' +
+               '<a class="btn btn-default btn-sm filter_deleteHeader" role="button"><span class="glyphicon glyphicon-trash" aria-hidden="true"></span></a>' +
+               '</td></tr>');
+
+                $( ".filter_deleteHeader" ).bind( "click", function() {
+                    var tr = $(this).closest('tr');
+                    tr.fadeOut(400, 0, function(){
+                        tr.remove();
+                    });
+                    return false;
+                });
+            });
+
+            $('#filter_addResponseHeaderButton').on('click', function () {
+               $('#filterResponseHeaders > tbody:last').append('<tr><td>' +
+               '<input type="text" class="form-control input-sm" placeholder="Header name" name="filterResponseHeaderKeys[]" />' +
+               '</td><td>' +
+               '<input type="text" class="form-control input-sm" placeholder="Header value" name="filterResponseHeaderValues[]" />' +
                '</td><td>' +
                '<a class="btn btn-default btn-sm filter_deleteHeader" role="button"><span class="glyphicon glyphicon-trash" aria-hidden="true"></span></a>' +
                '</td></tr>');
@@ -225,11 +245,10 @@
                         {% bootstrap_field form.filterProtocol %}
                         {% bootstrap_field form.filterMethod %}
                         {% bootstrap_field form.filterUrl %}
-                        {% bootstrap_field form.filterStatusCode %}
 
                         <div class="form-group">
-                            <label class="control-label">Headers</label>
-                            <table id="filterHeaders" class="table table-bordered">
+                            <label class="control-label">Request Headers</label>
+                            <table id="filterRequestHeaders" class="table table-bordered">
                                 <thead>
                                 <tr>
                                     <th>Name</th>
@@ -238,18 +257,46 @@
                                 </tr>
                                 </thead>
                                 <tbody>
-                                    {% if rule.filter.headers %}
-                                        {% for header in rule.filter.headers %}
+                                    {% if rule.filter.requestHeaders %}
+                                        {% for header in rule.filter.requestHeaders %}
                                             <tr>
-                                                <td><input type="text" class="form-control input-sm" placeholder="Header name" name="filterHeaderKeys[]" value="{{ header.key }}" /></td>
-                                                <td><input type="text" class="form-control input-sm" placeholder="Header value" name="filterHeaderValues[]" value="{{ header.value }}" /></td>
+                                                <td><input type="text" class="form-control input-sm" placeholder="Header name" name="filterRequestHeaderKeys[]" value="{{ header.key }}" /></td>
+                                                <td><input type="text" class="form-control input-sm" placeholder="Header value" name="filterRequestHeaderValues[]" value="{{ header.value }}" /></td>
                                                 <td><a class="btn btn-default btn-sm filter_deleteHeader" role="button"><span class="glyphicon glyphicon-trash" aria-hidden="true"></span></a></td>
                                             </tr>
                                         {% endfor %}
                                     {% endif %}
                                 </tbody>
                             </table>
-                            <a id="filter_addHeaderButton" class="btn btn-default btn-sm bold"
+                            <a id="filter_addRequestHeaderButton" class="btn btn-default btn-sm bold"
+                               role="button"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> Add header</a>
+                        </div>
+
+                        {% bootstrap_field form.filterStatusCode %}
+
+                        <div class="form-group">
+                            <label class="control-label">Response Headers</label>
+                            <table id="filterResponseHeaders" class="table table-bordered">
+                                <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Value</th>
+                                    <th></th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                    {% if rule.filter.responseHeaders %}
+                                        {% for header in rule.filter.responseHeaders %}
+                                            <tr>
+                                                <td><input type="text" class="form-control input-sm" placeholder="Header name" name="filterResponseHeaderKeys[]" value="{{ header.key }}" /></td>
+                                                <td><input type="text" class="form-control input-sm" placeholder="Header value" name="filterResponseHeaderValues[]" value="{{ header.value }}" /></td>
+                                                <td><a class="btn btn-default btn-sm filter_deleteHeader" role="button"><span class="glyphicon glyphicon-trash" aria-hidden="true"></span></a></td>
+                                            </tr>
+                                        {% endfor %}
+                                    {% endif %}
+                                </tbody>
+                            </table>
+                            <a id="filter_addResponseHeaderButton" class="btn btn-default btn-sm bold"
                                role="button"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> Add header</a>
                         </div>
                     </div>

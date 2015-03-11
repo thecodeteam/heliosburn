@@ -100,6 +100,8 @@ def _rule_to_post_data(rule):
             post_data['filterMethod'] = filter['method']
         if 'url' in filter:
             post_data['filterUrl'] = filter['url']
+        if 'statusCode' in filter:
+            post_data['filterstatusCode'] = filter['statusCode']
 
     if 'action' in rule:
         action = rule['action']
