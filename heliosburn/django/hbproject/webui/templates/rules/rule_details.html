@@ -189,8 +189,6 @@
                $('#actionDeleteHeaders > tbody:last').append('<tr><td>' +
                '<input type="text" class="form-control input-sm" placeholder="Header name" name="actionDeleteHeaderKeys[]" />' +
                '</td><td>' +
-               '<input type="text" class="form-control input-sm" placeholder="Header value" name="actionDeleteHeaderValues[]" />' +
-               '</td><td>' +
                '<a class="btn btn-default btn-sm action_deleteDeleteHeader" role="button"><span class="glyphicon glyphicon-trash" aria-hidden="true"></span></a>' +
                '</td></tr>');
 
@@ -364,7 +362,6 @@
                                         {% for header in rule.action.deleteHeaders %}
                                             <tr>
                                                 <td><input type="text" class="form-control input-sm" placeholder="Header name" name="actionDeleteHeaderKeys[]" value="{{ header.key }}" /></td>
-                                                <td><input type="text" class="form-control input-sm" placeholder="Header value" name="actionDeleteHeaderValues[]" value="{{ header.value }}" /></td>
                                                 <td><a class="btn btn-default btn-sm action_deleteDeleteHeader" role="button"><span class="glyphicon glyphicon-trash" aria-hidden="true"></span></a></td>
                                             </tr>
                                         {% endfor %}
