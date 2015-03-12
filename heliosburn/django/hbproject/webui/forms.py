@@ -138,13 +138,11 @@ class RuleRequestForm(forms.Form):
                         value = action_header_values[index]
                         rule['action']['setHeaders'].append({'key': key, 'value': value})
             action_deleteHeader_keys = self.data.getlist('actionDeleteHeaderKeys[]')
-            action_deleteHeader_values = self.data.getlist('actionDeleteHeaderValues[]')
             if action_deleteHeader_keys:
                 rule['action']['deleteHeaders'] = []
                 for index, key in enumerate(action_deleteHeader_keys):
                     if key:
-                        value = action_deleteHeader_values[index]
-                        rule['action']['deleteHeaders'].append({'key': key, 'value': value})
+                        rule['action']['deleteHeaders'].append({'key': key})
 
         if cleaned_data['actionType'] == 'newResponse':
             if cleaned_data['actionProtocol']:
