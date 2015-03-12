@@ -83,6 +83,9 @@ def rule_update(request, testplan_id, rule_id):
         response = 'field cannot be empty!'
         return HttpResponseBadRequest(response)
 
+    if name == 'enabled':
+        value = False if value == '0' else True
+
     try:
         Rule(testplan_id, auth_token=request.user.password).update(pk, {name: value})
     except Exception as inst:

@@ -77,7 +77,6 @@ class RuleRequestForm(forms.Form):
         rule = {'filter': {}, 'action': {}}
 
         rule['ruleType'] = cleaned_data['ruleType']
-        rule['name'] = 'Rule A'
 
         # Filter Protocol
         if cleaned_data['filterProtocol']:

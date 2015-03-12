@@ -32,8 +32,13 @@ def validate(rule):
         assert c_name in rule
         new_rule[c_name] = rule[c_name]
 
-        assert c_enabled in rule
-        new_rule[c_enabled] = bool(rule[c_enabled])
+        if c_enabled in rule:
+            try:
+                new_rule[c_enabled] = bool(rule[c_enabled])
+            except TypeError:
+                new_rule[c_enabled] = True
+        else:
+            new_rule[c_enabled] = True
 
         if c_description in rule:
             new_rule[c_description] = rule[c_description]

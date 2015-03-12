@@ -40,7 +40,7 @@
                 url: '{% url 'rule_update' testplan.id rule.id %}',
                 type: 'text',
                 pk: '{{ rule.id }}',
-                name: 'ruleName',
+                name: 'name',
                 title: 'Rule name',
                 inputclass: 'title-input',
                 params: '{csrfmiddlewaretoken:"{{csrf_token}}"}'
@@ -51,7 +51,7 @@
                 url: '{% url 'rule_update' testplan.id rule.id %}',
                 type: 'textarea',
                 pk: '{{ rule.id }}',
-                name: 'ruleDescription',
+                name: 'description',
                 title: 'Rule description',
                 inputclass: 'description-input',
                 params: '{csrfmiddlewaretoken:"{{csrf_token}}"}'
@@ -61,7 +61,7 @@
                 url: '{% url 'rule_update' testplan.id rule.id %}',
                 type: 'select',
                 pk: '{{ rule.id }}',
-                name: 'ruleEnabled',
+                name: 'enabled',
                 title: 'Enabled',
                 mode: 'popup',
                 value: {{ rule.enabled|bool_to_int }},
