@@ -95,6 +95,8 @@ def rule_update(request, testplan_id, rule_id):
 
 def _rule_to_post_data(rule):
     post_data = {}
+    post_data['ruleType'] = rule['ruleType']
+
     if 'filter' in rule:
         filter = rule['filter']
         if 'httpProtocol' in filter:

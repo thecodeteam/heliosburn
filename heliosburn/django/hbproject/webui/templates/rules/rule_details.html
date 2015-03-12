@@ -33,6 +33,10 @@
     <script type="text/javascript">
         $(document).ready(function () {
 
+            $( "#rule" ).submit(function( event ) {
+                $('button[type=submit]', this).attr('disabled', 'disabled');
+            });
+
             $.fn.editable.defaults.mode = 'inline';
 
             //editables
@@ -207,7 +211,7 @@
 {% block content %}
 
     <div class="row">
-        <form method="post" action="{% url 'rule_details' testplan.id rule.id %}">
+        <form id="rule" method="post" action="{% url 'rule_details' testplan.id rule.id %}">
             {% csrf_token %}
             <div class="col-md-12">
                 <div class="nav-tabs-custom">
@@ -220,10 +224,10 @@
                             <dd><a href="#" id="id_ruleName">{{ rule.name }}</a></dd>
                             <dt>Description</dt>
                             <dd><a href="#" id="id_ruleDescription">{{ rule.description }}</a></dd>
-                            <dt>Type</dt>
-                            <dd>{{ form.ruleType }}</dd>
                             <dt>Enabled</dt>
                             <dd><a href="#" id="id_ruleEnabled">{{ rule.enabled }}</a></dd>
+                            <dt>Type</dt>
+                            <dd>{{ form.ruleType }}</dd>
                             <dt>Created at</dt>
                             <dd>{{ testplan.createdAt }}</dd>
                             <dt>Last updated</dt>
