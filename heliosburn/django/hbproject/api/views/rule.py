@@ -7,7 +7,6 @@ from bson import ObjectId
 from pymongo.helpers import DuplicateKeyError
 from api.models.auth import RequireLogin
 from api.models import rule_model
-from sqlalchemy.exc import IntegrityError
 import json
 from datetime import datetime
 

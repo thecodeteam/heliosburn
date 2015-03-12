@@ -75,6 +75,7 @@ def main():
         current_db.testplan.ensure_index('name', unique=True)
         current_db.session.ensure_index('name', unique=True)
         current_db.template.ensure_index('name', unique=True)
+        #current_db.recording.ensure_index('name', unique=True)
 
 if __name__ == '__main__':
     main()

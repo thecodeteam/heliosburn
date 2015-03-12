@@ -1,5 +1,5 @@
 from django.conf.urls import patterns, url
-from api.views import default, user, session, testplan, auth, traffic, rule, testplan_rule
+from api.views import default, user, session, testplan, auth, traffic, rule, testplan_rule, recording
 
 urlpatterns = patterns('',
     url(r'^$', default.index),
@@ -17,4 +17,8 @@ urlpatterns = patterns('',
     url(r'^traffic/{0,1}$', traffic.rest),
     url(r'^rule/{0,1}$', rule.rest),
     url(r'^rule/(\w+?)/{0,1}$', rule.rest),
+    url(r'^recording/{0,1}$', recording.rest),
+    url(r'^recording/(?P<recording_id>)/{0,1}$', recording.rest),
+    url(r'^recording/(?P<recording_id>)/start/{0,1}$', recording.start),
+    url(r'^recording/(?P<recording_id>)/stop/{0,1}$', recording.stop),
 )
