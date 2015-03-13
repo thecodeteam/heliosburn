@@ -13,11 +13,9 @@ class TrafficRecorderHandlerFactory(HBRedisMessageHandlerFactory):
 
     def get_handler(self, message):
         message = json.loads(message)
-        recording = {}
-        recording['_id'] = self.recording_id
-        recording['traffic'] = {'recording': dict(message)}
+        message['recording_id'] = self.recording_id
 
-        return self.message_handler(recording)
+        return self.message_handler(message)
 
     def set_recording_id(self, recording_id):
         self.recording_id = recording_id
@@ -28,8 +26,8 @@ class TrafficHandler(HBRedisMessageHandler):
     def execute(self):
         conn = pymongo.MongoClient()
         db = conn.proxy
-        db.traffic.update({'_id': self.message['_id']},
-                          {"$push": self.message['traffic']},
+        db.traffic.update({'transaction_id': self.message['transaction_id']},
+                          self.message,
                           upsert=True)
 
 
