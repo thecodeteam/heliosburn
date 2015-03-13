@@ -1,5 +1,6 @@
 import io
 import sys
+import collections
 from zope.interface import implements
 from zope.interface import Interface
 from twisted.internet import defer
@@ -34,24 +35,14 @@ class IModule(Interface):
         @rtype: C{string}
         """
 
-    def handle_request(self, **keywords):
+    def handle_request(self):
         """
         Called to handle proxy request event
         """
 
-    def handle_status(self, **keywords):
-        """
-        Called to handle proxy status event
-        """
-
-    def handle_response(self, **keywords):
+    def handle_response(self):
         """
         Called to handle proxy response event
-        """
-
-    def handle_header(self, **keywords):
-        """
-        Called to handle proxy header event
         """
 
     def reset(self, **keywords):
@@ -59,6 +50,21 @@ class IModule(Interface):
         If the module maintains state, this method is called to reset
         the current state of the module
 
+        """
+
+    def reload(self, **keywords):
+        """
+        this method is called to reload the module configuration
+        """
+
+    def start(self, **keywords):
+        """
+        this method is called to start the module execution
+        """
+
+    def stop(self, **keywords):
+        """
+        this method is called to stop the module execution
         """
 
 
@@ -90,184 +96,72 @@ class AbstractModule(object):
     def log(self):
         return self.log
 
-    def handle_request(self, request, **keywords):
+    def handle_request(self, request):
         """
         Called by to handle proxy request event
         """
         return request
 
-    def handle_response(self, response,  **keywords):
+    def handle_response(self, response):
         """
         Called to handle proxy response event
         """
         return response
 
-    def handle_status(self, status, **keywords):
-        """
-        Called to handle proxy status event
-        """
-        return status
-
-    def handle_header(self, header, **keywords):
-        """
-        Called to handle proxy header event
-        """
-        return header
-
-    def reset(self, **keywords):
+    def reset(self):
         """
         If the module maintains state, this method is called to reset
         the current state of the module
         """
 
-    def getProtocol(self):
-        if self.context in ['request', 'response']:
-            return self.request_object.clientproto
-        else:
-            raise Exception('Invalid context')
+    def reload(self):
+        """
+        this method is called to reload the module configuration
+        """
 
-    def setProtocol(self, protocol):
-        if self.context in ['request', 'response']:
-            self.request_object.clientproto = protocol
-        else:
-            raise Exception('Invalid context')
+    def start(self, **params):
+        """
+        this method is called to start the module execution
+        """
 
-    def getMethod(self):
-        if self.context in ['request', 'response']:
-            return self.request_object.method
-        else:
-            raise Exception('Invalid context')
-
-    def setMethod(self, method):
-        if self.context in ['request']:
-            self.request_object.method = method
-        else:
-            raise Exception('Invalid context')
-
-    def getURI(self):
-        if self.context in ['request', 'response']:
-            return self.request_object.uri
-        else:
-            raise Exception('Invalid context')
-
-    def setURI(self, uri):
-        if self.context in ['request']:
-            self.request_object.uri = uri
-        else:
-            raise Exception('Invalid context')
-
-    def getStatusCode(self):
-        if self.context in ['response']:
-            return self.request_object.code
-        else:
-            raise Exception('Invalid context')
-
-    def setStatusCode(self, status_code):
-        if self.context in ['response']:
-            self.request_object.code = status_code
-        else:
-            raise Exception('Invalid context')
-
-    def getStatusDescription(self):
-        if self.context in ['response']:
-            return self.request_object.code_message
-        else:
-            raise Exception('Invalid context')
-
-    def setStatusDescription(self, status_description):
-        if self.context in ['response']:
-            self.request_object.code_message = status_description
-        else:
-            raise Exception('Invalid context')
-
-    def getAllHeaders(self):
-        if self.context == 'request':
-            return self.request_object.requestHeaders.getAllRawHeaders()
-        elif self.context == 'response':
-            return self.request_object.responseHeaders.getAllRawHeaders()
-        else:
-            raise Exception('Invalid context')
-
-    def hasHeader(self, name):
-        if self.context == 'request':
-            return self.request_object.requestHeaders.hasHeader(name)
-        elif self.context == 'response':
-            return self.request_object.responseHeaders.hasHeader(name)
-        else:
-            raise Exception('Invalid context')
-
-    def getHeader(self, name):
-        if self.context == 'request':
-            return self.request_object.requestHeaders.getRawHeaders(name)
-        elif self.context == 'response':
-            return self.request_object.responseHeaders.getRawHeaders(name)
-        else:
-            raise Exception('Invalid context')
-
-    def removeHeader(self, name):
-        if self.context == 'request':
-            return self.request_object.requestHeaders.removeHeader(name)
-        elif self.context == 'response':
-            return self.request_object.responseHeaders.removeHeader(name)
-        else:
-            raise Exception('Invalid context')
-
-    def setHeader(self, name, value):
-        if self.context == 'request':
-            return self.request_object.requestHeaders.setRawHeaders(name,
-                                                                    [value])
-        elif self.context == 'response':
-            return self.request_object.responseHeaders.setRawHeaders(name,
-                                                                     [value])
-        else:
-            raise Exception('Invalid context')
-
-    def getContent(self):
-        if self.context in ['request', 'response']:
-            if self.context == 'request':
-                return self.request_object.content.getvalue()
-            elif self.context == 'response':
-                return self.request_object.response_content.getvalue()
-        else:
-            raise Exception('Invalid context')
-
-    def setContent(self, content):
-        if self.context in ['request', 'response']:
-            self.setHeader('Content-Length', str(len(content)))
-            self.request_object.content = io.BytesIO(content)
-        else:
-            raise Exception('Invalid context')
+    def stop(self, **params):
+        """
+        this method is called to stop the module execution
+        """
 
 
 class Registry(object):
 
     def __init__(self, modules_list):
-        self.modules_list = modules_list
+        self.pipeline_modules = modules_list['modules']
+        log.msg("loaded pipline modules: %s" % self.pipeline_modules)
 
-        plugins = {plugin.get_name(): plugin for plugin in
-                   getPlugins(IModule, modules)}
+        self.plugins = {plugin.get_name(): plugin for plugin in
+                        getPlugins(IModule, modules)}
 
-        self.modules = {}
-        for module in modules_list['modules']:
-            module_name = module['name']
-            plugin = plugins[module_name]
-            self.modules[module_name] = plugin
+        log.msg("loaded plugins: %s" % self.plugins.keys())
 
-        log.msg("loaded modules: %s" % self.modules)
+#        self.pipeline_modules = collections.OrderedDict()
+#        for module in modules_list['modules']:
+#            module_name = module['name']
+#            plugin = plugins[module_name]
+#            self.pipeline_modules[module_name] = plugin
 
-    def _get_request_pipline(self):
+    def _build_request_pipeline(self):
 
         pipeline = defer.Deferred()
-        for key in self.modules:
-            pipeline.addCallback(self.modules[key].handle_request)
+        for module in self.pipeline_modules:
+            module_name = module['name']
+            pipeline.addCallback(self.plugins[module_name].handle_request)
 
         return pipeline
 
-    def _get_response_pipeline(self):
+    def _build_response_pipeline(self):
 
         pipeline = defer.Deferred()
-        for key in self.modules:
-            pipeline.addCallback(self.modules[key].handle_response)
+        for module in self.pipeline_modules:
+            module_name = module['name']
+            pipeline.addCallback(self.plugins[module_name].handle_response)
 
         return pipeline
 
@@ -276,7 +170,7 @@ class Registry(object):
         """
         Executes the handle_request method of all currently active modules
         """
-        pipeline = self._get_request_pipline()
+        pipeline = self._build_request_pipeline()
         pipeline.addCallback(callback)
 
         pipeline.callback(request)
@@ -286,10 +180,9 @@ class Registry(object):
         """
         Executes the handle_response method of all currently active modules
         """
-        pipeline = self._get_response_pipeline()
+        pipeline = self._build_response_pipeline()
         pipeline.addCallback(callback)
 
-#        log.msg("Started handling of response: %s" % response)
         pipeline.callback(response)
 
     def reset(self):
@@ -297,6 +190,35 @@ class Registry(object):
         """
         Executes the reset method of all currently active modules
         """
-        for module in self.modules.values():
-            module.reset()
+        for plugin in self.plugins.values():
+            plugin.reset()
 
+    def reload(self):
+
+        """
+        Executes the reload method of all currently active modules
+        """
+        for plugin in self.plugins.values():
+            plugin.reload()
+
+    def start(self, module_name=None, **params):
+
+        """
+        Executes the start method of all or one currently active modules
+        """
+        if module_name:
+            self.plugins[module_name].start(**params)
+        else:
+            for plugin in self.plugins.values():
+                plugin.start(**params)
+
+    def stop(self, module_name=None, **params):
+
+        """
+        Executes the stop method of all or one currently active modules
+        """
+        if module_name:
+            self.plugins[module_name].stop(**params)
+        else:
+            for plugin in self.pipeline_modules.values():
+                plugin.stop(**params)

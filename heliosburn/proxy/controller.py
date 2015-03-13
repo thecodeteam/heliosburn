@@ -128,6 +128,18 @@ class OperationFactory(object):
                                    self.response_factory,
                                    op_string['key'])
 
+        if "stop_recording" == op_string['operation']:
+            operation = StopRecording(self.controller,
+                                      self.response_factory,
+                                      op_string['key'],
+                                      recording_id=op_string['param'])
+
+        if "start_recording" == op_string['operation']:
+            operation = StartRecording(self.controller,
+                                       self.response_factory,
+                                       op_string['key'],
+                                       recording_id=op_string['param'])
+
         if "reload" == op_string['operation']:
             operation = ReloadPlugins(self.controller,
                                       self.response_factory,
@@ -314,6 +326,42 @@ class ChangeBindPort(ControllerOperation):
         self.response.set_message("Change_bind_port: { "
                                   + self.response.get_message() + ", "
                                   + self.start_op.response.get_message()
+                                  + "}")
+
+
+class StopRecording(ControllerOperation):
+
+    def __init__(self, controller, response_factory, key, **params):
+        ControllerOperation.__init__(self, controller, response_factory, key)
+
+        self.params = params
+
+        d = self.addCallback(self.stop_recording)
+        d.addCallback(self.respond)
+
+    def stop_recording(self, result):
+        self.controller.module_registry.stop(module_name='TrafficRecorder',
+                                             **self.params)
+        self.response.set_message("Stopped Recording: { "
+                                  + self.response.get_message() + ", "
+                                  + "}")
+
+
+class StartRecording(ControllerOperation):
+
+    def __init__(self, controller, response_factory, key, **params):
+        ControllerOperation.__init__(self, controller, response_factory, key)
+
+        self.params = params
+
+        d = self.addCallback(self.start_recording)
+        d.addCallback(self.respond)
+
+    def start_recording(self, result):
+        self.controller.module_registry.start(module_name='TrafficRecorder',
+                                              **self.params)
+        self.response.set_message("Started Recording: { "
+                                  + self.response.get_message() + ", "
                                   + "}")
 
 

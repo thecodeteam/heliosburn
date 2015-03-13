@@ -103,7 +103,7 @@ sg21
 S'traffic_reader'
 p41
 sg10
-S'\n    Extension of AbstractModule class used to serialize items to Redis.\n    '
+S'\n    Extension of AbstractModule class used to serialize traffic\n    to a Redis pubsub channel.\n    '
 p42
 sbasbsS'unittest_module'
 p43

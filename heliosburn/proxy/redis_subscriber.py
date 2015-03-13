@@ -11,6 +11,7 @@ class HBRedisMessageHandler(object):
 
     def __init__(self, message):
         self.message = message
+        self.log = log
 
     def execute(self):
         pass
@@ -46,10 +47,11 @@ class HBRedisSubscriber(RedisSubscriber):
     def channelSubscribed(self, channel, numSubscriptions):
         log.msg("Subscribed to channel: "
                 + channel
-                + " it is subscriber 1 of : "
-                + str(numSubscriptions))
+                + " there are now : "
+                + str(numSubscriptions)
+                + " subscribers ")
 
-    def channelUnSubscribed(self, channel, numSubscriptions):
+    def channelUnsubscribed(self, channel, numSubscriptions):
         log.msg("Unsubscribed from channel: "
                 + channel
                 + " there are : "

@@ -11,10 +11,6 @@ from redis_subscriber import HBRedisMessageHandler
 
 class TrafficRecorderHandlerFactory(HBRedisMessageHandlerFactory):
 
-    def __init__(self, recording_id, message_handler=None):
-        HBRedisMessageHandlerFactory.__init__(self, message_handler)
-        self.recording_id = recording_id
-
     def get_handler(self, message):
         message = json.loads(message)
         recording = {}
@@ -41,30 +37,24 @@ class TrafficRecorder(AbstractModule):
 
     def __init__(self):
         AbstractModule.__init__(self)
-        redis_endpoint = TCP4ClientEndpoint(reactor, '127.0.0.1', 6379)
-        recording_id = uuid.uuid1()
-
-        self.handler_factory = TrafficRecorderHandlerFactory(recording_id,
-                                                             TrafficHandler)
-        redis = redis_endpoint.connect(
-            HBRedisSubscriberFactory('heliosburn.traffic',
-                                     self.handler_factory))
-
-        redis.addCallback(self._subscribe)
+        self.redis_endpoint = TCP4ClientEndpoint(reactor, '127.0.0.1', 6379)
+        self.channel = 'heliosburn.traffic'
 
     def _subscribe(self, redis):
-        self.redis = redis
-        response = self.redis.subscribe()
+        self.redis_subscriber = redis
+        redis.subscribe()
 
-    def start(self):
-        if self.redis:
-            self.handler_factory.set_recording_id(uuid.uuid1())
-            self.redis.subscribe()
+    def start(self, **params):
+        handler_factory = TrafficRecorderHandlerFactory(TrafficHandler)
+        handler_factory.set_recording_id(params['recording_id'])
+        d = self.redis_endpoint.connect(HBRedisSubscriberFactory(self.channel,
+                                        handler_factory))
 
-    def stop(self):
-        if self.redis:
-            self.handler_factory.recording_id = ""
-            self.redis.unsubscribe()
+        d.addCallback(self._subscribe)
+
+    def stop(self, **params):
+        if self.redis_subscriber:
+            self.redis_subscriber.unsubscribe()
 
 
 traffic_recorder = TrafficRecorder()

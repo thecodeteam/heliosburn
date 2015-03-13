@@ -2,48 +2,19 @@ from module import AbstractModule
 import time
 import json
 import redis
-import datetime
+from redis_subscriber import HBRedisSubscriberFactory
+from redis_subscriber import HBRedisMessageHandlerFactory
+from redis_subscriber import HBRedisMessageHandler
+from twisted.internet.endpoints import TCP4ClientEndpoint
+from twisted.internet import reactor
 
 
-class TrafficStream(AbstractModule):
-    """
-    Extension of AbstractModule class used to serialize items to Redis.
-    """
+class TrafficHandler(HBRedisMessageHandler):
 
     def _get_current_time(self):
         return int(time.time() * 1000000)
 
-    def handle_response(self, response):
-        """
-        Default redis serializer.
-
-        Processes both proxy request and client response objects after
-        response is received
-        """
-
-        now = datetime.datetime.now()
-
-        request = {}
-        # TODO: get the real request date
-        request['createdAt'] = now.strftime('%Y-%m-%d %H:%M:%S')
-        request['httpProtocol'] = "HTTP/1.1"
-        request['method'] = self.getMethod()
-        request['url'] = self.getURI()
-        request['headers'] = {}
-        headers = self.request_object.requestHeaders.getAllRawHeaders()
-        for key, value in headers:
-            request['headers'][key] = value
-        request['response'] = {}
-        # TODO: get the real response date
-        request['response']['createdAt'] = now.strftime('%Y-%m-%d %H:%M:%S')
-        request['response']['httpProtocol'] = "HTTP/1.1"
-        request['response']['statusCode'] = self.getStatusCode()
-        request['response']['statusDescription'] = self.getStatusDescription()
-        request['response']['headers'] = {}
-        for key, value in self.getAllHeaders():
-            request['response']['headers'][key] = value
-        response_json = json.dumps(request)
-
+    def execute(self):
         r = redis.StrictRedis(host='127.0.0.1',
                               port=6379,
                               db=0)
@@ -53,17 +24,41 @@ class TrafficStream(AbstractModule):
         # Remove traffic older than 1 second
         result = r.zremrangebyscore('heliosburn.traffic', '-inf',
                                     score - 1 * 1000000)
-#        self.log.msg('* Cleaned %d messages' % (result,))
+        self.log.msg('* Cleaned %d messages' % (result,))
 
-        # Add request to set
-        result = r.zadd('heliosburn.traffic', score, response_json)
-#        if result:
-#            self.log.msg('* Message with score %d sent successfully'
-#                         % (score,))
-#        else:
-#            self.log.msg('Could not send message (%d)' % (score,))
+        result = r.zadd('heliosburn.traffic', score, self.message)
+        if result:
+            self.log.msg('* Message with score %d sent successfully'
+                         % (score,))
+        else:
+            self.log.msg('Could not send message (%d)' % (score,))
 
-        return response
+
+class TrafficStream(AbstractModule):
+    """
+    Extension of AbstractModule class used to serialize items to Redis.
+    """
+    def __init__(self):
+        AbstractModule.__init__(self)
+        self.redis_endpoint = TCP4ClientEndpoint(reactor, '127.0.0.1', 6379)
+        self.channel = 'heliosburn.traffic'
+
+        self.start()
+
+    def _subscribe(self, redis):
+        self.redis_subscriber = redis
+        redis.subscribe()
+
+    def start(self, **params):
+        handler_factory = HBRedisMessageHandlerFactory(TrafficHandler)
+        d = self.redis_endpoint.connect(HBRedisSubscriberFactory(self.channel,
+                                        handler_factory))
+
+        d.addCallback(self._subscribe)
+
+    def stop(self, **params):
+        if self.redis_subscriber:
+            self.redis_subscriber.unsubscribe()
 
 
 traffic_stream = TrafficStream()

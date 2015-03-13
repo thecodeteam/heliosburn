@@ -8,7 +8,8 @@ import datetime
 
 class TrafficReader(AbstractModule):
     """
-    Extension of AbstractModule class used to serialize items to Redis.
+    Extension of AbstractModule class used to serialize traffic
+    to a Redis pubsub channel.
     """
 
     def _get_request_message(self, http_message):
@@ -24,7 +25,6 @@ class TrafficReader(AbstractModule):
         message['path'] = http_message.path
         message['args'] = http_message.args
         message['headers'] = request_headers
-#        message['content'] = http_message.content.getvalue()
 
         return message
 
@@ -38,7 +38,6 @@ class TrafficReader(AbstractModule):
         message['statusCode'] = http_message.code
         message['statusDescription'] = http_message.code_message
         message['headers'] = response_headers
-#        message['response_content'] = http_message.response_content
 
         return message
 
