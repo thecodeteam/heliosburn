@@ -4,7 +4,7 @@
   - [Get Recording details](#get-recording-details)
   - [Update a Recording](#update-a-recording)
   - [Delete a Recording](#delete-a-recording)
-  - [Start a recording](#start-a-new-recording)
+  - [Start a recording](#start-a-recording)
   - [Stop a recording](#stop-a-recording)
 
 
