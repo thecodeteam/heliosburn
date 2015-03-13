@@ -4,6 +4,7 @@ from django.test import TestCase
 import subprocess
 import logging
 import time
+import uuid
 from webui.forms import TestPlanForm
 
 
@@ -139,7 +140,7 @@ class TestPlanTest(WebuiSignedInTest):
 
     def test_testplan_new_form_valid_all_fields(self):
         form_data = {}
-        form_data['name'] = 'My cool Test Plan'
+        form_data['name'] = 'Test Plan %s' % (uuid.uuid4().hex,)
         form_data['description'] = 'Description...'
         form_data['latencyEnabled'] = True
         form_data['clientLatency'] = 0
@@ -149,7 +150,7 @@ class TestPlanTest(WebuiSignedInTest):
 
     def test_testplan_new_form_valid_minimal_fields(self):
         form_data = {}
-        form_data['name'] = 'My cool Test Plan'
+        form_data['name'] = 'Test Plan %s' % (uuid.uuid4().hex,)
         form_data['description'] = 'Description...'
         form = TestPlanForm(data=form_data)
         self.assertTrue(form.is_valid())
@@ -165,7 +166,7 @@ class TestPlanTest(WebuiSignedInTest):
 
     def test_testplan_submit_valid_fields(self):
         form_data = {}
-        form_data['name'] = 'My cool Test Plan'
+        form_data['name'] = 'Test Plan %s' % (uuid.uuid4().hex,)
         form_data['description'] = 'Description...'
         form_data['latencyEnabled'] = True
         form_data['clientLatency'] = 0
@@ -202,7 +203,7 @@ class TestPlanTest(WebuiSignedInTest):
 
     def test_testplan_delete_valid(self):
         form_data = {}
-        form_data['name'] = 'My cool Test Plan'
+        form_data['name'] = 'Test Plan %s' % (uuid.uuid4().hex,)
         form_data['description'] = 'Description...'
         form_data['latencyEnabled'] = True
         form_data['clientLatency'] = 0

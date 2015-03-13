@@ -27,9 +27,18 @@ def validate(rule):
         c_filter = "filter"
         c_action = "action"
         c_type = "type"
+        c_enabled = "enabled"
 
         assert c_name in rule
         new_rule[c_name] = rule[c_name]
+
+        if c_enabled in rule:
+            try:
+                new_rule[c_enabled] = bool(rule[c_enabled])
+            except TypeError:
+                new_rule[c_enabled] = True
+        else:
+            new_rule[c_enabled] = True
 
         if c_description in rule:
             new_rule[c_description] = rule[c_description]
@@ -44,20 +53,24 @@ def validate(rule):
             assert type(rule[c_filter]) is dict
             new_rule[c_filter] = {}
 
-            if rule[c_ruletype] == 'request':  # members specific to 'request' filter
-                if 'method' in rule[c_filter]:
-                    new_rule[c_filter]['method'] = str(rule[c_filter]['method'])
-                if 'url' in rule[c_filter]:
-                    new_rule[c_filter]['url'] = str(rule[c_filter]['url'])
-            elif rule[c_ruletype] == 'response':  # members specific to 'response' filter
-                if 'statusCode' in rule[c_filter]:
-                    new_rule['statusCode'] = int(rule[c_filter]['statusCode'])
-
-            # members in both 'request' or 'response' filters
+            # Always get members specific to 'request' filter
             if 'httpProtocol' in rule[c_filter]:
                 new_rule[c_filter]['httpProtocol'] = str(rule[c_filter]['httpProtocol'])
-            if ('headers' in rule[c_filter]) and (type(rule[c_filter]['headers']) is list):
-                new_rule[c_filter]['headers'] = rule[c_filter]['headers']
+            if 'method' in rule[c_filter]:
+                new_rule[c_filter]['method'] = str(rule[c_filter]['method'])
+            if 'url' in rule[c_filter]:
+                new_rule[c_filter]['url'] = str(rule[c_filter]['url'])
+            if ('requestHeaders' in rule[c_filter]) and (type(rule[c_filter]['requestHeaders']) is list):
+                new_rule[c_filter]['requestHeaders'] = rule[c_filter]['requestHeaders']
+
+            if rule[c_ruletype] == 'response':  # members specific to 'response' filter
+                if 'statusCode' in rule[c_filter]:
+                    try:
+                        new_rule['statusCode'] = int(rule[c_filter]['statusCode'])
+                    except TypeError:
+                        pass
+                if ('responseHeaders' in rule[c_filter]) and (type(rule[c_filter]['responseHeaders']) is list):
+                    new_rule[c_filter]['responseHeaders'] = rule[c_filter]['responseHeaders']
 
         # Validate action
         if c_action in rule:

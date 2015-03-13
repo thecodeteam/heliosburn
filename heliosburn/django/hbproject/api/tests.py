@@ -158,6 +158,8 @@ class TestplanViewTestCase(TestCase):
                 "rules": [
                     {
                         'ruleType': 'request',
+                        'name': 'test_rule_3',
+                        'enabled': True,
                         'filter': {
                             'httpProtocol': 'HTTP/1.1',
                             'method': 'GET',
@@ -374,6 +376,8 @@ class RuleViewTestCase(TestCase):
         def create(request):
             request.body = json.dumps({
                 'ruleType': 'request',
+                'name': 'test_rule_2',
+                'enabled': True,
                 'filter': {
                     'httpProtocol': 'HTTP/1.1',
                     'method': 'GET',
@@ -412,6 +416,8 @@ class RuleViewTestCase(TestCase):
         def update(request, rule_id):
             request.body = json.dumps({
                 'ruleType': 'request',
+                'enabled': True,
+                'name': 'test_rule_4',
                 'filter': {
                     'httpProtocol': 'HTTP/1.1',
                     'method': 'GET',
@@ -487,6 +493,8 @@ class TestplanRuleViewTestCase(TestCase):
         def create(request, testplan_id):
             request.body = json.dumps({
                 'ruleType': 'request',
+                'enabled': True,
+                'name': 'test_rule_1',
                 'filter': {
                     'httpProtocol': 'HTTP/1.1',
                     'method': 'GET',
@@ -525,6 +533,8 @@ class TestplanRuleViewTestCase(TestCase):
         def update(request, testplan_id, rule_id):
             request.body = json.dumps({
                 'ruleType': 'request',
+                'enabled': True,
+                'name': 'test_rule_4',
                 'filter': {
                     'httpProtocol': 'HTTP/1.1',
                     'method': 'GET',

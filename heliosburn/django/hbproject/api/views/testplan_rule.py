@@ -99,17 +99,6 @@ def put(request, testplan_id, rule_id):
     """
     Update existing test plan based on testplan_id.
     """
-    try:
-        new = json.loads(request.body)
-    except ValueError:
-        return HttpResponseBadRequest("invalid JSON")
-    except AssertionError:
-        return HttpResponseBadRequest("argument mismatch")
-
-    new['id'] = rule_id
-    rule = rule_model.validate(new)
-    if rule is None:
-        return HttpResponseBadRequest("invalid rule")
 
     dbc = db_model.connect()
     try:
@@ -121,8 +110,22 @@ def put(request, testplan_id, rule_id):
 
     for ri in range(0, len(testplan['rules'])):
         if testplan['rules'][ri]['id'] == rule_id:
-            testplan['rules'][ri] = rule
+            rule = testplan['rules'][ri]
             break
+
+    try:
+        new = json.loads(request.body)
+    except ValueError:
+        return HttpResponseBadRequest("invalid JSON")
+    except AssertionError:
+        return HttpResponseBadRequest("argument mismatch")
+
+    rule.update(new)
+    rule = rule_model.validate(rule)
+    if rule is None:
+        return HttpResponseBadRequest("invalid rule")
+
+    testplan['rules'][ri] = rule
 
     dbc.testplan.save(testplan)
     r = HttpResponse(status=200)

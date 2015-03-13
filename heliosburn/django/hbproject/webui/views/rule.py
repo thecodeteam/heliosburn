@@ -32,12 +32,13 @@ def rule_details(request, testplan_id, rule_id):
     if form.is_valid():
         try:
             Rule(testplan_id, auth_token=request.user.password).update(rule['id'], form.cleaned_data)
+            messages.success(request, "The rule was updated successfully.")
             return HttpResponseRedirect(reverse('rule_details', args=(str(testplan_id), str(rule_id))))
         except UnauthorizedException:
             return signout(request)
         except Exception as inst:
             messages.error(request, inst.message if inst.message else 'Unexpected error')
-            return HttpResponseRedirect(reverse('rule_new', args=(str(testplan_id),)))
+            return HttpResponseRedirect(reverse('rule_details', args=(str(testplan_id), str(rule_id))))
 
     data = {'testplan': testplan, 'rule': rule, 'form': form}
     return render(request, 'rules/rule_details.html', data)
@@ -82,6 +83,9 @@ def rule_update(request, testplan_id, rule_id):
         response = 'field cannot be empty!'
         return HttpResponseBadRequest(response)
 
+    if name == 'enabled':
+        value = False if value == '0' else True
+
     try:
         Rule(testplan_id, auth_token=request.user.password).update(pk, {name: value})
     except Exception as inst:
@@ -91,6 +95,8 @@ def rule_update(request, testplan_id, rule_id):
 
 def _rule_to_post_data(rule):
     post_data = {}
+    post_data['ruleType'] = rule['ruleType']
+
     if 'filter' in rule:
         filter = rule['filter']
         if 'httpProtocol' in filter:
@@ -99,6 +105,8 @@ def _rule_to_post_data(rule):
             post_data['filterMethod'] = filter['method']
         if 'url' in filter:
             post_data['filterUrl'] = filter['url']
+        if 'statusCode' in filter:
+            post_data['filterstatusCode'] = filter['statusCode']
 
     if 'action' in rule:
         action = rule['action']
@@ -116,4 +124,6 @@ def _rule_to_post_data(rule):
             post_data['actionStatusDescription'] = action['statusDescription']
         if 'payload' in action:
             post_data['actionPayload'] = action['payload']
+        if 'setHeaders' in action:
+            action['headers'] = action.pop('setHeaders')
     return post_data
