@@ -190,6 +190,8 @@ The response body contains the following elements in JSON format:
 | description | Description of the Test Plan. |
 | createdAt | A dateTime value that specifies the date and time the recording was created. |
 | updatedAt | A dateTime value that specifies the date and time the recording was last modified. |
+| startedAt | A dateTime value that specifies the date and time the recording was started. |
+| stoppedAt | A dateTime value that specifies the date and time the recording was stopped. |
 | traffic | A list of `Traffic` objects corresponding to the recorded traffic. |
 
 A `Traffic` object contains the following elements:
@@ -236,7 +238,9 @@ A `Response` object contains the following elements:
     "name": "Recording of Swift traffic",
     "description": "bla bla bla bla...",
     "createdAt": "2014-02-12 03:34:51",
-    "updatedAt": "2014-02-12 03:34:51",
+    "updatedAt": "2014-02-12 03:56:01",
+    "startedAt": "2014-02-12 03:35:23",
+    "stoppedAt": "2014-02-12 03:56:01",
     "traffic": [
         {
             "transactionId": "34895234052345823",
