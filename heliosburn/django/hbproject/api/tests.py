@@ -592,3 +592,60 @@ class TestplanRuleViewTestCase(TestCase):
 
         print("Removing temporary testplan for use within %s" % self.__class__)
         delete_testplan(request, testplan_id)
+
+
+class RecordingViewTestCase(TestCase):
+    """
+    Test views/recording.py CRUD
+    This test requires a valid user "admin" with password "admin".
+    """
+
+    def test_crud(self):
+        """
+        Tests CRUD for recording model.
+        """
+        from views import recording
+        import json
+
+        def create(request):
+            request.body = json.dumps({
+                "name": "CRUD test for recording",
+            })
+            response = recording.post(request)
+            self.assertEqual(response.status_code, 200)
+            self.assertIn("location", response._headers)
+            in_json = json.loads(response.content)
+            self.assertIn("id", in_json)
+            return in_json['id']
+
+        def read(request, recording_id):
+            response = recording.get(request, recording_id)
+            self.assertEqual(response.status_code, 200)
+
+        def update(request, recording_id):
+            request.body = json.dumps({
+                "name": "CRUD test for recording, updated",
+                "description": "description...",
+            })
+            response = recording.put(request, recording_id)
+            self.assertEqual(response.status_code, 200)
+
+        def delete(request, recording_id):
+            response = recording.delete(request, recording_id)
+            self.assertEqual(response.status_code, 200)
+
+        print("Creating authenticated request for CRUD tests in %s" % self.__class__)
+        request = create_authenticated_request("admin", "admin")
+        request.method = "POST"
+
+        print("Testing CREATE in %s" % self.__class__)
+        recording_id = create(request)
+
+        print("Testing READ in %s" % self.__class__)
+        read(request, recording_id)
+
+        print("Testing UPDATE in %s" % self.__class__)
+        update(request, recording_id)
+
+        print("Testing DELETE in %s" % self.__class__)
+        delete(request, recording_id)

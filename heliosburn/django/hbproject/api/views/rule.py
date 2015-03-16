@@ -1,13 +1,11 @@
 from bson.errors import InvalidId
 from django.http import JsonResponse, HttpResponseNotFound, HttpResponseBadRequest, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
-from api.models import legacy_db_model
 from api.models import db_model
 from bson import ObjectId
 from pymongo.helpers import DuplicateKeyError
 from api.models.auth import RequireLogin
 from api.models import rule_model
-from sqlalchemy.exc import IntegrityError
 import json
 from datetime import datetime
 
