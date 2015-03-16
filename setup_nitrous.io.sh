@@ -17,6 +17,11 @@ echo ">>>>> Entering virtualenv"
 echo ">>>>> Installing requirements.txt via pip"
 pip install -r requirements.txt
 
+echo ">>>>> Creating .env file"
+cp heliosburn/django/hbproject/example.env heliosburn/django/hbproject/.env
+SECRET_KEY=$(openssl rand -hex 16)
+sed -i "s/DJANGO_SECRET_KEY.*/DJANGO_SECRET_KEY='$SECRET_KEY'/" heliosburn/django/hbproject/.env
+
 echo ">>>>> Creating initial MongoDB model"
 python heliosburn/django/hbproject/create_db_model.py
 
