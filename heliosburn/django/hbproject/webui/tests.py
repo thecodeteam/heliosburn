@@ -15,7 +15,7 @@ class BaseTest(TestCase):
         Create temporary testserver.py and proxycore.py instances
         """
         logging.warning("Starting CherryPy server")
-        cls.django_process = subprocess.Popen(["/usr/bin/python2.7", "cherrypy_launcher.py"])  # TODO: fix this, obviously :)
+        cls.django_process = subprocess.Popen(["python", "cherrypy_launcher.py"])  # TODO: fix this, obviously :)
         time.sleep(2)  # Let CherryPy begin listening
 
     @classmethod
