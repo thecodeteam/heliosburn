@@ -1,0 +1,26 @@
+modules:
+  [
+    {
+      name: 'TrafficReader',
+      kwargs:
+      {
+        redis_host: '127.0.0.1',
+        redis_port: 6379,
+        redis_db: 0,
+      }
+    },
+    {
+      name: 'Latency',
+      kwargs:
+      {
+        minimum: 1,
+        maximum: 5,
+      }
+    },
+    {
+      name: 'FaultInjection',
+      kwargs:
+      {
+      }
+     }
+  ]

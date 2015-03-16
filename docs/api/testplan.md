@@ -5,7 +5,7 @@
   - [Update Test Plan details](#update-test-plan-details)
   - [Delete a Test Plan](#delete-a-test-plan)
 
-  
+
 # Test Plan
 
 ## Get a list of Test Plans
@@ -182,7 +182,7 @@ JSON input that contains a Test Plan representation with the following elements:
 #### Request example
 
 ```json
-POST https://api.heliosburn.com/testplans/ HTTP/1.1
+POST https://api.heliosburn.com/testplan/ HTTP/1.1
 User-Agent: Jakarta Commons-HttpClient/3.1
 Host: api.heliosburn.com
 Content-Length: 294
@@ -224,7 +224,7 @@ HTTP/1.1 201 Created
 Content-Type: application/octet-stream; charset=UTF-8
 Content-Length: 0
 Date: Wed, 14 Dec 2014 19:35:02 GMT
-Location: http://api.heliosburn.com/testplans/65
+Location: http://api.heliosburn.com/testplan/65435564536453234566
 Access-Control-Allow-Origin: *
 Server: Noelios-Restlet-Engine/1.1.5
 ```
@@ -266,7 +266,7 @@ JSON input that contains a Test Plan representation with the elements to be modi
 #### Request example
 
 ```json
-PUT https://api.heliosburn.com/testplans/54edbcd9eb90892f5eed9129 HTTP/1.1
+PUT https://api.heliosburn.com/testplan/54edbcd9eb90892f5eed9129 HTTP/1.1
 User-Agent: Jakarta Commons-HttpClient/3.1
 Host: api.heliosburn.com
 Content-Length: 294
@@ -313,7 +313,7 @@ Server: Noelios-Restlet-Engine/1.1.5
 
 ## Delete a Test Plan
 
-An application can permanantly delete a Test Plan by issuing an HTTP DELETE request to the URL of the Test Plan resource. It's a good idea to precede DELETE requests like this with a caution note in your application's user interface.
+An application can permanently delete a Test Plan by issuing an HTTP DELETE request to the URL of the Test Plan resource. It's a good idea to precede DELETE requests like this with a caution note in your application's user interface.
 
 ### Request
 
@@ -331,22 +331,11 @@ The request header includes the following information:
 | Content-Type | The content type and character encoding of the response. |
 | Content-Length | The length of the retrieved content. |
 
-#### Request Body
-
-JSON input that contains a Test Plan representation with the elements to be modified:
-
-| Element | Description |
-|---|---|
-| name | Name of the session. |
-| description | Description of the session. |
-| latencyEnabled | A boolean value that indicates whether the latency is enabled or not. |
-| clientLatency | An integer value that specifies the client latency in milliseconds.  |
-| serverLatency | An integer value that specifies the client latency in milliseconds.  |
 
 #### Request example
 
 ```
-DELETE https://api.heliosburn.com/testplans/54edbcd9eb90892f5eed9129 HTTP/1.1
+DELETE https://api.heliosburn.com/testplan/54edbcd9eb90892f5eed9129 HTTP/1.1
 User-Agent: Jakarta Commons-HttpClient/3.1
 Host: api.heliosburn.com
 Content-Length: 0
@@ -355,13 +344,6 @@ Content-Type: application/json; charset=UTF-8
 
 ### Response
 
-#### Response Header
-The response header includes the following information:
-
-| Field | Description |
-|---|---|
-| Content-Type | The content type and character encoding of the response. |
-| Content-Length | The length of the content. |
 
 #### Status Codes
 

@@ -1,8 +1,9 @@
-from base import ProxyModuleBase
+from module import AbstractModule
 
 
-class SampleModule(ProxyModuleBase):
-    def onRequest(self, **kwargs):
+class SampleModule(AbstractModule):
+
+    def handle_request(self, request, **kwargs):
 
         headers = self.getAllHeaders()
         print headers
@@ -22,13 +23,13 @@ class SampleModule(ProxyModuleBase):
 
         uri = self.getURI()
         print uri
-        #self.setURI('/modified/url')
+        # self.setURI('/modified/url')
 
         content = self.getContent()
         print content
         self.setContent('Content modified by HeliosBurn in REQUEST!')
 
-    def onResponse(self, **kwargs):
+    def handle_response(self, response, **kwargs):
         headers = self.getAllHeaders()
         print headers
         self.setHeader('Server', 'Proxied by Helios (Response)')
@@ -43,12 +44,14 @@ class SampleModule(ProxyModuleBase):
 
         status_code = self.getStatusCode()
         print status_code
-        #self.setStatusCode(500)
+        # self.setStatusCode(500)
 
         status_desc = self.getStatusDescription()
         print status_desc
-        #self.setStatusDescription("Internal Server Error")
+        # self.setStatusDescription("Internal Server Error")
 
         content = self.getContent()
         print content
         self.setContent('Content modified by HeliosBurn in RESPONSE!\n')
+
+sample_module = SampleModule()
