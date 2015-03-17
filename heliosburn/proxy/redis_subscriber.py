@@ -9,8 +9,9 @@ from txredis.client import RedisSubscriber
 
 class HBRedisMessageHandler(object):
 
-    def __init__(self, message):
+    def __init__(self, message, **configs):
         self.message = message
+        self.configs = configs
         self.log = log
 
     def execute(self):
@@ -20,11 +21,12 @@ class HBRedisMessageHandler(object):
 class HBRedisMessageHandlerFactory(object):
     message_handler = HBRedisMessageHandler
 
-    def __init__(self, message_handler=None):
+    def __init__(self, message_handler=None, **configs):
         self.message_handler = message_handler
+        self.configs = configs
 
     def get_handler(self, message):
-        return self.message_handler(message)
+        return self.message_handler(message, **self.configs)
 
 
 class HBRedisSubscriber(RedisSubscriber):

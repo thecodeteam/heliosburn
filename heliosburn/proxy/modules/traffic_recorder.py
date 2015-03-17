@@ -11,11 +11,12 @@ from redis_subscriber import HBRedisMessageHandler
 
 class TrafficRecorderHandlerFactory(HBRedisMessageHandlerFactory):
 
-    def get_handler(self, message):
+    def get_handler(self, message, **configs):
+        self.configs = configs
         message = json.loads(message)
         message['recording_id'] = self.recording_id
 
-        return self.message_handler(message)
+        return self.message_handler(message, configs)
 
     def set_recording_id(self, recording_id):
         self.recording_id = recording_id
@@ -41,6 +42,7 @@ class TrafficRecorder(AbstractModule):
         redis.subscribe()
 
     def configure(self, **configs):
+        self.configs = configs
         self.redis_host = configs['redis_host']
         self.redis_port = configs['redis_port']
         self.redis_sub_queue = configs['redis_sub_queue']

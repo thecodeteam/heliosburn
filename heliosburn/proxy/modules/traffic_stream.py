@@ -15,18 +15,19 @@ class TrafficHandler(HBRedisMessageHandler):
         return int(time.time() * 1000000)
 
     def execute(self):
-        r = redis.StrictRedis(host='127.0.0.1',
-                              port=6379,
-                              db=0)
+        r = redis.StrictRedis(host=self.configs['redis_host'],
+                              port=self.configs['redis_port'],
+                              db=self.configs['redis_db'])
+        redis_key = self.configs['redis_key']
 
         score = self._get_current_time()
 
         # Remove traffic older than 1 second
-        result = r.zremrangebyscore('heliosburn.traffic', '-inf',
+        result = r.zremrangebyscore(redis_key, '-inf',
                                     score - 1 * 1000000)
         self.log.msg('* Cleaned %d messages' % (result,))
 
-        result = r.zadd('heliosburn.traffic', score, self.message)
+        result = r.zadd(redis_key, score, self.message)
         if result:
             self.log.msg('* Message with score %d sent successfully'
                          % (score,))
@@ -40,17 +41,26 @@ class TrafficStream(AbstractModule):
     """
     def __init__(self):
         AbstractModule.__init__(self)
-        self.redis_endpoint = TCP4ClientEndpoint(reactor, '127.0.0.1', 6379)
-        self.channel = 'heliosburn.traffic'
+#        self.redis_endpoint = TCP4ClientEndpoint(reactor, '127.0.0.1', 6379)
+#        self.channel = 'heliosburn.traffic'
 
-        self.start()
+#        self.start()
 
     def _subscribe(self, redis):
         self.redis_subscriber = redis
         redis.subscribe()
 
+    def configure(self, **configs):
+        self.configs = configs
+        self.channel = configs['redis_sub_queue']
+        self.start()
+
     def start(self, **params):
-        handler_factory = HBRedisMessageHandlerFactory(TrafficHandler)
+        self.redis_endpoint = TCP4ClientEndpoint(reactor,
+                                                 self.configs['redis_host'],
+                                                 self.configs['redis_port'])
+        handler_factory = HBRedisMessageHandlerFactory(TrafficHandler,
+                                                       **self.configs)
         d = self.redis_endpoint.connect(HBRedisSubscriberFactory(self.channel,
                                         handler_factory))
 
