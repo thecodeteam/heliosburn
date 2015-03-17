@@ -35,16 +35,23 @@ class TrafficRecorder(AbstractModule):
 
     def __init__(self):
         AbstractModule.__init__(self)
-        self.redis_endpoint = TCP4ClientEndpoint(reactor, '127.0.0.1', 6379)
-        self.channel = 'heliosburn.traffic'
 
     def _subscribe(self, redis):
         self.redis_subscriber = redis
         redis.subscribe()
 
+    def configure(self, **configs):
+        self.redis_host = configs['redis_host']
+        self.redis_port = configs['redis_port']
+        self.redis_sub_queue = configs['redis_sub_queue']
+
     def start(self, **params):
         handler_factory = TrafficRecorderHandlerFactory(TrafficHandler)
         handler_factory.set_recording_id(params['recording_id'])
+        self.redis_endpoint = TCP4ClientEndpoint(reactor,
+                                                 self.redis_host,
+                                                 self.redis_port)
+        self.channel = self.redis_sub_queue
         d = self.redis_endpoint.connect(HBRedisSubscriberFactory(self.channel,
                                         handler_factory))
 

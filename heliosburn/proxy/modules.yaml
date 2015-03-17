@@ -1,4 +1,4 @@
-modules:
+pipeline:
   [
     {
       name: 'TrafficReader',
@@ -7,6 +7,7 @@ modules:
         redis_host: '127.0.0.1',
         redis_port: 6379,
         redis_db: 0,
+        redis_pub_queue: 'heliosburn.traffic',
       }
     },
     {
@@ -23,4 +24,30 @@ modules:
       {
       }
      }
+  ]
+
+support:
+  [
+    {
+      name: 'TrafficRecorder',
+      kwargs:
+      {
+        redis_host: '127.0.0.1',
+        redis_port: 6379,
+        redis_sub_queue: 'heliosburn.traffic',
+        mongo_host: '127.0.0.1',
+        mongo_port: '27017',
+        mongo_db: 'proxy'
+        mongo_collection: 'traffic'
+      }
+    },
+    {
+      name: 'TrafficStream',
+      kwargs:
+      {
+        redis_host: '127.0.0.1',
+        redis_port: 6379,
+        redis_db: 0,
+      }
+    }
   ]

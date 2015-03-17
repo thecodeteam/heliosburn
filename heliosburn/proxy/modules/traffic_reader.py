@@ -49,28 +49,30 @@ class TrafficReader(AbstractModule):
 
         return message
 
+    def configure(self, **configs):
+        self.redis_host = configs['redis_host']
+        self.redis_port = configs['redis_port']
+        self.redis_db = configs['redis_db']
+        self.redis_pub_queue = configs['redis_pub_queue']
+        self.redis_client = redis.StrictRedis(host=self.redis_host,
+                                              port=self.redis_port,
+                                              db=self.redis_db)
+
     def handle_request(self, request):
 
-        r = redis.StrictRedis(host='127.0.0.1',
-                              port=6379,
-                              db=0)
         message = self._get_traffic_message(request)
         message['request'] = self._get_request_message(request)
 
-        r.publish('heliosburn.traffic', json.dumps(message))
+        self.redis_client.publish(self.redis_pub_queue, json.dumps(message))
         return request
 
     def handle_response(self, response):
-
-        r = redis.StrictRedis(host='127.0.0.1',
-                              port=6379,
-                              db=0)
 
         message = self._get_traffic_message(response)
         message['request'] = self._get_request_message(response)
         message['response'] = self._get_response_message(response)
 
-        r.publish('heliosburn.traffic', json.dumps(message))
+        self.redis_client.publish(self.redis_pub_queue, json.dumps(message))
         return response
 
 traffic_reader = TrafficReader()

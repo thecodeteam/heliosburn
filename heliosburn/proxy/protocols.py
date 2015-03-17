@@ -108,14 +108,9 @@ class HBReverseProxyRequest(ReverseProxyRequest):
         self.request_id = uuid.uuid1()
         self.response_id = uuid.uuid1()
 
-        # need to refactor this
-        plugins = self.get_config("./modules.yaml")
-        config = self.get_config("./config.yaml")
-        proxy_config = config['proxy']
-
-        self.module_registry = Registry(plugins)
-        self.upstream_host = proxy_config['upstream']['address']
-        self.upstream_port = proxy_config['upstream']['port']
+        self.module_registry = channel.site.resource.module_registry
+        self.upstream_host = channel.site.resource.host
+        self.upstream_port = channel.site.resource.port
 
     def __repr__(self):
         request = {}
@@ -125,12 +120,6 @@ class HBReverseProxyRequest(ReverseProxyRequest):
         request['url'] = self.uri
         request['headers'] = self.getAllHeaders()
         return str(request)
-
-    def get_config(self, config_path):
-        with open(config_path, 'r+') as config_file:
-            config = yaml.load(config_file.read())
-
-        return config
 
     def _forward_request(self, request):
 

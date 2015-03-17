@@ -57,6 +57,12 @@ class IModule(Interface):
         this method is called to reload the module configuration
         """
 
+    def configure(self, **configs):
+        """
+        this method is called to provide configuration data to the
+        module
+        """
+
     def start(self, **keywords):
         """
         this method is called to start the module execution
@@ -119,6 +125,12 @@ class AbstractModule(object):
         this method is called to reload the module configuration
         """
 
+    def configure(self, **configs):
+        """
+        this method is called to provide configuration data to the
+        module
+        """
+
     def start(self, **params):
         """
         this method is called to start the module execution
@@ -132,20 +144,25 @@ class AbstractModule(object):
 
 class Registry(object):
 
-    def __init__(self, modules_list):
-        self.pipeline_modules = modules_list['modules']
+    def __init__(self, plugin_config):
+        self.pipeline_modules = plugin_config['pipeline']
+        self.support_modules = plugin_config['support']
         log.msg("loaded pipline modules: %s" % self.pipeline_modules)
 
         self.plugins = {plugin.get_name(): plugin for plugin in
                         getPlugins(IModule, modules)}
 
-        log.msg("loaded plugins: %s" % self.plugins.keys())
+        for module in self.pipeline_modules:
+            name = module['name']
+            configs = module['kwargs']
+            self.plugins[name].configure(**configs)
 
-#        self.pipeline_modules = collections.OrderedDict()
-#        for module in modules_list['modules']:
-#            module_name = module['name']
-#            plugin = plugins[module_name]
-#            self.pipeline_modules[module_name] = plugin
+        for module in self.support_modules:
+            name = module['name']
+            configs = module['kwargs']
+            self.plugins[name].configure(**configs)
+
+        log.msg("loaded plugins: %s" % self.plugins.keys())
 
     def _build_request_pipeline(self):
 
