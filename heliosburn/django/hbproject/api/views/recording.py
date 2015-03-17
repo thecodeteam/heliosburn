@@ -47,6 +47,7 @@ def get(request, recording_id=None):
         return HttpResponseNotFound()
     else:
         recording['id'] = str(recording.pop('_id'))
+        recording['traffic_count'] = dbc.traffic.find({"recording_id": recording['id']}).count()
         return JsonResponse(recording)
 
 
@@ -130,6 +131,7 @@ def delete(request, recording_id):
         return HttpResponseNotFound()
     else:
         dbc.recording.remove({"_id": ObjectId(recording_id)})
+        dbc.traffic.remove({"recording_id": recording_id}, multi=True)
         return HttpResponse()
 
 
