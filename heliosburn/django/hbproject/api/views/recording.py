@@ -137,9 +137,19 @@ def delete(request, recording_id):
 
 @RequireLogin()
 def start(request, recording_id):
-    pass  # TODO
+    from api.models import redis_wrapper
+    redis_wrapper.publish_to_proxy({
+        "operation": "start_recording",
+        "param": recording_id,
+    })
+    return HttpResponse(status=200)
 
 
 @RequireLogin()
 def stop(request, recording_id):
-    pass  # TODO
+    from api.models import redis_wrapper
+    redis_wrapper.publish_to_proxy({
+        "operation": "stop_recording",
+        "param": recording_id,
+    })
+    return HttpResponse(status=200)
