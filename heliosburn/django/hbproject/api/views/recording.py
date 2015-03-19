@@ -47,7 +47,10 @@ def get(request, recording_id=None):
         return HttpResponseNotFound()
     else:
         recording['id'] = str(recording.pop('_id'))
-        recording['traffic_count'] = dbc.traffic.find({"recording_id": recording['id']}).count()
+        recording['traffic'] = [t for t in dbc.traffic.find({"recording_id": recording['id']})]
+        for t in recording['traffic']:
+            t['id'] = str(t.pop('_id'))
+        recording['count'] = len(recording['traffic'])
         return JsonResponse(recording)
 
 
@@ -59,6 +62,7 @@ def get_all_recordings():
     recordings = [r for r in dbc.recording.find()]
     for recording in recordings:
         recording['id'] = str(recording.pop('_id'))
+        recording['count'] = dbc.traffic.find({"recording_id": recording['id']}).count()
     return JsonResponse({"recordings": recordings})
 
 

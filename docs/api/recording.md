@@ -54,7 +54,7 @@ Content-Type: application/json; charset=UTF-8
 
 {
     "name": "My Recording",
-    "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit..."
+    "description": "Endpoint test #1"
 }
 ```
 
@@ -67,7 +67,10 @@ The response header includes the following information:
 |---|---|
 | Content-Type | The content type and character encoding of the response. |
 | Content-Length | The length of the content. |
-| Location | The location of the newly created Test Plan. |
+| Location | The location of the newly created Recording. |
+
+#### Response Body
+The response body is a JSON containing the id of the created recording.
 
 #### Status Codes
 
@@ -87,6 +90,8 @@ Date: Wed, 14 Dec 2014 19:35:02 GMT
 Location: http://api.heliosburn.com/recording/123
 Access-Control-Allow-Origin: *
 Server: Noelios-Restlet-Engine/1.1.5
+
+{"id": "0xdeadbeef"}
 ```
 
 
@@ -192,40 +197,13 @@ The response body contains the following elements in JSON format:
 | updatedAt | A dateTime value that specifies the date and time the recording was last modified. |
 | startedAt | A dateTime value that specifies the date and time the recording was started. |
 | stoppedAt | A dateTime value that specifies the date and time the recording was stopped. |
-| traffic | A list of `Traffic` objects corresponding to the recorded traffic. |
-
-A `Traffic` object contains the following elements:
-
-| Element | Description |
-|---|---|
-| transactionId | An alphanumeric value that uniquely identifies this piece of traffic. |
-| createdAt | A dateTime value that specifies the date and time the proxy processed the transaction. |
-| request | The `Request` object representing the received HTTP request. |
-| response | The `Response` object representing the returned HTTP response. |
-
-A `Request` object contains the following elements:
-
-| Element | Description |
-|---|---|
-| httpProtocol | both | HTTP protocol. |
-| method | request | Request method. |
-| url | request | Request URL. |
-| headers | List of header objects containing a `key` and a `value`. |
-
-A `Response` object contains the following elements:
-
-| Element | Description |
-|---|---|
-| statusCode | Status Code. |
-| statusDescription | Status description. |
-| headers | List of header objects containing a `key` and a `value`. |
-
+| count | An integer value that specifies the number of transactions associated to the Recording. |
 
 #### Status Codes
 
 | Status Code | Description |
 |---|---|
-| 200-299 | The request was successful. The Test Plan information is in the response body. |
+| 200-299 | The request was successful. The Recording information is in the response body. |
 | 400 | Bad request. Typically returned if required information was not provided as input. |
 | 404 | Not found. The resource was not found. |
 | 500-599 | Server error. |
@@ -241,69 +219,20 @@ A `Response` object contains the following elements:
     "updatedAt": "2014-02-12 03:56:01",
     "startedAt": "2014-02-12 03:35:23",
     "stoppedAt": "2014-02-12 03:56:01",
-    "traffic": [
-        {
-            "transactionId": "34895234052345823",
-            "createdAt": "2015-03-11 00:00:00",
-            "request": {
-                "httpProtocol": "HTTP/1.1",
-                "method": "GET",
-                "url": "http://foo.bar",
-                "headers": [
-                    {
-                        "key": "X-Auth-Token",
-                        "value": "3405829123"
-                    },
-                    {
-                        "key": "Content-Type",
-                        "value": "application/json"
-                    }
-                ]
-            },
-            "response": {
-                "statusCode": 200,
-                "statusDescription": "OK",
-                "headers": [
-                    {
-                        "key": "Server",
-                        "value": "Nginx"
-                    }
-                ]
-            }
-        },
-        {
-            "transactionId": "39245723895234",
-            "createdAt": "2015-03-11 01:01:59",
-            "request": {
-                "httpProtocol": "HTTP/1.1",
-                "method": "PUT",
-                "url": "http://foo.bar/johndoe?q=asd",
-                "headers": [
-                    {
-                        "key": "X-Auth-Token",
-                        "value": "3405829123"
-                    },
-                    {
-                        "key": "Content-Type",
-                        "value": "application/json"
-                    }
-                ]
-            },
-            "response": {
-                "statusCode": 404,
-                "statusDescription": "Not Found",
-                "headers": [
-                    {
-                        "key": "Server",
-                        "value": "Nginx"
-                    }
-                ]
-            }
-        }
+    "count": 601229
+    "traffic" [
+      { <Traffic Object> },
+      { <Traffic Object> },
+      { <Traffic Object> },
+      { <Traffic Object> },
+      { <Traffic Object> },
+      { <Traffic Object> },
+      { <Traffic Object> },
+      { <Traffic Object> },
+      ...
     ]
 }
 ```
-
 
 
 ## Update a Recording
@@ -329,7 +258,7 @@ The request header includes the following information:
 
 #### Request Body
 
-JSON input that contains a Test Plan representation with the elements to be modified:
+JSON input that contains a Recording representation with the elements to be modified:
 
 | Element | Description |
 |---|---|
@@ -346,8 +275,8 @@ Content-Length: 294
 Content-Type: application/json; charset=UTF-8
 
 {
-    "name": "My first Recording",
-    "description": "Bla bla bla bla..."
+    "name": "Updated recording name",
+    "description": "A more descriptive name for this recording."
 }
 ```
 
@@ -419,7 +348,7 @@ Content-Type: application/json; charset=UTF-8
 
 | Status Code | Description |
 |---|---|
-| 200-299 | The request was successful. The Test Plan was successfully deleted. |
+| 200-299 | The request was successful. The Recording was successfully deleted. |
 | 400 | Bad request. Typically returned if required information was not provided as input. |
 | 404 | Not found. The resource was not found. |
 | 500-599 | Server error. |
