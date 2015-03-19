@@ -164,12 +164,16 @@ The response body contains a list containing the following elements in JSON form
 
 ## Get Recording details
 
-To retrieve information about a Recording, an application submits an HTTP GET request to the URL that represents the Recording resource.
+To retrieve information about a Recording, an application submits an HTTP GET request to the URL that represents the Recording resource. If a recording
+contains a large amount of traffic, you may wish to receive it in chunks rather than a single massive response.
 
 ### Request
 
 #### URL
 `/recording/:id`, for example, `/recording/54edbcd9eb90892f5eed9129`.
+
+#### URL to receive traffic in chunks
+`/recording/:id?traffic_begin=:n&traffic_end=:n`, for example, `/recording/:id?traffic_begin=0&traffic_end=500`
 
 #### Method
 GET
@@ -198,6 +202,12 @@ The response body contains the following elements in JSON format:
 | startedAt | A dateTime value that specifies the date and time the recording was started. |
 | stoppedAt | A dateTime value that specifies the date and time the recording was stopped. |
 | count | An integer value that specifies the number of transactions associated to the Recording. |
+
+#### Response query string variables
+| Query variable | Description |
+|---|---|
+| traffic_begin | (OPTIONAL) An integer of the first piece of traffic to return. The lowest value is 0. |
+| traffic_begin | (OPTIONAL) An integer of the last piece of traffic to return. |
 
 #### Status Codes
 
