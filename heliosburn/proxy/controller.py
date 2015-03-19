@@ -490,7 +490,7 @@ def get_arg_parser():
                         default="./config.yaml",
                         dest='config_path',
                         help='Path to output config file. Default: '
-                        + ' ./config.yamle')
+                        + ' ./config.yaml')
 
     parser.add_argument('--tcp_mgmt',
                         action="store_true",
