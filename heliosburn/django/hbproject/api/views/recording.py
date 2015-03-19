@@ -32,7 +32,7 @@ def rest(request, *pargs, **kwargs):
 
 
 @RequireLogin()
-def get(request, recording_id=None):
+def get(request, recording_id=None, get_traffic=None):
     """
     Retrieve recording based on id.
     """
@@ -48,18 +48,27 @@ def get(request, recording_id=None):
     else:
         recording['id'] = str(recording.pop('_id'))
         recording['count'] = dbc.traffic.find({"recording_id": recording['id']}).count()
-        recording['traffic'] = [t for t in dbc.traffic.find({"recording_id": recording['id']})]
-        for t in recording['traffic']:
-            t['id'] = str(t.pop('_id'))
 
-        #paginate traffic
-        if hasattr(request, 'GET') and ('traffic_begin' in request.GET) and ('traffic_end' in request.GET):
-            try:
-                traffic_begin = int(request.REQUEST['traffic_begin'][0])
-                traffic_end = int(request.REQUEST['traffic_end'][0])
-            except ValueError:
-                return HttpResponseBadRequest()
-            recording['traffic'] = recording['traffic'][traffic_begin:traffic_end]
+
+        # Return paginated traffic data
+        if get_traffic is not None:
+
+            #Fetch the traffic
+            recording['traffic'] = [t for t in dbc.traffic.find({"recording_id": recording['id']})]
+            for t in recording['traffic']:
+                t['id'] = str(t.pop('_id'))
+
+            #Paginate the traffic
+            start = 0
+            offset = 100
+            if hasattr(request, 'GET') and ('start' in request.GET) and ('offset' in request.GET):
+                try:
+                    start = int(request.REQUEST['start'][0])
+                    offset = int(request.REQUEST['offset'][0])
+                except ValueError:
+                    return HttpResponseBadRequest()
+
+            recording['traffic'] = recording['traffic'][start:offset]
 
         return JsonResponse(recording)
 

@@ -173,7 +173,7 @@ contains a large amount of traffic, you may wish to receive it in chunks rather 
 `/recording/:id`, for example, `/recording/54edbcd9eb90892f5eed9129`.
 
 #### URL to receive traffic in chunks
-`/recording/:id?traffic_begin=:n&traffic_end=:n`, for example, `/recording/:id?traffic_begin=0&traffic_end=500`
+`/recording/:id?traffic_begin=:n&traffic_end=:n`, for example, `/recording/:id?/traffic?start=0&offset=500`
 
 #### Method
 GET
@@ -203,11 +203,11 @@ The response body contains the following elements in JSON format:
 | stoppedAt | A dateTime value that specifies the date and time the recording was stopped. |
 | count | An integer value that specifies the number of transactions associated to the Recording. |
 
-#### Response query string variables
+#### Response query string variables 
 | Query variable | Description |
 |---|---|
-| traffic_begin | (OPTIONAL) An integer of the first piece of traffic to return. The lowest value is 0. |
-| traffic_begin | (OPTIONAL) An integer of the last piece of traffic to return. |
+| start | (OPTIONAL) An integer of the first piece of traffic to return. The lowest value is 0. |
+| offset | (OPTIONAL) An integer of the last piece of traffic to return. |
 
 #### Status Codes
 
