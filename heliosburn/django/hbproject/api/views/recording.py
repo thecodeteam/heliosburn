@@ -47,10 +47,20 @@ def get(request, recording_id=None):
         return HttpResponseNotFound()
     else:
         recording['id'] = str(recording.pop('_id'))
+        recording['count'] = dbc.traffic.find({"recording_id": recording['id']}).count()
         recording['traffic'] = [t for t in dbc.traffic.find({"recording_id": recording['id']})]
         for t in recording['traffic']:
             t['id'] = str(t.pop('_id'))
-        recording['count'] = len(recording['traffic'])
+
+        #paginate traffic
+        if ('traffic_begin' in request.REQUEST) and ('traffic_end' in request.REQUEST):
+            try:
+                traffic_begin = int(request.REQUEST['traffic_begin'])
+                traffic_end = int(request.REQUEST['traffic_end'])
+            except ValueError:
+                return HttpResponseBadRequest()
+            recording['traffic'] = recording['traffic'][traffic_begin:traffic_end]
+
         return JsonResponse(recording)
 
 
