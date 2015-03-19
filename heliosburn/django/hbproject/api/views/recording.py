@@ -53,10 +53,10 @@ def get(request, recording_id=None):
             t['id'] = str(t.pop('_id'))
 
         #paginate traffic
-        if ('traffic_begin' in request.REQUEST) and ('traffic_end' in request.REQUEST):
+        if hasattr(request, 'GET') and ('traffic_begin' in request.GET) and ('traffic_end' in request.GET):
             try:
-                traffic_begin = int(request.REQUEST['traffic_begin'])
-                traffic_end = int(request.REQUEST['traffic_end'])
+                traffic_begin = int(request.REQUEST['traffic_begin'][0])
+                traffic_end = int(request.REQUEST['traffic_end'][0])
             except ValueError:
                 return HttpResponseBadRequest()
             recording['traffic'] = recording['traffic'][traffic_begin:traffic_end]
