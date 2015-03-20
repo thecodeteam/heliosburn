@@ -1,5 +1,6 @@
 import yaml
 import os
+import json
 from protocols import HBProxyMgmtRedisSubscriberFactory
 from protocols import HBProxyMgmtProtocolFactory
 from controller import HBProxyController
@@ -8,7 +9,7 @@ from twisted.trial import unittest
 from twisted.test import proto_helpers
 
 
-def get_op_factory():
+def get_controller():
     config = get_config("../config.yaml")
     plugins = get_config("../modules.yaml")
     proxy_config = config['proxy']
@@ -37,7 +38,7 @@ def get_op_factory():
                                    tcp_mgmt_port,
                                    plugins)
 
-    return OperationFactory(controller)
+    return controller
 
 
 def get_config(config_path):
@@ -47,94 +48,106 @@ def get_config(config_path):
     return config
 
 
-class ProxyInterfaceTCPTestCase(unittest.TestCase):
-
+class ProxyInterfaceOpTest(unittest.TestCase):
     def setUp(self):
-        self.op_factory = get_op_factory()
-        protoFactory = HBProxyMgmtProtocolFactory(self.op_factory)
-        self.proto = protoFactory.buildProtocol(('127.0.0.1', 0))
+        self.controller = get_controller()
+        self.op_factory = OperationFactory(self.controller)
+
+        protoFactory = HBProxyMgmtRedisSubscriberFactory('heliosburn.traffic',
+                                                         self.op_factory)
+        self.proto = protoFactory.buildProtocol(('127.0.0.1', 6379))
         self.proto_transport = proto_helpers.StringTransport()
         self.proto.makeConnection(self.proto_transport)
 
     def _test(self, operation, expected):
-        self.proto.dataReceived("'" + str(operation) + "'")
+        self.proto.messageReceived('heliosburn.traffic', operation)
+        print(operation)
         self.assertEqual(self.proto_transport.value(), expected)
 
+
+class ProxyStopOpTestCase(ProxyInterfaceOpTest):
+
     def test_stop(self):
-        operation = {"operation": "stop", "param": "n/a", "key": "abc"}
-        expected = {"operation": "stop", "param": "n/a", "key": "abc"}
+        self.controller.add_test(self.stop)
+        self.controller.test()
+
+    def stop(self, data):
+        operation = json.dumps({"operation": "stop", "param": "n/a",
+                               "key": "abc"})
+        expected = json.dumps({"operation": "stop", "param": "n/a",
+                               "key": "abc"})
 
         return self._test(operation, expected)
 
-    def test_start(self):
-        operation = {"operation": "start", "param": "n/a", "key": "abc"}
-        expected = {"operation": "stop", "param": "n/a", "key": "abc"}
+#    def test_start(self):
+#        operation = json.dumps({"operation": "stop", "param": "n/a",
+#                               "key": "abc"})
+#        expected = json.dumps({"operation": "stop", "param": "n/a",
+#                               "key": "abc"})
+#
+#        return self._test(operation, expected)
 
-        return self._test(operation, expected)
+#    def test_reset(self):
+#        operation = json.dumps({"operation": "reset", "param": "n/a",
+#                               "key": "abc"})
+#        expected = json.dumps({"operation": "reset", "param": "n/a",
+#                               "key": "abc"})
+#
+#        return self._test(operation, expected)
+#
+#    def test_reload(self):
+#        operation = json.dumps({"operation": "reload", "param": "n/a",
+#                               "key": "abc"})
+#        expected = json.dumps({"operation": "reload", "param": "n/a",
+#                               "key": "abc"})
+#
+#        return self._test(operation, expected)
+#
+#    def test_change_upstream_host(self):
+#        operation = json.dumps({"operation": "upstream_host",
+#                               "param": "192.168.1.1", "key": "abc"})
+#        expected = json.dumps({"operation": "upstream_host",
+#                               "param": "192.168.1.1", "key": "abc"})
+#
+#        return self._test(operation, expected)
+#
+#    def test_change_upstream_port(self):
+#        operation = json.dumps({"operation": "upstream_port", "param": "8890",
+#                               "key": "abc"})
+#        expected = json.dumps({"operation": "upstream_port", "param": "8890",
+#                               "key": "abc"})
+#
+#        return self._test(operation, expected)
+#
+#    def test_change_bind_address(self):
+#        operation = json.dumps({"operation": "bind_address",
+#                               "param": "192.168.1.1", "key": "abc"})
+#        expected = json.dumps({"operation": "bind_address",
+#                               "param": "192.168.1.1", "key": "abc"})
+#
+#        return self._test(operation, expected)
+#
+#    def test_change_bind_port(self):
+#        operation = json.dumps({"operation": "bind_port", "param": "8890",
+#                               "key": "abc"})
+#        expected = json.dumps({"operation": "bind_port", "param": "8890",
+#                               "key": "abc"})
 
-    def test_reset(self):
-        operation = {"operation": "reset", "param": "n/a", "key": "abc"}
-        expected = {"operation": "reset", "param": "n/a", "key": "abc"}
+#        return self._test(operation, expected)
 
-        return self._test(operation, expected)
+#    def test_start_recording(self):
+#        operation = json.dumps({"operation": "start_recording", "param": "1",
+#                               "key": "abc"})
+#        expected = json.dumps({"operation": "start_recording", "param": "1",
+#                               "key": "abc"})
 
-    def test_reload(self):
-        operation = {"operation": "reload", "param": "n/a", "key": "abc"}
-        expected = {"operation": "reload", "param": "n/a", "key": "abc"}
+#        return self._test(operation, expected)
 
-        return self._test(operation, expected)
+#    def test_stop_recording(self):
+#        operation = json.dumps({"operation": "stop_recording", "param": "1",
+#                               "key": "abc"})
+#        expected = json.dumps({"operation": "stop_recording", "param": "1",
+#                               "key": "abc"})
 
-    def test_change_upstream_host(self):
-        operation = {"operation": "upstream_host", "param": "192.168.1.1",
-                     "key": "abc"}
-        expected = {"operation": "upstream_host", "param": "192.168.1.1",
-                    "key": "abc"}
-
-        return self._test(operation, expected)
-
-    def test_change_upstream_port(self):
-        operation = {"operation": "upstream_port", "param": "8890",
-                     "key": "abc"}
-        expected = {"operation": "upstream_port", "param": "8890",
-                    "key": "abc"}
-
-        return self._test(operation, expected)
-
-    def test_change_bind_address(self):
-        operation = {"operation": "bind_address", "param": "192.168.1.1",
-                     "key": "abc"}
-        expected = {"operation": "bind_address", "param": "192.168.1.1",
-                    "key": "abc"}
-
-        return self._test(operation, expected)
-
-    def test_change_bind_port(self):
-        operation = {"operation": "bind_port", "param": "8890", "key": "abc"}
-        expected = {"operation": "bind_port", "param": "8890", "key": "abc"}
-
-        return self._test(operation, expected)
-
-    def test_start_recording(self):
-        operation = {"operation": "start_recording", "param": "1",
-                     "key": "abc"}
-        expected = {"operation": "start_recording", "param": "1",
-                    "key": "abc"}
-
-        return self._test(operation, expected)
-
-    def test_stop_recording(self):
-        operation = {"operation": "stop_recording", "param": "1", "key": "abc"}
-        expected = {"operation": "stop_recording", "param": "1", "key": "abc"}
-
-        return self._test(operation, expected)
-
-
-class ProxyInterfaceRedisTestCase(ProxyInterfaceTCPTestCase):
-
-    def setUp(self):
-        self.op_factory = get_op_factory()
-        protoFactory = HBProxyMgmtRedisSubscriberFactory(self.op_factory)
-        self.proto = protoFactory.buildProtocol(('127.0.0.1', 6379))
-        self.proto_transport = proto_helpers.StringTransport()
-        self.proto.makeConnection(self.proto_transport)
+#        return self._test(operation, expected)
 

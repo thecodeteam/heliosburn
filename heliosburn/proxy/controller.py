@@ -430,11 +430,26 @@ class HBProxyController(object):
         self.tcp_mgmt_address = tcp_mgmt_address
         self.tcp_mgmt_port = tcp_mgmt_port
 
+        self.tests = defer.Deferred()
         self.module_registry = Registry(plugins)
         self.site = server.Site(proxy.ReverseProxyResource(self.upstream_host,
                                 self.upstream_port, ''))
 
         self.mgmt_protocol_factory = HBProxyMgmtProtocolFactory(self)
+        reactor.listenTCP(self.tcp_mgmt_port, self.mgmt_protocol_factory,
+                          interface=self.tcp_mgmt_address)
+
+        redis_endpoint = TCP4ClientEndpoint(reactor, self.redis_host,
+                                            self.redis_port)
+
+        op_factory = RedisOperationFactory(self, redis_endpoint,
+                                           self.response_channel)
+        redis_conn = redis_endpoint.connect(
+            HBProxyMgmtRedisSubscriberFactory(self.request_channel,
+                                              op_factory))
+
+        redis_conn.addCallback(self.subscribe)
+        self.start_proxy()
 
     def _start_logging(self):
 
@@ -454,22 +469,21 @@ class HBProxyController(object):
     def subscribe(self, redis):
         response = redis.subscribe()
 
+    def add_test(self, test):
+        self.tests.addCallback(test)
+
     def run(self):
+        reactor.run()
 
-        reactor.listenTCP(self.tcp_mgmt_port, self.mgmt_protocol_factory,
-                          interface=self.tcp_mgmt_address)
+    def _test(self):
+        self.tests.callback("")
 
-        self.start_proxy()
-        redis_endpoint = TCP4ClientEndpoint(reactor, self.redis_host,
-                                            self.redis_port)
+    def _stop_test(self, data):
+        reactor.stop()
 
-        op_factory = RedisOperationFactory(self, redis_endpoint,
-                                           self.response_channel)
-        redis_conn = redis_endpoint.connect(
-            HBProxyMgmtRedisSubscriberFactory(self.request_channel,
-                                              op_factory))
-
-        redis_conn.addCallback(self.subscribe)
+    def test(self):
+        self.tests.addCallback(self._stop_test)
+        reactor.callWhenRunning(self._test)
         reactor.run()
 
 

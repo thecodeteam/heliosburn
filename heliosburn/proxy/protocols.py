@@ -185,7 +185,7 @@ class HBProxyMgmtRedisSubscriber(RedisSubscriber):
 
     def messageReceived(self, channel, message):
         operation = self.op_factory.get_operation(message)
-        operation.execute()
+        return operation.execute()
 
     def channelSubscribed(self, channel, numSubscriptions):
         log.msg("HBproxy subscribed to channel: "
@@ -205,11 +205,11 @@ class HBProxyMgmtRedisSubscriberFactory(protocol.Factory):
 
     def __init__(self, request_channel, op_factory):
         self.request_channel = request_channel
-        self.opt_factory = op_factory
+        self.op_factory = op_factory
 
     def buildProtocol(self, addr):
         return HBProxyMgmtRedisSubscriber(self.request_channel,
-                                          self.opt_factory)
+                                          self.op_factory)
 
 
 class HBProxyMgmtProtocol(protocol.Protocol):
@@ -218,7 +218,10 @@ class HBProxyMgmtProtocol(protocol.Protocol):
         self.op_factory = op_factory
 
     def dataReceived(self, data):
-        self.op_factory.get_operation(data)
+        operation = self.op_factory.get_operation(data)
+        response = operation.execute()
+        self.transport.write(response)
+        return response
 
 
 class HBProxyMgmtProtocolFactory(protocol.Factory):
