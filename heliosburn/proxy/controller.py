@@ -430,7 +430,6 @@ class HBProxyController(object):
         self.tcp_mgmt_address = tcp_mgmt_address
         self.tcp_mgmt_port = tcp_mgmt_port
 
-        self.tests = defer.Deferred()
         self.module_registry = Registry(plugins)
         self.site = server.Site(proxy.ReverseProxyResource(self.upstream_host,
                                 self.upstream_port, ''))
@@ -444,19 +443,18 @@ class HBProxyController(object):
 
         op_factory = RedisOperationFactory(self, redis_endpoint,
                                            self.response_channel)
-        redis_conn = redis_endpoint.connect(
+        self.redis_conn = redis_endpoint.connect(
             HBProxyMgmtRedisSubscriberFactory(self.request_channel,
                                               op_factory))
-
-        redis_conn.addCallback(self.subscribe)
-        self.start_proxy()
+        self.redis_conn.addCallback(self.subscribe)
+        self.redis_conn.addCallback(self.start_proxy)
 
     def _start_logging(self):
 
         setStdout = True
         log.startLogging(sys.stdout)
 
-    def start_proxy(self):
+    def start_proxy(self, result):
         resource = HBReverseProxyResource(self.upstream_host,
                                           self.upstream_port, '',
                                           self.module_registry)
@@ -465,6 +463,7 @@ class HBProxyController(object):
         self.protocol = self.protocols['http']
         self.proxy = reactor.listenTCP(self.protocol, f,
                                        interface=self.bind_address)
+        return self.proxy
 
     def subscribe(self, redis):
         response = redis.subscribe()
@@ -476,12 +475,13 @@ class HBProxyController(object):
         reactor.run()
 
     def _test(self):
-        self.tests.callback("")
+        self.tests.callback(None)
 
-    def _stop_test(self, data):
+    def _stop_test(self, result):
         reactor.stop()
 
     def test(self):
+        self.tests = self.module_registry.test()
         self.tests.addCallback(self._stop_test)
         reactor.callWhenRunning(self._test)
         reactor.run()
@@ -556,6 +556,12 @@ def get_arg_parser():
                         + ', this option will set the channel to which it '
                         + ' should publish.')
 
+    parser.add_argument('--test',
+                        action="store_true",
+                        dest='run_tests',
+                        help='If set will run all proxy tests'
+                        + ' Default: false')
+
     return parser
 
 
@@ -606,7 +612,10 @@ def main():
                                          response_channel, args.tcp_mgmt,
                                          tcp_mgmt_address, tcp_mgmt_port,
                                          plugins)
-    proxy_controller.run()
+    if args.run_tests:
+        proxy_controller.test()
+    else:
+        proxy_controller.run()
 
 if __name__ == "__main__":
     main()

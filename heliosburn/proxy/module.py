@@ -147,6 +147,7 @@ class Registry(object):
     def __init__(self, plugin_config):
         self.pipeline_modules = plugin_config['pipeline']
         self.support_modules = plugin_config['support']
+        self.test_modules = plugin_config['test']
         log.msg("loaded pipline modules: %s" % self.pipeline_modules)
 
         self.plugins = {plugin.get_name(): plugin for plugin in
@@ -158,6 +159,11 @@ class Registry(object):
             self.plugins[name].configure(**configs)
 
         for module in self.support_modules:
+            name = module['name']
+            configs = module['kwargs']
+            self.plugins[name].configure(**configs)
+
+        for module in self.test_modules:
             name = module['name']
             configs = module['kwargs']
             self.plugins[name].configure(**configs)
@@ -239,3 +245,19 @@ class Registry(object):
         else:
             for plugin in self.pipeline_modules.values():
                 plugin.stop(**params)
+
+    def test(self, module_name=None):
+
+        """
+        Executes the start method of all or one currently active modules
+        """
+        d = defer.Deferred()
+        if module_name:
+            d.addCallback(self.plugins[module_name].run_tests())
+        else:
+            for module in self.test_modules:
+                name = module['name']
+                d.addCallback(self.plugins[name].run_tests())
+
+        return d
+
