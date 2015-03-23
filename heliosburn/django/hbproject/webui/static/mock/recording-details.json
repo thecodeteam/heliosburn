@@ -1,44 +1,68 @@
 {
-    "id": 1,
-    "name": "Recording 1",
-    "description": "My recording bla bla bla...",
-    "created_at": "2014-02-12 03:34:51",
-    "duration": 343,
+    "id": "54edbcd9eb90892f5eed9129",
+    "name": "Recording of Swift traffic",
+    "description": "bla bla bla bla...",
+    "createdAt": "2014-02-12 03:34:51",
+    "updatedAt": "2014-02-12 03:56:01",
+    "startedAt": "2014-02-12 03:35:23",
+    "stoppedAt": "2014-02-12 03:56:01",
     "traffic": [
         {
-            "id": 23,
-            "method": "GET",
-            "url": "http://asdasdasd.com/ikdsf",
-            "date": "2014-02-12 03:34:51",
+            "transactionId": "34895234052345823",
+            "createdAt": "2015-03-11 00:00:00",
+            "request": {
+                "httpProtocol": "HTTP/1.1",
+                "method": "GET",
+                "url": "http://foo.bar",
+                "headers": [
+                    {
+                        "key": "X-Auth-Token",
+                        "value": "3405829123"
+                    },
+                    {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                    }
+                ]
+            },
             "response": {
-                "status_code": 200
+                "statusCode": 200,
+                "statusDescription": "OK",
+                "headers": [
+                    {
+                        "key": "Server",
+                        "value": "Nginx"
+                    }
+                ]
             }
         },
         {
-            "id": 43,
-            "method": "GET",
-            "url": "http://asdasdasd.com/ikdsf",
-            "date": "2014-02-12 03:34:51",
+            "transactionId": "39245723895234",
+            "createdAt": "2015-03-11 01:01:59",
+            "request": {
+                "httpProtocol": "HTTP/1.1",
+                "method": "PUT",
+                "url": "http://foo.bar/johndoe?q=asd",
+                "headers": [
+                    {
+                        "key": "X-Auth-Token",
+                        "value": "3405829123"
+                    },
+                    {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                    }
+                ]
+            },
             "response": {
-                "status_code": 200
-            }
-        },
-        {
-            "id": 54,
-            "method": "GET",
-            "url": "http://asdasdasd.com/ikdsf",
-            "date": "2014-02-12 03:34:51",
-            "response": {
-                "status_code": 500
-            }
-        },
-        {
-            "id": 87,
-            "method": "GET",
-            "url": "http://asdasdasd.com/ikdsf",
-            "date": "2014-02-12 03:34:51",
-            "response": {
-                "status_code": 200
+                "statusCode": 404,
+                "statusDescription": "Not Found",
+                "headers": [
+                    {
+                        "key": "Server",
+                        "value": "Nginx"
+                    }
+                ]
             }
         }
     ]

@@ -87,7 +87,7 @@
                                         <th>Date</th>
                                         <th>Name</th>
                                         <th>Description</th>
-                                        <th>Requests</th>
+                                        <th>Transactions</th>
                                     </tr>
                                 </thead>
                                 <tfoot>
@@ -97,7 +97,7 @@
                                         <th>Date</th>
                                         <th>Name</th>
                                         <th>Description</th>
-                                        <th>Requests</th>
+                                        <th>Transactions</th>
                                     </tr>
                                 </tfoot>
                                 <tbody>
@@ -106,10 +106,10 @@
                                         <tr>
                                             <td>{{ recording.id }}</td>
                                             <td>{{ recording.name }}</td>
-                                            <td>{{ recording.created_at }}</td>
+                                            <td>{{ recording.createdAt }}</td>
                                             <td><a href="{% url 'recording_details' recording.id %}">{{ recording.name }}</a></td>
                                             <td>{{ recording.description }}</td>
-                                            <td>{{ recording.requests }}</td>
+                                            <td>{{ recording.count }}</td>
                                         </tr>
                                     {% endfor %}
                                 </tbody>

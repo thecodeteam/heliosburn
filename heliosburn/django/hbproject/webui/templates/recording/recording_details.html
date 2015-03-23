@@ -90,7 +90,9 @@
                         <dt>Description</dt>
                         <dd><a href="#" id="recording-description">{{ recording.description }}</a></dd>
                         <dt>Created at</dt>
-                        <dd>{{ recording.created_at }}</dd>
+                        <dd>{{ recording.createdAt }}</dd>
+                        <dt>Updated at</dt>
+                        <dd>{{ recording.updatedAt }}</dd>
                         <dt>Duration</dt>
                         <dd>{{ recording.duration }}</dd>
                     </dl>
@@ -131,14 +133,14 @@
                                     </tr>
                                 </tfoot>
                                 <tbody>
-                                    {% for request in recording.traffic %}
+                                    {% for transaction in recording.traffic %}
                                         <tr>
-                                            <td>{{ request.id }}</td>
+                                            <td>{{ transaction.transactionId }}</td>
                                             <td><a href="#">view</a></td>
-                                            <td>{{ request.date }}</td>
-                                            <td>{{ request.method }}</td>
-                                            <td>{{ request.url }}</td>
-                                            <td>{{ request.response.status_code }}</td>
+                                            <td>{{ transaction.createdAt }}</td>
+                                            <td>{{ transaction.request.method }}</td>
+                                            <td>{{ transaction.request.url }}</td>
+                                            <td>{{ transaction.response.statusCode }}</td>
                                         </tr>
                                     {% endfor %}
                                 </tbody>
