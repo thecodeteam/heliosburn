@@ -2,6 +2,7 @@
 from twisted.internet import reactor
 from twisted.python import log
 from twisted.internet import protocol
+from twisted.internet import defer
 from txredis.client import RedisClientFactory
 from txredis.client import RedisClient
 from txredis.client import RedisSubscriber
@@ -37,7 +38,10 @@ class HBRedisSubscriber(RedisSubscriber):
         self.handler_factory = handler_factory
 
     def subscribe(self):
+        self.subscribed = defer.Deferred()
+        print("subscriber_subscribe")
         super(HBRedisSubscriber, self).subscribe(self.channel)
+        return self.subscribed
 
     def unsubscribe(self):
         super(HBRedisSubscriber, self).unsubscribe(self.channel)
@@ -46,12 +50,19 @@ class HBRedisSubscriber(RedisSubscriber):
         handler = self.handler_factory.get_handler(message)
         handler.execute()
 
+    def log_msg(self, message):
+        log.msg(message)
+
     def channelSubscribed(self, channel, numSubscriptions):
-        log.msg("Subscribed to channel: "
-                + channel
-                + " there are now : "
-                + str(numSubscriptions)
-                + " subscribers ")
+
+        message = "Subscribed to channel: "
+        message += channel
+        message += " there are now : "
+        message += str(numSubscriptions)
+        message += " subscribers "
+
+        self.subscribed.addCallback(self.log_msg)
+        self.subscribed.callback(message)
 
     def channelUnsubscribed(self, channel, numSubscriptions):
         log.msg("Unsubscribed from channel: "

@@ -446,8 +446,8 @@ class HBProxyController(object):
         self.redis_conn = redis_endpoint.connect(
             HBProxyMgmtRedisSubscriberFactory(self.request_channel,
                                               op_factory))
-        self.redis_conn.addCallback(self.subscribe)
-        self.redis_conn.addCallback(self.start_proxy)
+        self.redis_conn.addCallback(self.subscribe).addCallback(
+            self.start_proxy)
 
     def _start_logging(self):
 
@@ -463,10 +463,12 @@ class HBProxyController(object):
         self.protocol = self.protocols['http']
         self.proxy = reactor.listenTCP(self.protocol, f,
                                        interface=self.bind_address)
+        print("start_proxy")
         return self.proxy
 
     def subscribe(self, redis):
-        response = redis.subscribe()
+        print("proxy_subscribe")
+        return redis.subscribe()
 
     def add_test(self, test):
         self.tests.addCallback(test)
