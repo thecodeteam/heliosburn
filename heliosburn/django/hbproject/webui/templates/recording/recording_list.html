@@ -64,7 +64,7 @@
         <div class="col-xs-12">
             <div class="box box-solid">
                 <div class="box-body clearfix">
-                    <button class="btn btn-primary pull-right">Create a new Recording</button>
+                     <a class="btn btn-primary pull-right bold" href="{% url "recording_new" %}" role="button">Create a new Recording</a>
                 </div><!-- /.box-body -->
             </div>
         </div>
@@ -84,8 +84,8 @@
                                     <tr>
                                         <th>ID</th>
                                         <th>Plain name</th>
-                                        <th>Date</th>
                                         <th>Name</th>
+                                        <th>Date</th>
                                         <th>Description</th>
                                         <th>Transactions</th>
                                     </tr>
@@ -94,8 +94,8 @@
                                     <tr>
                                         <th>ID</th>
                                         <th>Plain name</th>
-                                        <th>Date</th>
                                         <th>Name</th>
+                                        <th>Date</th>
                                         <th>Description</th>
                                         <th>Transactions</th>
                                     </tr>
@@ -106,8 +106,8 @@
                                         <tr>
                                             <td>{{ recording.id }}</td>
                                             <td>{{ recording.name }}</td>
-                                            <td>{{ recording.createdAt }}</td>
                                             <td><a href="{% url 'recording_details' recording.id %}">{{ recording.name }}</a></td>
+                                            <td>{{ recording.createdAt }}</td>
                                             <td>{{ recording.description }}</td>
                                             <td>{{ recording.count }}</td>
                                         </tr>

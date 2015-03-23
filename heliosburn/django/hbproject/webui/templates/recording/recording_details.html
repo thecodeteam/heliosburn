@@ -30,7 +30,7 @@
     <!-- page script -->
     <script type="text/javascript">
         $(document).ready(function() {
-            var table = $('#example1').dataTable( {
+            var table = $('#example1').DataTable( {
                 "columnDefs": [
                     {
                         "targets": [ 0 ],
@@ -57,7 +57,7 @@
         $('#recording-name').editable({
             url: '{% url 'recording_update' %}',
             type: 'text',
-            pk: {{ recording.id }},
+            pk: '{{ recording.id }}',
             name: 'name',
             title: 'Recording name',
             inputclass: 'title-input',
@@ -67,7 +67,7 @@
         $('#recording-description').editable({
             url: '{% url 'recording_update' %}',
             type: 'textarea',
-            pk: {{ recording.id }},
+            pk: '{{ recording.id }}',
             name: 'description',
             title: 'Recording description',
             inputclass: 'description-input',
@@ -145,6 +145,12 @@
                                     {% endfor %}
                                 </tbody>
                             </table>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-xs-12">
+                            <button class="lmargin10 btn btn-primary pull-right bold">Add selected traffic to Test Plan</button>
+                            <button id="delete" class="btn btn-danger pull-right">Delete selected</button>
                         </div>
                     </div>
                 </div><!-- /.box-body -->
