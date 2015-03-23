@@ -195,15 +195,10 @@ The response body contains the following elements in JSON format:
 | description | Description of the Recording. |
 | createdAt | A dateTime value that specifies the date and time the recording was created. |
 | updatedAt | A dateTime value that specifies the date and time the recording was last modified. |
-| startedAt | A dateTime value that specifies the date and time the recording was started. |
-| stoppedAt | A dateTime value that specifies the date and time the recording was stopped. |
+| startedAt | A dateTime value that specifies the date and time the recording was started(does not exist if never started). |
+| stoppedAt | A dateTime value that specifies the date and time the recording was stopped(does not exist if never stopped).|
 | count | An integer value that specifies the number of transactions associated to the Recording. |
 
-#### Response query string variables
-| Query variable | Description |
-|---|---|
-| start | (OPTIONAL) An integer of the first piece of traffic to return. The lowest value is 0. |
-| offset | (OPTIONAL) An integer of the last piece of traffic to return. |
 
 #### Status Codes
 
@@ -248,6 +243,9 @@ GET
 | start | An integer as low as 0, indicating the first traffic object to return. |
 | offset | An integer indicating how many traffic objects past the `start` should be returned. |
 
+#### Example URL with query string
+`/recording/fd8303a87ba/traffic?start=0&offfset=50`
+
 #### Request Header
 The request header includes the following information:
 
@@ -276,8 +274,8 @@ The response body contains the following elements in JSON format:
 | description | Description of the Recording. |
 | createdAt | A dateTime value that specifies the date and time the recording was created. |
 | updatedAt | A dateTime value that specifies the date and time the recording was last modified. |
-| startedAt | A dateTime value that specifies the date and time the recording was started. |
-| stoppedAt | A dateTime value that specifies the date and time the recording was stopped. |
+| startedAt | A dateTime value that specifies the date and time the recording was started(does not exist if never started). |
+| stoppedAt | A dateTime value that specifies the date and time the recording was stopped(does not exist if never stopped). |
 | count | An integer value that specifies the number of transactions associated to the Recording. |
 | traffic | An array of Traffic objects. |
 
