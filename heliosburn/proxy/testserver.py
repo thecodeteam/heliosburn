@@ -8,7 +8,10 @@ class DummyReceiver(object):
 
     def default(self, *pargs, **kwargs):
         """
-        Return the URL as list, querystring args as dict, and headers as dict.
+        Return a serialized reprensentation of the URL, headers, querystring arguments, and body
+
+        INFO: The default() function in CherryPy receives all non-matching URL's, so this function
+        will be called for any URL except "/fail" and "/die"
         """
         import cherrypy
         pp = pprint.PrettyPrinter()
@@ -33,6 +36,8 @@ class DummyReceiver(object):
     def die(self):
         """
         Cause CherryPy's engine to exit cleanly.
+
+        NOTE: This is used by the unit tests to communicate to CherryPy's thread that it should shut down.
         """
         cherrypy.log("DIE received")
         cherrypy.engine.exit()

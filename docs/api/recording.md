@@ -1,5 +1,10 @@
 - [Recording](#recording)
-  - [Start a new recording](#start-a-new-recording)
+  - [Create a Recording](#create-a-recording)
+  - [Get a list of Recordings](#get-a-list-of-recordings)
+  - [Get Recording details](#get-recording-details)
+  - [Update a Recording](#update-a-recording)
+  - [Delete a Recording](#delete-a-recording)
+  - [Start a recording](#start-a-recording)
   - [Stop a recording](#stop-a-recording)
 
 
@@ -9,7 +14,7 @@ A recording is a set of HTTP traffic of a particular period of time. It can be u
 
 
 
-## Create a new Recording
+## Create a Recording
 
 An application can create a Recording by issuing an HTTP POST request to the URL of the containing Recording resource. Note that creating a recording does automatically start it. To start a recording see the appropriate action.
 
@@ -83,6 +88,353 @@ Location: http://api.heliosburn.com/recording/123
 Access-Control-Allow-Origin: *
 Server: Noelios-Restlet-Engine/1.1.5
 ```
+
+
+## Get a list of Recordings
+
+To retrieve a list of Recordings, an application submits an HTTP GET request to the URL that represents the Recording resource.
+
+### Request
+
+#### URL
+`/recording`
+
+#### Method
+GET
+
+### Response
+
+#### Response Header
+The response header includes the following information:
+
+| Field | Description |
+|---|---|
+| Content-Type | The content type and character encoding of the response. |
+| Content-Length | The length of the retrieved content. |
+
+#### Response Body
+
+The response body contains a list containing the following elements in JSON format:
+
+| Element | Description |
+|---|---|
+| id | An alphanumeric value that uniquely identifies the Test Plan. |
+| name | Name of the Test Plan. |
+| description | Description of the Test Plan. |
+| createdAt | A dateTime value that specifies the date and time the session was created. |
+| updatedAt | A dateTime value that specifies the date and time the session was last modified. |
+| count | An integer value that specifies the number of transactions associated to the Recording. |
+
+#### Status Codes
+
+| Status Code | Description |
+|---|---|
+| 200-299 | The request was successful. The list of Recordings is in the response body. |
+| 400 | Bad request. Typically returned if required information was not provided as input. |
+| 500-599 | Server error. |
+
+#### Response example
+
+```json
+[
+    {
+        "id": "54edbcd9eb90892f5eed9129",
+        "name": "Recording of Swift traffic",
+        "description": "bla bla bla bla...",
+        "createdAt": "2014-02-12 03:34:51",
+        "updatedAt": "2014-02-12 03:34:51",
+        "count": 451
+    },
+    {
+        "id": "54edbcd9eb90892f5eed9129",
+        "name": "Recording of Swift traffic",
+        "description": "bla bla bla bla...",
+        "createdAt": "2014-02-12 03:34:51",
+        "updatedAt": "2014-02-12 03:34:51",
+        "count": 451
+    }
+]
+```
+
+
+## Get Recording details
+
+To retrieve information about a Recording, an application submits an HTTP GET request to the URL that represents the Recording resource.
+
+### Request
+
+#### URL
+`/recording/:id`, for example, `/recording/54edbcd9eb90892f5eed9129`.
+
+#### Method
+GET
+
+### Response
+
+#### Response Header
+The response header includes the following information:
+
+| Field | Description |
+|---|---|
+| Content-Type | The content type and character encoding of the response. |
+| Content-Length | The length of the retrieved content. |
+
+#### Response Body
+
+The response body contains the following elements in JSON format:
+
+| Element | Description |
+|---|---|
+| id | An alphanumeric value that uniquely identifies the Test Plan. |
+| name | Name of the Test Plan. |
+| description | Description of the Test Plan. |
+| createdAt | A dateTime value that specifies the date and time the recording was created. |
+| updatedAt | A dateTime value that specifies the date and time the recording was last modified. |
+| startedAt | A dateTime value that specifies the date and time the recording was started. |
+| stoppedAt | A dateTime value that specifies the date and time the recording was stopped. |
+| traffic | A list of `Traffic` objects corresponding to the recorded traffic. |
+
+A `Traffic` object contains the following elements:
+
+| Element | Description |
+|---|---|
+| transactionId | An alphanumeric value that uniquely identifies this piece of traffic. |
+| createdAt | A dateTime value that specifies the date and time the proxy processed the transaction. |
+| request | The `Request` object representing the received HTTP request. |
+| response | The `Response` object representing the returned HTTP response. |
+
+A `Request` object contains the following elements:
+
+| Element | Description |
+|---|---|
+| httpProtocol | both | HTTP protocol. |
+| method | request | Request method. |
+| url | request | Request URL. |
+| headers | List of header objects containing a `key` and a `value`. |
+
+A `Response` object contains the following elements:
+
+| Element | Description |
+|---|---|
+| statusCode | Status Code. |
+| statusDescription | Status description. |
+| headers | List of header objects containing a `key` and a `value`. |
+
+
+#### Status Codes
+
+| Status Code | Description |
+|---|---|
+| 200-299 | The request was successful. The Test Plan information is in the response body. |
+| 400 | Bad request. Typically returned if required information was not provided as input. |
+| 404 | Not found. The resource was not found. |
+| 500-599 | Server error. |
+
+#### Response example
+
+```json
+{
+    "id": "54edbcd9eb90892f5eed9129",
+    "name": "Recording of Swift traffic",
+    "description": "bla bla bla bla...",
+    "createdAt": "2014-02-12 03:34:51",
+    "updatedAt": "2014-02-12 03:56:01",
+    "startedAt": "2014-02-12 03:35:23",
+    "stoppedAt": "2014-02-12 03:56:01",
+    "traffic": [
+        {
+            "transactionId": "34895234052345823",
+            "createdAt": "2015-03-11 00:00:00",
+            "request": {
+                "httpProtocol": "HTTP/1.1",
+                "method": "GET",
+                "url": "http://foo.bar",
+                "headers": [
+                    {
+                        "key": "X-Auth-Token",
+                        "value": "3405829123"
+                    },
+                    {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                    }
+                ]
+            },
+            "response": {
+                "statusCode": 200,
+                "statusDescription": "OK",
+                "headers": [
+                    {
+                        "key": "Server",
+                        "value": "Nginx"
+                    }
+                ]
+            }
+        },
+        {
+            "transactionId": "39245723895234",
+            "createdAt": "2015-03-11 01:01:59",
+            "request": {
+                "httpProtocol": "HTTP/1.1",
+                "method": "PUT",
+                "url": "http://foo.bar/johndoe?q=asd",
+                "headers": [
+                    {
+                        "key": "X-Auth-Token",
+                        "value": "3405829123"
+                    },
+                    {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                    }
+                ]
+            },
+            "response": {
+                "statusCode": 404,
+                "statusDescription": "Not Found",
+                "headers": [
+                    {
+                        "key": "Server",
+                        "value": "Nginx"
+                    }
+                ]
+            }
+        }
+    ]
+}
+```
+
+
+
+## Update a Recording
+
+An application can update a Recording by issuing an HTTP PUT request to the URL of the containing Recording resource.
+In addition, the app needs to provide as input, JSON that identifies the new attribute values for the Recording. Upon receiving the PUT request, the HeliosBurn service examines the input and updates any of the attributes that have been modified.
+
+### Request
+
+#### URL
+`/recording/:id`, for example, `/recording/54edbcd9eb90892f5eed9129`.
+
+#### Method
+PUT
+
+#### Request Header
+The request header includes the following information:
+
+| Field | Description |
+|---|---|
+| Content-Type | The content type and character encoding of the response. |
+| Content-Length | The length of the retrieved content. |
+
+#### Request Body
+
+JSON input that contains a Test Plan representation with the elements to be modified:
+
+| Element | Description |
+|---|---|
+| name | Name of the Recording. |
+| description | Description of the Recording. |
+
+#### Request example
+
+```json
+PUT https://api.heliosburn.com/recording/54edbcd9eb90892f5eed9129 HTTP/1.1
+User-Agent: Jakarta Commons-HttpClient/3.1
+Host: api.heliosburn.com
+Content-Length: 294
+Content-Type: application/json; charset=UTF-8
+
+{
+    "name": "My first Recording",
+    "description": "Bla bla bla bla..."
+}
+```
+
+### Response
+
+#### Response Header
+The response header includes the following information:
+
+| Field | Description |
+|---|---|
+| Content-Type | The content type and character encoding of the response. |
+| Content-Length | The length of the content. |
+
+#### Status Codes
+
+| Status Code | Description |
+|---|---|
+| 200-299 | The request was successful. The Recording was successfully updated. |
+| 400 | Bad request. Typically returned if required information was not provided as input. |
+| 404 | Not found. The resource was not found. |
+| 500-599 | Server error. |
+
+#### Response Example
+
+```
+HTTP/1.1 200 OK
+Content-Type: application/octet-stream; charset=UTF-8
+Content-Length: 0
+Date: Wed, 14 Dec 2014 19:35:02 GMT
+Access-Control-Allow-Origin: *
+Server: Noelios-Restlet-Engine/1.1.5
+```
+
+
+## Delete a Recording
+
+An application can permanently delete a Recording by issuing an HTTP DELETE request to the URL of the Recording resource. It's a good idea to precede DELETE requests like this with a caution note in your application's user interface.
+
+### Request
+
+#### URL
+`/recording/:id`, for example, `/recording/54edbcd9eb90892f5eed9129`.
+
+#### Method
+DELETE
+
+#### Request Header
+The request header includes the following information:
+
+| Field | Description |
+|---|---|
+| Content-Type | The content type and character encoding of the response. |
+| Content-Length | The length of the retrieved content. |
+
+
+#### Request example
+
+```
+DELETE https://api.heliosburn.com/recording/54edbcd9eb90892f5eed9129 HTTP/1.1
+User-Agent: Jakarta Commons-HttpClient/3.1
+Host: api.heliosburn.com
+Content-Length: 0
+Content-Type: application/json; charset=UTF-8
+```
+
+### Response
+
+#### Status Codes
+
+| Status Code | Description |
+|---|---|
+| 200-299 | The request was successful. The Test Plan was successfully deleted. |
+| 400 | Bad request. Typically returned if required information was not provided as input. |
+| 404 | Not found. The resource was not found. |
+| 500-599 | Server error. |
+
+#### Response Example
+
+```
+HTTP/1.1 200 OK
+Content-Type: application/octet-stream; charset=UTF-8
+Content-Length: 0
+Date: Wed, 14 Dec 2014 19:35:02 GMT
+Access-Control-Allow-Origin: *
+Server: Noelios-Restlet-Engine/1.1.5
+```
+
 
 
 
