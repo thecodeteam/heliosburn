@@ -11,4 +11,4 @@ def init_redis():
 
 def publish_to_proxy(msg):
     r = init_redis()
-    r.publish('proxy_core', msg)
+    r.publish('proxy_mgmt_request', msg)
