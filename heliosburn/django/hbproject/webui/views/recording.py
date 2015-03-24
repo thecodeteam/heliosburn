@@ -69,6 +69,9 @@ def recording_update(request):
     if not name or not pk:
         response = 'field cannot be empty!'
         return HttpResponseBadRequest(response)
-    else:
-        # TODO: API call to update value
-        return HttpResponse()
+
+    try:
+        Recording(auth_token=request.user.password).update(pk, {name: value})
+    except Exception as inst:
+        return HttpResponseBadRequest(content='Error updating the recording. {}'.format(inst.message))
+    return HttpResponse()

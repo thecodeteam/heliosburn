@@ -183,3 +183,12 @@ class Recording(Base):
             raise exception
         recordings = json.loads(response.text)
         return recordings
+
+    def update(self, resource_id, data):
+        url = self.get_url(extra=str(resource_id))
+        headers = {'X-Auth-Token': self.auth_token}
+        response = requests.put(url, headers=headers, data=json.dumps(data))
+        if not validate_response(response):
+            exception = status_code_to_exception(response.status_code)
+            exception.message = response.text
+            raise exception
