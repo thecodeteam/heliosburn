@@ -10,13 +10,6 @@ from twisted.plugin import pluginPackagePaths
 from twisted.python import log
 import modules
 
-"""
-Simple Interface to handling proxy requests and responses via class instances.
-To use, make a new class that inherits ProxyModuleBase. Each context
-represents a step in the proxy request or client response process.
-
-"""
-
 
 class IModule(Interface):
     """
@@ -142,13 +135,16 @@ class AbstractModule(object):
         """
 
 
+class AbstractTestModule(AbstractModule):
+    implements(IPlugin, IModule)
+
+
 class Registry(object):
 
     def __init__(self, plugin_config):
         self.pipeline_modules = plugin_config['pipeline']
         self.support_modules = plugin_config['support']
         self.test_modules = plugin_config['test']
-        log.msg("loaded pipline modules: %s" % self.pipeline_modules)
 
         self.plugins = {plugin.get_name(): plugin for plugin in
                         getPlugins(IModule, modules)}
@@ -167,8 +163,6 @@ class Registry(object):
             name = module['name']
             configs = module['kwargs']
             self.plugins[name].configure(**configs)
-
-        log.msg("loaded plugins: %s" % self.plugins.keys())
 
     def _build_request_pipeline(self):
 
@@ -251,13 +245,11 @@ class Registry(object):
         """
         Executes the start method of all or one currently active modules
         """
-        d = defer.Deferred()
         if module_name:
-            d.addCallback(self.plugins[module_name].run_tests())
+            test_deferred = self.plugins[module_name].start()
         else:
             for module in self.test_modules:
                 name = module['name']
-                d.addCallback(self.plugins[name].run_tests())
-
-        return d
+                test_deferred = self.plugins[name].start()
+        return test_deferred
 

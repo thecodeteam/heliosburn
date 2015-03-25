@@ -106,7 +106,7 @@ sg21
 S'test_proxy_api'
 p42
 sg10
-S'\n    Extension of AbstractModule class used to serialize traffic\n    to a Redis pubsub channel.\n    '
+S'\n    Extension of AbstractModule used to teset the proxy controller\n    API.\n    '
 p43
 sbasbsS'traffic_reader'
 p44

@@ -419,7 +419,7 @@ class HBProxyController(object):
                  plugins):
 
         self.bind_address = bind_address
-        self._start_logging()
+#        self._start_logging()
         self.protocols = protocols
         self.upstream_host = upstream_host
         self.upstream_port = upstream_port
@@ -463,21 +463,13 @@ class HBProxyController(object):
         self.protocol = self.protocols['http']
         self.proxy = reactor.listenTCP(self.protocol, f,
                                        interface=self.bind_address)
-        print("start_proxy")
         return self.proxy
 
     def subscribe(self, redis):
-        print("proxy_subscribe")
         return redis.subscribe()
-
-    def add_test(self, test):
-        self.tests.addCallback(test)
 
     def run(self):
         reactor.run()
-
-    def _test(self):
-        self.tests.callback(None)
 
     def _stop_test(self, result):
         reactor.stop()
@@ -485,7 +477,6 @@ class HBProxyController(object):
     def test(self):
         self.tests = self.module_registry.test()
         self.tests.addCallback(self._stop_test)
-        reactor.callWhenRunning(self._test)
         reactor.run()
 
 

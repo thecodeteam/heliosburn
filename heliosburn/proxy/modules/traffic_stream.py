@@ -41,10 +41,6 @@ class TrafficStream(AbstractModule):
     """
     def __init__(self):
         AbstractModule.__init__(self)
-#        self.redis_endpoint = TCP4ClientEndpoint(reactor, '127.0.0.1', 6379)
-#        self.channel = 'heliosburn.traffic'
-
-#        self.start()
 
     def _subscribe(self, redis):
         self.redis_subscriber = redis
