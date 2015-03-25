@@ -4,6 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect, HttpResponseBadRequest, HttpResponse
 from django.shortcuts import render
+from django.views.decorators.csrf import csrf_exempt
 import requests
 from webui.exceptions import UnauthorizedException, NotFoundException
 from webui.forms import RecordingForm
@@ -58,6 +59,22 @@ def recording_details(request, recording_id):
 
 
 @login_required
+def recording_live(request, recording_id):
+    try:
+        recording = Recording(auth_token=request.user.password).get(recording_id)
+    except UnauthorizedException:
+        return signout(request)
+    except NotFoundException:
+        return render(request, '404.html')
+    except Exception as inst:
+        messages.error(request, inst.message if inst.message else 'Unexpected error')
+        return HttpResponseRedirect(reverse('testplan_list'))
+
+    data = {'recording': recording}
+    return render(request, 'recording/recording_live.html', data)
+
+
+@login_required
 def recording_update(request):
     if not request.POST:
         return HttpResponseRedirect(reverse('recording_list'))
@@ -75,3 +92,23 @@ def recording_update(request):
     except Exception as inst:
         return HttpResponseBadRequest(content='Error updating the recording. {}'.format(inst.message))
     return HttpResponse()
+
+
+@login_required
+@csrf_exempt
+def recording_start(request, recording_id):
+    if not request.POST:
+        return HttpResponseBadRequest('Method must be POST')
+
+    try:
+        info = Recording(auth_token=request.user.password).start(recording_id)
+    except UnauthorizedException:
+        signout(request)
+        return HttpResponseBadRequest('Unauthorized')
+    except NotFoundException:
+        return HttpResponseBadRequest('Resource not found')
+    except Exception as inst:
+        message = inst.message if inst.message else 'Unexpected error'
+        HttpResponseBadRequest(message)
+
+    return HttpResponse('started')
