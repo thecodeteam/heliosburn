@@ -158,6 +158,7 @@ def delete(request, recording_id):
         return HttpResponse()
 
 
+@csrf_exempt
 @RequireLogin()
 def start(request, recording_id):
     from api.models import redis_wrapper
@@ -168,6 +169,7 @@ def start(request, recording_id):
     return HttpResponse(status=200)
 
 
+@csrf_exempt
 @RequireLogin()
 def stop(request, recording_id):
     from api.models import redis_wrapper
