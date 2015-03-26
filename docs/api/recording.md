@@ -2,6 +2,7 @@
   - [Create a Recording](#create-a-recording)
   - [Get a list of Recordings](#get-a-list-of-recordings)
   - [Get Recording details](#get-recording-details)
+  - [Get Traffic from a Recording](#get-recording-traffic)
   - [Update a Recording](#update-a-recording)
   - [Delete a Recording](#delete-a-recording)
   - [Start a recording](#start-a-recording)
@@ -36,7 +37,7 @@ The request header includes the following information:
 
 #### Request Body
 
-JSON input that contains a Test Plan representation with the following elements:
+JSON input that contains a Recording representation with the following elements:
 
 | Element | Description |
 |---|---|
@@ -123,9 +124,9 @@ The response body contains a list containing the following elements in JSON form
 
 | Element | Description |
 |---|---|
-| id | An alphanumeric value that uniquely identifies the Test Plan. |
-| name | Name of the Test Plan. |
-| description | Description of the Test Plan. |
+| id | An alphanumeric value that uniquely identifies the Recording. |
+| name | Name of the Recording. |
+| description | Description of the Recording. |
 | createdAt | A dateTime value that specifies the date and time the session was created. |
 | updatedAt | A dateTime value that specifies the date and time the session was last modified. |
 | count | An integer value that specifies the number of transactions associated to the Recording. |
@@ -164,16 +165,11 @@ The response body contains a list containing the following elements in JSON form
 
 ## Get Recording details
 
-To retrieve information about a Recording, an application submits an HTTP GET request to the URL that represents the Recording resource. If a recording
-contains a large amount of traffic, you may wish to receive it in chunks rather than a single massive response.
-
+To retrieve information about a Recording, an application submits an HTTP GET request to the URL that represents the Recording resource.
 ### Request
 
 #### URL
 `/recording/:id`, for example, `/recording/54edbcd9eb90892f5eed9129`.
-
-#### URL to receive traffic in chunks
-`/recording/:id?traffic_begin=:n&traffic_end=:n`, for example, `/recording/:id?/traffic?start=0&offset=500`
 
 #### Method
 GET
@@ -194,20 +190,15 @@ The response body contains the following elements in JSON format:
 
 | Element | Description |
 |---|---|
-| id | An alphanumeric value that uniquely identifies the Test Plan. |
-| name | Name of the Test Plan. |
-| description | Description of the Test Plan. |
+| id | An alphanumeric value that uniquely identifies the Recording. |
+| name | Name of the Recording. |
+| description | Description of the Recording. |
 | createdAt | A dateTime value that specifies the date and time the recording was created. |
 | updatedAt | A dateTime value that specifies the date and time the recording was last modified. |
-| startedAt | A dateTime value that specifies the date and time the recording was started. |
-| stoppedAt | A dateTime value that specifies the date and time the recording was stopped. |
+| startedAt | A dateTime value that specifies the date and time the recording was started(does not exist if never started). |
+| stoppedAt | A dateTime value that specifies the date and time the recording was stopped(does not exist if never stopped).|
 | count | An integer value that specifies the number of transactions associated to the Recording. |
 
-#### Response query string variables 
-| Query variable | Description |
-|---|---|
-| start | (OPTIONAL) An integer of the first piece of traffic to return. The lowest value is 0. |
-| offset | (OPTIONAL) An integer of the last piece of traffic to return. |
 
 #### Status Codes
 
@@ -230,20 +221,92 @@ The response body contains the following elements in JSON format:
     "startedAt": "2014-02-12 03:35:23",
     "stoppedAt": "2014-02-12 03:56:01",
     "count": 601229
-    "traffic" [
-      { <Traffic Object> },
-      { <Traffic Object> },
-      { <Traffic Object> },
-      { <Traffic Object> },
-      { <Traffic Object> },
-      { <Traffic Object> },
-      { <Traffic Object> },
-      { <Traffic Object> },
-      ...
-    ]
 }
 ```
 
+## Get Traffic from a Recording
+
+To retrieve the traffic associated with a recording, you can issue a GET to the URL representing a recording's traffic. The query string variables `start` and `offset` are used to control the position and number of traffic results returned. Considering that a recording could potentially contain millions of Traffic objects, these should be used conservatively in your application.
+
+### Request
+
+#### URL
+`/recording/:id/traffic/`
+
+#### Method
+GET
+
+#### Request query string variables
+
+| Field | Description |
+|---|---|
+| start | An integer as low as 0, indicating the first traffic object to return. |
+| offset | An integer indicating how many traffic objects past the `start` should be returned. |
+
+#### Example URL with query string
+`/recording/fd8303a87ba/traffic?start=0&offfset=50`
+
+#### Request Header
+The request header includes the following information:
+
+| Field | Description |
+|---|---|
+| Content-Type | The content type and character encoding of the response. |
+| Content-Length | The length of the retrieved content. |
+
+### Response
+
+#### Response Header
+The response header includes the following information:
+
+| Field | Description |
+|---|---|
+| Content-Type | The content type and character encoding of the response. |
+| Content-Length | The length of the retrieved content. |
+
+#### Response Body
+The response body contains the following elements in JSON format:
+
+| Element | Description |
+|---|---|
+| id | An alphanumeric value that uniquely identifies the Recording. |
+| name | Name of the Recording. |
+| description | Description of the Recording. |
+| createdAt | A dateTime value that specifies the date and time the recording was created. |
+| updatedAt | A dateTime value that specifies the date and time the recording was last modified. |
+| startedAt | A dateTime value that specifies the date and time the recording was started(does not exist if never started). |
+| stoppedAt | A dateTime value that specifies the date and time the recording was stopped(does not exist if never stopped). |
+| count | An integer value that specifies the number of transactions associated to the Recording. |
+| traffic | An array of Traffic objects. |
+
+#### Status Codes
+
+| Status Code | Description |
+|---|---|
+| 200-299 | The request was successful. The Recording was successfully updated. |
+| 400 | Bad request. Typically returned if required information was not provided as input. |
+| 404 | Not found. The resource was not found. |
+| 500-599 | Server error. |
+
+#### Response example
+```json
+{
+    "id": "54edbcd9eb90892f5eed9129",
+    "name": "Recording of Swift traffic",
+    "description": "bla bla bla bla...",
+    "createdAt": "2014-02-12 03:34:51",
+    "updatedAt": "2014-02-12 03:56:01",
+    "startedAt": "2014-02-12 03:35:23",
+    "stoppedAt": "2014-02-12 03:56:01",
+    "count": 601229,
+    "traffic": [
+      {<traffic_object>},
+      {<traffic_object>},
+      {<traffic_object>},
+      {<traffic_object>}
+    ]
+}
+```
 
 ## Update a Recording
 
