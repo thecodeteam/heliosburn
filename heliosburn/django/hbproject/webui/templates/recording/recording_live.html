@@ -53,8 +53,8 @@
                   .done(function( data ) {
                     alert( "OK: " + data );
                 })
-                .fail(function() {
-                    alert( "error" );
+                .fail(function( error) {
+                    alert( "error: " + error );
                 });
 
                 $('#recording-timer').runner('start');

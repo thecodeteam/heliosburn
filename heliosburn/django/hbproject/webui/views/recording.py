@@ -97,7 +97,7 @@ def recording_update(request):
 @login_required
 @csrf_exempt
 def recording_start(request, recording_id):
-    if not request.POST:
+    if request.method != 'POST':
         return HttpResponseBadRequest('Method must be POST')
 
     try:
@@ -109,6 +109,6 @@ def recording_start(request, recording_id):
         return HttpResponseBadRequest('Resource not found')
     except Exception as inst:
         message = inst.message if inst.message else 'Unexpected error'
-        HttpResponseBadRequest(message)
+        return HttpResponseBadRequest(message)
 
     return HttpResponse('started')
