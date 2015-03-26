@@ -197,5 +197,16 @@ class Recording(Base):
         url = self.get_url(extra='{}/{}'.format(resource_id, 'start'))
         headers = {'X-Auth-Token': self.auth_token}
         response = requests.post(url, headers=headers)
-        resource_id = get_resource_id_or_raise_exception(self.__resourcename__, response)
-        return resource_id
+        if not validate_response(response):
+            exception = status_code_to_exception(response.status_code)
+            exception.message = response.text
+            raise exception
+
+    def stop(self, resource_id):
+        url = self.get_url(extra='{}/{}'.format(resource_id, 'stop'))
+        headers = {'X-Auth-Token': self.auth_token}
+        response = requests.post(url, headers=headers)
+        if not validate_response(response):
+            exception = status_code_to_exception(response.status_code)
+            exception.message = response.text
+            raise exception

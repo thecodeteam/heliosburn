@@ -1,15 +1,14 @@
-import json
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect, HttpResponseBadRequest, HttpResponse
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
-import requests
+
 from webui.exceptions import UnauthorizedException, NotFoundException
 from webui.forms import RecordingForm
 from webui.models import Recording
-from webui.views import get_mock_url, signout
+from webui.views import signout
 
 
 @login_required
@@ -31,7 +30,7 @@ def recording_new(request):
         try:
             recording_id = Recording(auth_token=request.user.password).create(form.cleaned_data)
             messages.success(request, 'Recording created successfully')
-            return HttpResponseRedirect(reverse('recording_details', args=(str(recording_id),)))
+            return HttpResponseRedirect(reverse('recording_live', args=(str(recording_id),)))
         except UnauthorizedException:
             return signout(request)
         except NotFoundException:
@@ -110,5 +109,23 @@ def recording_start(request, recording_id):
     except Exception as inst:
         message = inst.message if inst.message else 'Unexpected error'
         return HttpResponseBadRequest(message)
-
     return HttpResponse('started')
+
+@login_required
+@csrf_exempt
+def recording_stop(request, recording_id):
+    if request.method != 'POST':
+        return HttpResponseBadRequest('Method must be POST')
+
+    try:
+        info = Recording(auth_token=request.user.password).stop(recording_id)
+    except UnauthorizedException:
+        signout(request)
+        return HttpResponseBadRequest('Unauthorized')
+    except NotFoundException:
+        return HttpResponseBadRequest('Resource not found')
+    except Exception as inst:
+        message = inst.message if inst.message else 'Unexpected error'
+        return HttpResponseBadRequest(message)
+
+    return HttpResponse('stopped')
