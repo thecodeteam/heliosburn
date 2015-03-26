@@ -1,51 +1,18 @@
 [
     {
-        "id": 1,
-        "name": "Recording 1",
-        "description": "My recording bla bla bla...",
-        "requests": 42,
-        "created_at": "2014-02-12 03:34:51"
+        "id": "54edbcd9eb90892f5eed9129",
+        "name": "Recording of EMC ECS traffic",
+        "description": "bla bla bla bla...",
+        "createdAt": "2014-02-12 03:34:51",
+        "updatedAt": "2014-02-12 03:34:51",
+        "count": 200
     },
     {
-        "id": 2,
-        "name": "Recording 2",
-        "description": "My recording bla bla bla...",
-        "requests": 23,
-        "created_at": "2014-02-12 03:34:51"
-    },
-    {
-        "id": 3,
-        "name": "Recording 3",
-        "description": "My recording bla bla bla...",
-        "requests": 2,
-        "created_at": "2014-02-12 03:34:51"
-    },
-    {
-        "id": 4,
-        "name": "Recording 4",
-        "description": "My recording bla bla bla...",
-        "requests": 442,
-        "created_at": "2014-02-12 03:34:51"
-    },
-    {
-        "id": 5,
-        "name": "Recording 5",
-        "description": "My recording bla bla bla...",
-        "requests": 345,
-        "created_at": "2014-02-12 03:34:51"
-    },
-    {
-        "id": 6,
-        "name": "Recording 6",
-        "description": "My recording bla bla bla...",
-        "requests": 93,
-        "created_at": "2014-02-12 03:34:51"
-    },
-    {
-        "id": 7,
-        "name": "Recording 7",
-        "description": "My recording bla bla bla...",
-        "requests": 12,
-        "created_at": "2014-02-12 03:34:51"
+        "id": "54edbcd9eb90892f5eed9129",
+        "name": "Recording of Swift traffic",
+        "description": "bla bla bla bla...",
+        "createdAt": "2014-02-12 03:34:51",
+        "updatedAt": "2014-02-12 03:34:51",
+        "count": 451
     }
 ]

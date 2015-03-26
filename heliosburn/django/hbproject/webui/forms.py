@@ -163,3 +163,8 @@ class RuleRequestForm(forms.Form):
                         rule['action']['headers'].append({'key': key, 'value': value})
 
         return rule
+
+
+class RecordingForm(forms.Form):
+    name = forms.CharField(label='Name', max_length=100)
+    description = forms.CharField(label='Description', widget=forms.Textarea)

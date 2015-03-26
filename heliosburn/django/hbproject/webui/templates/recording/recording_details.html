@@ -30,7 +30,7 @@
     <!-- page script -->
     <script type="text/javascript">
         $(document).ready(function() {
-            var table = $('#example1').dataTable( {
+            var table = $('#example1').DataTable( {
                 "columnDefs": [
                     {
                         "targets": [ 0 ],
@@ -57,7 +57,7 @@
         $('#recording-name').editable({
             url: '{% url 'recording_update' %}',
             type: 'text',
-            pk: {{ recording.id }},
+            pk: '{{ recording.id }}',
             name: 'name',
             title: 'Recording name',
             inputclass: 'title-input',
@@ -67,7 +67,7 @@
         $('#recording-description').editable({
             url: '{% url 'recording_update' %}',
             type: 'textarea',
-            pk: {{ recording.id }},
+            pk: '{{ recording.id }}',
             name: 'description',
             title: 'Recording description',
             inputclass: 'description-input',
@@ -90,7 +90,9 @@
                         <dt>Description</dt>
                         <dd><a href="#" id="recording-description">{{ recording.description }}</a></dd>
                         <dt>Created at</dt>
-                        <dd>{{ recording.created_at }}</dd>
+                        <dd>{{ recording.createdAt }}</dd>
+                        <dt>Updated at</dt>
+                        <dd>{{ recording.updatedAt }}</dd>
                         <dt>Duration</dt>
                         <dd>{{ recording.duration }}</dd>
                     </dl>
@@ -131,18 +133,24 @@
                                     </tr>
                                 </tfoot>
                                 <tbody>
-                                    {% for request in recording.traffic %}
+                                    {% for transaction in recording.traffic %}
                                         <tr>
-                                            <td>{{ request.id }}</td>
+                                            <td>{{ transaction.transactionId }}</td>
                                             <td><a href="#">view</a></td>
-                                            <td>{{ request.date }}</td>
-                                            <td>{{ request.method }}</td>
-                                            <td>{{ request.url }}</td>
-                                            <td>{{ request.response.status_code }}</td>
+                                            <td>{{ transaction.createdAt }}</td>
+                                            <td>{{ transaction.request.method }}</td>
+                                            <td>{{ transaction.request.url }}</td>
+                                            <td>{{ transaction.response.statusCode }}</td>
                                         </tr>
                                     {% endfor %}
                                 </tbody>
                             </table>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-xs-12">
+                            <button class="lmargin10 btn btn-primary pull-right bold">Add selected traffic to Test Plan</button>
+                            <button id="delete" class="btn btn-danger pull-right">Delete selected</button>
                         </div>
                     </div>
                 </div><!-- /.box-body -->

@@ -20,6 +20,6 @@ urlpatterns = patterns('',
     url(r'^recording/{0,1}$', recording.rest),
     url(r'^recording/(?P<recording_id>\w+?)/{0,1}$', recording.rest),
     url(r'^recording/(?P<recording_id>\w+?)/(?P<get_traffic>traffic)/{0,1}$', recording.rest),
-    url(r'^recording/(?P<recording_id>)\w+?/start/{0,1}$', recording.start),
-    url(r'^recording/(?P<recording_id>)\w+?/stop/{0,1}$', recording.stop),
+    url(r'^recording/(?P<recording_id>\w+?)/start/{0,1}$', recording.start),
+    url(r'^recording/(?P<recording_id>\w+?)/stop/{0,1}$', recording.stop),
 )
