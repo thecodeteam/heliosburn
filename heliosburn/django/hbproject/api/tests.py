@@ -52,7 +52,6 @@ class SessionViewTestCase(APITestCase):
         Tests CRUD for session model.
         """
         import json
-        from views import session, testplan
 
         def create():
             self.login(admin_username, admin_password)
@@ -352,7 +351,7 @@ class UserViewTestCase(APITestCase):
 
 
         print("Testing CREATE in %s" % self.__class__)
-        username = create()
+        create()
 
         print("Testing READ in %s" % self.__class__)
         read()
@@ -364,329 +363,351 @@ class UserViewTestCase(APITestCase):
         delete()
 
 
-# class TrafficViewTestCase(TestCase):
-#     """
-#     Test views/traffic.py CRUD
-#     This test requires a valid user "admin" with password "admin".
-#     """
-#
-#     def test_crud(self):
-#         """
-#         Tests CRUD for traffic model.
-#         """
-#         from views import traffic
-#         from models import snippet_generator
-#
-#         def create(request):
-#             pass
-#
-#         def read(request):
-#             response = traffic.get(request)
-#             self.assertEqual(response.status_code, 200)
-#
-#         def update(request, username):
-#             pass
-#
-#         def delete(request, username):
-#             pass
-#
-#         print("Creating authenticated request for CRUD tests in %s" % self.__class__)
-#         request = create_authenticated_request("admin", "admin")
-#         request.method = "POST"
-#
-#         print("Generating test traffic in Redis")
-#         snippet_generator.generate_traffic()
-#
-#         print("Testing READ in %s" % self.__class__)
-#         read(request)
-#
-#
-# class RuleViewTestCase(TestCase):
-#     """
-#     Test views/rule.py CRUD
-#     This test requires a valid user "admin" with password "admin".
-#     """
-#
-#     def test_crud(self):
-#         """
-#         Tests CRUD for rule model.
-#         """
-#         from views import rule
-#         import json
-#
-#         def create(request):
-#             request.body = json.dumps({
-#                 'ruleType': 'request',
-#                 'name': 'test_rule_2',
-#                 'enabled': True,
-#                 'filter': {
-#                     'httpProtocol': 'HTTP/1.1',
-#                     'method': 'GET',
-#                     'headers': [
-#                         {'key': 'foo'},
-#                         {'key': 'fizz', 'value': 'buzz'},
-#                     ],
-#                 },
-#                 'action': {
-#                     'type': 'modify',
-#                     'method': 'PUT',
-#                     'url': 'www.newurl.com/foo/bar',
-#                     'setHeaders': [
-#                         {
-#                             'key': 'zaphod', 'value': 'beeblebrox',
-#                         },
-#                     ],
-#                     'deleteHeaders': [
-#                         {
-#                             'key': 'foo',
-#                         },
-#                     ],
-#                 }
-#             })
-#             response = rule.post(request)
-#             self.assertEqual(response.status_code, 200)
-#             self.assertIn("location", response._headers)
-#             in_json = json.loads(response.content)
-#             self.assertIn("id", in_json)
-#             return in_json['id']
-#
-#         def read(request, rule_id):
-#             response = rule.get(request, rule_id)
-#             self.assertEqual(response.status_code, 200)
-#
-#         def update(request, rule_id):
-#             request.body = json.dumps({
-#                 'ruleType': 'request',
-#                 'enabled': True,
-#                 'name': 'test_rule_4',
-#                 'filter': {
-#                     'httpProtocol': 'HTTP/1.1',
-#                     'method': 'GET',
-#                     'headers': [
-#                         {'key': 'paul bunyon'},
-#                         {'key': 'companion', 'value': 'blue oxe'},
-#                     ],
-#                 },
-#                 'action': {
-#                     'type': 'newResponse',
-#                     'httpProtocol': 'CARRIERPIGEON/1.1',
-#                     'statusCode': 403,
-#                     'statusDescription': 'TOO RIDICULOUS',
-#                     'headers': [
-#                         {
-#                             'key': 'User-Agent',
-#                             'value': 'Broken Telescope 1.9'
-#                         },
-#                     ],
-#                     'payload': 'The answer to life, the universe, and everything...is 42.',
-#                 },
-#             })
-#             response = rule.put(request, rule_id)
-#             self.assertEqual(response.status_code, 200)
-#
-#         def delete(request, rule_id):
-#             response = rule.delete(request, rule_id)
-#             self.assertEqual(response.status_code, 200)
-#
-#         print("Creating authenticated request for CRUD tests in %s" % self.__class__)
-#         request = create_authenticated_request("admin", "admin")
-#         request.method = "POST"
-#
-#         print("Testing CREATE in %s" % self.__class__)
-#         rule_id = create(request)
-#
-#         print("Testing READ in %s" % self.__class__)
-#         read(request, rule_id)
-#
-#         print("Testing UPDATE in %s" % self.__class__)
-#         update(request, rule_id)
-#
-#         print("Testing DELETE in %s" % self.__class__)
-#         delete(request, rule_id)
-#
-#
-# class TestplanRuleViewTestCase(TestCase):
-#     """
-#     Test views/testplan_rule.py CRUD
-#     This test requires a valid user "admin" with password "admin".
-#     """
-#
-#     def test_crud(self):
-#         """
-#         Tests CRUD for testplan model.
-#         """
-#         from views import testplan, testplan_rule
-#         import json
-#
-#         def create_testplan(request):
-#             request.body = json.dumps({"name": "CRUD test for testplan_rule"})
-#             response = testplan.post(request)
-#             self.assertEqual(response.status_code, 200)
-#             self.assertIn("location", response._headers)
-#             in_json = json.loads(response.content)
-#             self.assertIn("id", in_json)
-#             return in_json['id']
-#
-#         def delete_testplan(request, testplan_id):
-#             response = testplan.delete(request, testplan_id)
-#             self.assertEqual(response.status_code, 200)
-#
-#         def create(request, testplan_id):
-#             request.body = json.dumps({
-#                 'ruleType': 'request',
-#                 'enabled': True,
-#                 'name': 'test_rule_1',
-#                 'filter': {
-#                     'httpProtocol': 'HTTP/1.1',
-#                     'method': 'GET',
-#                     'headers': [
-#                         {'key': 'foo'},
-#                         {'key': 'fizz', 'value': 'buzz'},
-#                     ],
-#                 },
-#                 'action': {
-#                     'type': 'modify',
-#                     'method': 'PUT',
-#                     'url': 'www.newurl.com/foo/bar',
-#                     'setHeaders': [
-#                         {
-#                             'key': 'zaphod', 'value': 'beeblebrox',
-#                         },
-#                     ],
-#                     'deleteHeaders': [
-#                         {
-#                             'key': 'foo',
-#                         },
-#                     ],
-#                 }
-#             })
-#             response = testplan_rule.post(request, testplan_id)
-#             self.assertEqual(response.status_code, 200)
-#             self.assertIn("location", response._headers)
-#             in_json = json.loads(response.content)
-#             self.assertIn("id", in_json)
-#             return in_json['id']
-#
-#         def read(request, testplan_id, rule_id):
-#             response = testplan_rule.get(request, testplan_id, rule_id)
-#             self.assertEqual(response.status_code, 200)
-#
-#         def update(request, testplan_id, rule_id):
-#             request.body = json.dumps({
-#                 'ruleType': 'request',
-#                 'enabled': True,
-#                 'name': 'test_rule_4',
-#                 'filter': {
-#                     'httpProtocol': 'HTTP/1.1',
-#                     'method': 'GET',
-#                     'headers': [
-#                         {'key': 'folk hero'},
-#                         {'key': 'instrument', 'value': 'violin'},
-#                     ],
-#                 },
-#                 'action': {
-#                     'type': 'newResponse',
-#                     'httpProtocol': 'CARRIERFLAMINGO/1.1',
-#                     'statusCode': 403,
-#                     'statusDescription': 'TOO FEATHERY',
-#                     'headers': [
-#                         {
-#                             'key': 'User-Agent',
-#                             'value': 'Broken Looking Glass 1.9'
-#                         },
-#                     ],
-#                     'payload': 'The answer to life, the universe, and everything...is----NO CARRIER.',
-#                 }
-#
-#             })
-#             response = testplan_rule.put(request, testplan_id, rule_id)
-#             self.assertEqual(response.status_code, 200)
-#
-#         def delete(request, testplan_id, rule_id):
-#             response = testplan_rule.delete(request, testplan_id, rule_id)
-#             self.assertEqual(response.status_code, 200)
-#
-#         print("Creating authenticated request for CRUD tests in %s" % self.__class__)
-#         request = create_authenticated_request("admin", "admin")
-#         request.method = "POST"
-#
-#         print("Creating temporary testplan for use within %s" % self.__class__)
-#         testplan_id = create_testplan(request)
-#
-#         print("Testing CREATE #1 in %s" % self.__class__)
-#         rule1_id = create(request, testplan_id)
-#
-#         print("Testing CREATE #2 in %s" % self.__class__)
-#         rule2_id = create(request, testplan_id)
-#
-#         print("Testing READ in %s" % self.__class__)
-#         read(request, testplan_id, rule1_id)
-#
-#         print("Testing UPDATE in %s" % self.__class__)
-#         update(request, testplan_id, rule1_id)
-#
-#         print("Testing DELETE #1 in %s" % self.__class__)
-#         delete(request, testplan_id, rule1_id)
-#
-#         print("Testing DELETE #2 in %s" % self.__class__)
-#         delete(request, testplan_id, rule2_id)
-#
-#         print("Removing temporary testplan for use within %s" % self.__class__)
-#         delete_testplan(request, testplan_id)
-#
-#
-# class RecordingViewTestCase(TestCase):
-#     """
-#     Test views/recording.py CRUD
-#     This test requires a valid user "admin" with password "admin".
-#     """
-#
-#     def test_crud(self):
-#         """
-#         Tests CRUD for recording model.
-#         """
-#         from views import recording
-#         import json
-#
-#         def create(request):
-#             request.body = json.dumps({
-#                 "name": "CRUD test for recording",
-#             })
-#             response = recording.post(request)
-#             self.assertEqual(response.status_code, 200)
-#             self.assertIn("location", response._headers)
-#             in_json = json.loads(response.content)
-#             self.assertIn("id", in_json)
-#             return in_json['id']
-#
-#         def read(request, recording_id):
-#             response = recording.get(request, recording_id)
-#             self.assertEqual(response.status_code, 200)
-#
-#         def update(request, recording_id):
-#             request.body = json.dumps({
-#                 "name": "CRUD test for recording, updated",
-#                 "description": "description...",
-#             })
-#             response = recording.put(request, recording_id)
-#             self.assertEqual(response.status_code, 200)
-#
-#         def delete(request, recording_id):
-#             response = recording.delete(request, recording_id)
-#             self.assertEqual(response.status_code, 200)
-#
-#         print("Creating authenticated request for CRUD tests in %s" % self.__class__)
-#         request = create_authenticated_request("admin", "admin")
-#         request.method = "POST"
-#
-#         print("Testing CREATE in %s" % self.__class__)
-#         recording_id = create(request)
-#
-#         print("Testing READ in %s" % self.__class__)
-#         read(request, recording_id)
-#
-#         print("Testing UPDATE in %s" % self.__class__)
-#         update(request, recording_id)
-#
-#         print("Testing DELETE in %s" % self.__class__)
-#         delete(request, recording_id)
+class TrafficViewTestCase(APITestCase):
+    """
+    Test views/traffic.py CRUD
+    """
+
+    def test_crud(self):
+        """
+        Tests CRUD for traffic model.
+        """
+        from models import snippet_generator
+
+        def create():
+            pass
+
+        def read():
+            self.login(admin_username, admin_password)
+            response = self.client.get(path=api_url + "/traffic/",
+                                       HTTP_X_AUTH_TOKEN=self.x_auth_token)
+            self.assertEqual(response.status_code, 200)
+
+        def update():
+            pass
+
+        def delete():
+            pass
+
+        print("Generating test traffic in Redis")
+        snippet_generator.generate_traffic()
+
+        print("Testing READ in %s" % self.__class__)
+        read()
+
+
+class RuleViewTestCase(APITestCase):
+    """
+    Test views/rule.py CRUD
+    """
+
+    def test_crud(self):
+        """
+        Tests CRUD for rule model.
+        """
+        import json
+
+        def create():
+            body = json.dumps({
+                'ruleType': 'request',
+                'name': 'test_rule_2',
+                'enabled': True,
+                'filter': {
+                    'httpProtocol': 'HTTP/1.1',
+                    'method': 'GET',
+                    'headers': [
+                        {'key': 'foo'},
+                        {'key': 'fizz', 'value': 'buzz'},
+                    ],
+                },
+                'action': {
+                    'type': 'modify',
+                    'method': 'PUT',
+                    'url': 'www.newurl.com/foo/bar',
+                    'setHeaders': [
+                        {
+                            'key': 'zaphod', 'value': 'beeblebrox',
+                        },
+                    ],
+                    'deleteHeaders': [
+                        {
+                            'key': 'foo',
+                        },
+                    ],
+                }
+            })
+            self.login(admin_username, admin_password)
+            response = self.client.post(path=api_url + "/rule/",
+                                        data=body,
+                                        content_type="application/json",
+                                        HTTP_X_AUTH_TOKEN=self.x_auth_token)
+            self.assertEqual(response.status_code, 200)
+            self.assertIn("location", response._headers)
+            in_json = json.loads(response.content)
+            self.assertIn("id", in_json)
+            self.rule_id = in_json['id']
+
+        def read():
+            self.login(admin_username, admin_password)
+            response = self.client.get(path=api_url + "/rule/" + self.rule_id,
+                                       HTTP_X_AUTH_TOKEN=self.x_auth_token)
+            self.assertEqual(response.status_code, 200)
+
+        def update():
+            body = json.dumps({
+                'ruleType': 'request',
+                'enabled': True,
+                'name': 'test_rule_4',
+                'filter': {
+                    'httpProtocol': 'HTTP/1.1',
+                    'method': 'GET',
+                    'headers': [
+                        {'key': 'paul bunyon'},
+                        {'key': 'companion', 'value': 'blue oxe'},
+                    ],
+                },
+                'action': {
+                    'type': 'newResponse',
+                    'httpProtocol': 'CARRIERPIGEON/1.1',
+                    'statusCode': 403,
+                    'statusDescription': 'TOO RIDICULOUS',
+                    'headers': [
+                        {
+                            'key': 'User-Agent',
+                            'value': 'Broken Telescope 1.9'
+                        },
+                    ],
+                    'payload': 'The answer to life, the universe, and everything...is 42.',
+                },
+            })
+            self.login(admin_username, admin_password)
+            response = self.client.put(path=api_url + "/rule/" + self.rule_id,
+                                       data=body,
+                                       content_type="application/json",
+                                       HTTP_X_AUTH_TOKEN=self.x_auth_token)
+            self.assertEqual(response.status_code, 200)
+
+        def delete():
+            self.login(admin_username, admin_password)
+            response = self.client.delete(path=api_url + "/rule/" + self.rule_id,
+                                          HTTP_X_AUTH_TOKEN=self.x_auth_token)
+            self.assertEqual(response.status_code, 200)
+
+
+        print("Testing CREATE in %s" % self.__class__)
+        create()
+
+        print("Testing READ in %s" % self.__class__)
+        read()
+
+        print("Testing UPDATE in %s" % self.__class__)
+        update()
+
+        print("Testing DELETE in %s" % self.__class__)
+        delete()
+
+
+class TestplanRuleViewTestCase(APITestCase):
+    """
+    Test views/testplan_rule.py CRUD
+    """
+
+    def test_crud(self):
+        """
+        Tests CRUD for testplan model.
+        """
+        import json
+
+        def create_testplan():
+            self.login(admin_username, admin_password)
+            body = json.dumps({"name": "CRUD test for testplan_rule"})
+            response = self.client.post(path=api_url + "/testplan/",
+                                        data=body,
+                                        content_type="application/json",
+                                        HTTP_X_AUTH_TOKEN=self.x_auth_token)
+            self.assertEqual(response.status_code, 200)
+            self.assertIn("location", response._headers)
+            in_json = json.loads(response.content)
+            self.assertIn("id", in_json)
+            self.testplan_id = in_json['id']
+
+        def delete_testplan():
+            self.login(admin_username, admin_password)
+            response = self.client.delete(path=api_url + "/testplan/" + self.testplan_id,
+                                          HTTP_X_AUTH_TOKEN=self.x_auth_token)
+            self.assertEqual(response.status_code, 200)
+
+        def create():
+            body = json.dumps({
+                'ruleType': 'request',
+                'enabled': True,
+                'name': 'test_rule_1',
+                'filter': {
+                    'httpProtocol': 'HTTP/1.1',
+                    'method': 'GET',
+                    'headers': [
+                        {'key': 'foo'},
+                        {'key': 'fizz', 'value': 'buzz'},
+                    ],
+                },
+                'action': {
+                    'type': 'modify',
+                    'method': 'PUT',
+                    'url': 'www.newurl.com/foo/bar',
+                    'setHeaders': [
+                        {
+                            'key': 'zaphod', 'value': 'beeblebrox',
+                        },
+                    ],
+                    'deleteHeaders': [
+                        {
+                            'key': 'foo',
+                        },
+                    ],
+                }
+            })
+            self.login(admin_username, admin_password)
+            response = self.client.post(path=api_url + "/testplan/" + self.testplan_id + "/rule/",
+                                     data=body,
+                                     content_type="application/json",
+                                     HTTP_X_AUTH_TOKEN=self.x_auth_token)
+            self.assertEqual(response.status_code, 200)
+            self.assertIn("location", response._headers)
+            in_json = json.loads(response.content)
+            self.assertIn("id", in_json)
+            return in_json['id']
+
+        def read(rule_id):
+            self.login(admin_username, admin_password)
+            response = self.client.get(path=api_url + "/testplan/" + self.testplan_id + "/rule/" + rule_id,
+                                       HTTP_X_AUTH_TOKEN=self.x_auth_token)
+            self.assertEqual(response.status_code, 200)
+
+        def update(rule_id):
+            body = json.dumps({
+                'ruleType': 'request',
+                'enabled': True,
+                'name': 'test_rule_4',
+                'filter': {
+                    'httpProtocol': 'HTTP/1.1',
+                    'method': 'GET',
+                    'headers': [
+                        {'key': 'folk hero'},
+                        {'key': 'instrument', 'value': 'violin'},
+                    ],
+                },
+                'action': {
+                    'type': 'newResponse',
+                    'httpProtocol': 'CARRIERFLAMINGO/1.1',
+                    'statusCode': 403,
+                    'statusDescription': 'TOO FEATHERY',
+                    'headers': [
+                        {
+                            'key': 'User-Agent',
+                            'value': 'Broken Looking Glass 1.9'
+                        },
+                    ],
+                    'payload': 'The answer to life, the universe, and everything...is----NO CARRIER.',
+                }
+
+            })
+            self.login(admin_username, admin_password)
+            response = self.client.put(path=api_url + "/testplan/" + self.testplan_id + "/rule/" + rule_id,
+                                       data=body,
+                                       content_type="application/json",
+                                       HTTP_X_AUTH_TOKEN=self.x_auth_token)
+            self.assertEqual(response.status_code, 200)
+
+        def delete(rule_id):
+            self.login(admin_username, admin_password)
+            response = self.client.delete(path=api_url + "/testplan/" + self.testplan_id + "/rule/" + rule_id,
+                                          HTTP_X_AUTH_TOKEN=self.x_auth_token)
+            self.assertEqual(response.status_code, 200)
+
+        print("Creating temporary testplan for use within %s" % self.__class__)
+        create_testplan()
+
+        print("Testing CREATE #1 in %s" % self.__class__)
+        rule1_id = create()
+
+        print("Testing CREATE #2 in %s" % self.__class__)
+        rule2_id = create()
+
+        print("Testing READ in %s" % self.__class__)
+        read(rule1_id)
+
+        print("Testing UPDATE in %s" % self.__class__)
+        update(rule1_id)
+
+        print("Testing DELETE #1 in %s" % self.__class__)
+        delete(rule1_id)
+
+        print("Testing DELETE #2 in %s" % self.__class__)
+        delete(rule2_id)
+
+        print("Removing temporary testplan for use within %s" % self.__class__)
+        delete_testplan()
+
+
+class RecordingViewTestCase(APITestCase):
+    """
+    Test views/recording.py CRUD
+    """
+
+    def test_crud(self):
+        """
+        Tests CRUD for recording model.
+        """
+        import json
+
+        def create():
+            body = json.dumps({
+                "name": "CRUD test for recording",
+            })
+            self.login(admin_username, admin_password)
+            response = self.client.post(path=api_url + "/recording/",
+                                        data=body,
+                                        content_type="application/json",
+                                        HTTP_X_AUTH_TOKEN=self.x_auth_token)
+
+            self.assertEqual(response.status_code, 200)
+            self.assertIn("location", response._headers)
+            in_json = json.loads(response.content)
+            self.assertIn("id", in_json)
+            self.recording_id = in_json['id']
+
+        def read():
+            self.login(admin_username, admin_password)
+            response = self.client.get(path=api_url + "/recording/" + self.recording_id,
+                                       HTTP_X_AUTH_TOKEN=self.x_auth_token)
+            self.assertEqual(response.status_code, 200)
+
+        def update():
+            body = json.dumps({
+                "name": "CRUD test for recording, updated",
+                "description": "description...",
+            })
+            self.login(admin_username, admin_password)
+            response = self.client.put(path=api_url + "/recording/" + self.recording_id,
+                                       data=body,
+                                       content_type="application/json",
+                                       HTTP_X_AUTH_TOKEN=self.x_auth_token)
+            self.assertEqual(response.status_code, 200)
+
+        def delete():
+            self.login(admin_username, admin_password)
+            response = self.client.delete(path=api_url + "/recording/" + self.recording_id,
+                                          HTTP_X_AUTH_TOKEN=self.x_auth_token)
+            self.assertEqual(response.status_code, 200)
+
+        print("Testing CREATE in %s" % self.__class__)
+        create()
+
+        print("Testing READ in %s" % self.__class__)
+        read()
+
+        print("Testing UPDATE in %s" % self.__class__)
+        update()
+
+        print("Testing DELETE in %s" % self.__class__)
+        delete()
