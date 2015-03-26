@@ -38,7 +38,7 @@ def get(request, username=None):
     Retrieve user based on username.
     """
     if username is None:  # Retrieve all users
-        return get_all_users()
+        return get_all_users(request)
 
     # Users can only retrieve their own account, unless admin
     if (request.user['username'] != username) and (auth.is_admin(request.user) is False):
