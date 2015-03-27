@@ -6,6 +6,7 @@ from bson import ObjectId
 from api.models.auth import RequireLogin
 import json
 from datetime import datetime
+import time
 
 
 @csrf_exempt
@@ -161,20 +162,44 @@ def delete(request, recording_id):
 @csrf_exempt
 @RequireLogin()
 def start(request, recording_id):
+    """
+    Start a recording, and wait N seconds for the proxy to acknowledge."
+    """
     from api.models import redis_wrapper
+    r = redis_wrapper.init_redis()
+    response_key = str(ObjectId())
     redis_wrapper.publish_to_proxy({
         "operation": "start_recording",
         "param": recording_id,
+        "key": response_key,
     })
-    return HttpResponse(status=200)
+    for i in range(0, 50):
+        response = r.get(response_key)
+        if response is not None:
+            return JsonResponse({"proxyResponse": response})
+        else:
+            time.sleep(.1)  # sleep 100ms
+    return JsonResponse({"proxyResponse": None})
 
 
 @csrf_exempt
 @RequireLogin()
 def stop(request, recording_id):
+    """
+    Stop a recording, and wait N seconds for the proxy to acknowledge."
+    """
     from api.models import redis_wrapper
+    r = redis_wrapper.init_redis()
+    response_key = str(ObjectId())
     redis_wrapper.publish_to_proxy({
         "operation": "stop_recording",
         "param": recording_id,
+        "key": response_key,
     })
-    return HttpResponse(status=200)
+    for i in range(0, 50):
+        response = r.get(response_key)
+        if response is not None:
+            return JsonResponse({"proxyResponse": response})
+        else:
+            time.sleep(.1)  # sleep 100ms
+    return JsonResponse({"proxyResponse": None})
