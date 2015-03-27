@@ -179,7 +179,7 @@ def start(request, recording_id):
             return JsonResponse({"proxyResponse": response})
         else:
             time.sleep(.1)  # sleep 100ms
-    return JsonResponse({"proxyResponse": None})
+    return JsonResponse({"proxyResponse": None}, status=503)
 
 
 @csrf_exempt
@@ -202,4 +202,4 @@ def stop(request, recording_id):
             return JsonResponse({"proxyResponse": response})
         else:
             time.sleep(.1)  # sleep 100ms
-    return JsonResponse({"proxyResponse": None})
+    return JsonResponse({"proxyResponse": None}, status=503)
