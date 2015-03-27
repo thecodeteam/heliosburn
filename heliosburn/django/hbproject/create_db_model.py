@@ -75,7 +75,7 @@ def main():
         current_db.testplan.ensure_index('name', unique=True)
         current_db.session.ensure_index('name', unique=True)
         current_db.template.ensure_index('name', unique=True)
-        #current_db.recording.ensure_index('name', unique=True)
+        current_db.traffic.ensure_index('recording_id')
 
 if __name__ == '__main__':
     main()

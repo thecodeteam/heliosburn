@@ -32,7 +32,7 @@ def rest(request, *pargs, **kwargs):
 
 
 @RequireLogin()
-def get(request, recording_id=None):
+def get(request, recording_id=None, get_traffic=None):
     """
     Retrieve recording based on id.
     """
@@ -47,6 +47,29 @@ def get(request, recording_id=None):
         return HttpResponseNotFound()
     else:
         recording['id'] = str(recording.pop('_id'))
+        recording['count'] = dbc.traffic.find({"recording_id": recording['id']}).count()
+
+
+        # Return paginated traffic data
+        if get_traffic is not None:
+
+            #Fetch the traffic
+            recording['traffic'] = [t for t in dbc.traffic.find({"recording_id": recording['id']})]
+            for t in recording['traffic']:
+                t['id'] = str(t.pop('_id'))
+
+            #Paginate the traffic
+            start = 0
+            offset = 100
+            if hasattr(request, 'GET') and ('start' in request.GET) and ('offset' in request.GET):
+                try:
+                    start = int(request.REQUEST['start'][0])
+                    offset = int(request.REQUEST['offset'][0])
+                except ValueError:
+                    return HttpResponseBadRequest()
+
+            recording['traffic'] = recording['traffic'][start:offset]
+
         return JsonResponse(recording)
 
 
@@ -58,6 +81,7 @@ def get_all_recordings():
     recordings = [r for r in dbc.recording.find()]
     for recording in recordings:
         recording['id'] = str(recording.pop('_id'))
+        recording['count'] = dbc.traffic.find({"recording_id": recording['id']}).count()
     return JsonResponse({"recordings": recordings})
 
 
@@ -130,14 +154,27 @@ def delete(request, recording_id):
         return HttpResponseNotFound()
     else:
         dbc.recording.remove({"_id": ObjectId(recording_id)})
+        dbc.traffic.remove({"recording_id": recording_id}, multi=True)
         return HttpResponse()
 
 
+@csrf_exempt
 @RequireLogin()
 def start(request, recording_id):
-    pass  # TODO
+    from api.models import redis_wrapper
+    redis_wrapper.publish_to_proxy({
+        "operation": "start_recording",
+        "param": recording_id,
+    })
+    return HttpResponse(status=200)
 
 
+@csrf_exempt
 @RequireLogin()
 def stop(request, recording_id):
-    pass  # TODO
+    from api.models import redis_wrapper
+    redis_wrapper.publish_to_proxy({
+        "operation": "stop_recording",
+        "param": recording_id,
+    })
+    return HttpResponse(status=200)

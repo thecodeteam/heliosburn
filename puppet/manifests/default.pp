@@ -15,7 +15,7 @@ package { ['python-software-properties']:
   require => Exec['apt-get update'],
 }
 
-$sysPackages = ['git', 'curl', 'ipython-notebook']
+$sysPackages = ['git', 'curl', 'ipython-notebook', 'npm']
 package { $sysPackages:
   ensure => "installed",
   require => Exec['apt-get update'],

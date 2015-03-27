@@ -29,8 +29,9 @@ urlpatterns = patterns(
     url(r'^testplans/(?P<testplan_id>[\w-]+)/rules/new/$', 'rule.rule_new', name='rule_new'),
 
     url(r'^recordings/$', 'recording.recording_list', name='recording_list'),
-    url(r'^recordings/(?P<id>[\w-]+)$', 'recording.recording_details', name='recording_details'),
+    url(r'^recordings/(?P<recording_id>[\w-]+)$', 'recording.recording_details', name='recording_details'),
     url(r'^recordings/update/$', 'recording.recording_update', name='recording_update'),
+    url(r'^recordings/new/$', 'recording.recording_new', name='recording_new'),
 
     url(r'^ajax/traffic/$', 'ajax_traffic', name='ajax_traffic'),
 
