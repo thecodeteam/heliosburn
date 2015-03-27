@@ -1,6 +1,9 @@
 import io
 import sys
 import collections
+import redis
+import modules
+import json
 from zope.interface import implements
 from zope.interface import Interface
 from twisted.internet import defer
@@ -8,7 +11,13 @@ from twisted.plugin import IPlugin
 from twisted.plugin import getPlugins
 from twisted.plugin import pluginPackagePaths
 from twisted.python import log
-import modules
+from twisted.trial import unittest
+from twisted.internet.endpoints import TCP4ClientEndpoint
+from twisted.internet import defer
+from twisted.internet import reactor
+from redis_subscriber import HBRedisSubscriberFactory
+from redis_subscriber import HBRedisTestMessageHandlerFactory
+from redis_subscriber import HBRedisTestMessageHandler
 
 
 class IModule(Interface):
@@ -135,8 +144,81 @@ class AbstractModule(object):
         """
 
 
-class AbstractTestModule(AbstractModule):
+class AbstractControllerTestModule(AbstractModule, unittest.TestCase):
     implements(IPlugin, IModule)
+
+    def configure(self, **configs):
+        self.redis_host = configs['redis_host']
+        self.redis_port = configs['redis_port']
+        self.redis_db = configs['redis_db']
+        self.redis_pub_queue = configs['redis_pub_queue']
+        self.redis_sub_queue = configs['redis_sub_queue']
+        self.redis_client = redis.StrictRedis(host=self.redis_host,
+                                              port=self.redis_port,
+                                              db=self.redis_db)
+
+    def start(self):
+        handler_factory = HBRedisTestMessageHandlerFactory(self.evaluate,
+                                                           self._failure)
+
+        self.redis_endpoint = TCP4ClientEndpoint(reactor,
+                                                 self.redis_host,
+                                                 self.redis_port)
+        self.channel = self.redis_sub_queue
+        d = self.redis_endpoint.connect(HBRedisSubscriberFactory(self.channel,
+                                        handler_factory))
+
+        sub_d = d.addCallback(self._subscribe)
+        sub_d.addErrback(self._error)
+        pub_d = sub_d.addCallback(self._publish_message)
+        pub_d.addErrback(self._error)
+
+        return handler_factory.get_deferred()
+
+    def evaluate(self, result):
+        response = json.loads(result)
+        result = self.assertEqual(self.get_expected(), response)
+        success_message = self.__class__.__name__ + ": "
+        success_message += "SUCCESS!\n"
+        success_message += "Result: " + str(result)
+        print(success_message)
+
+    def get_expected(self):
+        message = "get_expected not implemented by child class"
+        raise NotImplementedError(message)
+
+    def get_message(self):
+        message = "get_message not implemented by child class"
+        raise NotImplementedError(message)
+
+    def _error(self, failure):
+        print(failure)
+
+    def _subscribe(self, redis):
+        self.redis_subscriber = redis
+        return redis.subscribe()
+
+    def _failure(self, failure):
+        result = failure.getErrorMessage()
+        fail_message = self.__class__.__name__ + ": "
+        fail_message += "FAILED!\n"
+        fail_message += "Result: " + str(result)
+        print(fail_message)
+
+    def _get_operation_message(self, operation, param, key):
+
+        message = {}
+        message['operation'] = operation
+        message['param'] = param
+        message['key'] = key
+
+        return message
+
+    def _publish_message(self, result):
+        message = self.get_message()
+        if message:
+            self.redis_client.publish(self.redis_pub_queue, message)
+        return result
 
 
 class Registry(object):

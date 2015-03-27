@@ -33,25 +33,18 @@ class HBRedisMessageHandlerFactory(object):
 
 class HBRedisTestMessageHandler(HBRedisMessageHandler):
 
-    def __init__(self, message, deferred, **configs):
-        HBRedisMessageHandler.__init__(self, message, **configs)
+    def __init__(self, message, deferred):
+        HBRedisMessageHandler.__init__(self, message)
         self.deferred = deferred
 
     def execute(self):
         self.deferred.callback(self.message)
 
 
-class HBRedisTestMessageHandlerFactory(HBRedisMessageHandlerFactory,
-                                       unittest.TestCase):
+class HBRedisTestMessageHandlerFactory(object):
     message_handler = HBRedisTestMessageHandler
 
-    def __init__(self,
-                 response_handler,
-                 fail_handler,
-                 message_handler=None,
-                 **configs):
-        HBRedisMessageHandlerFactory.__init__(self,
-                                              **configs)
+    def __init__(self, response_handler, fail_handler):
         self.message_handler = HBRedisTestMessageHandler
         self.f_deferred = defer.Deferred()
         self._test_response = response_handler
@@ -63,8 +56,7 @@ class HBRedisTestMessageHandlerFactory(HBRedisMessageHandlerFactory,
         self.m_deferred.addErrback(self._test_failed)
         self.m_deferred.addCallback(self._message_handled)
         return self.message_handler(message,
-                                    self.m_deferred,
-                                    **self.configs)
+                                    self.m_deferred)
 
     def _message_handled(self, message):
         self.f_deferred.callback(message)

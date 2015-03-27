@@ -62,7 +62,8 @@ class OperationResponse(object):
 
 class RedisOperationResponse(OperationResponse):
 
-    def __init__(self, code, message, key, redis_endpoint, response_channel):
+    def __init__(self, code, message, key, redis_endpoint=None,
+                 response_channel=None):
 
         OperationResponse.__init__(self, code, message, key)
 
@@ -75,7 +76,8 @@ class RedisOperationResponse(OperationResponse):
         self.redis_client = redis_client
 
     def _send(self, result):
-        self.redis_client.publish(self.response_channel, self.response)
+        self.redis_client.publish(self.response_channel,
+                                  json.dumps(self.response))
         self.redis_client.set(self.response['key'], self.response)
 
     def send(self):
@@ -85,8 +87,10 @@ class RedisOperationResponse(OperationResponse):
 class OperationResponseFactory(object):
 
     def get_response(self, code, message, key):
-        pass
-
+        response = OperationResponse(code,
+                                     message,
+                                     key)
+        return response
 
 class RedisOperationResponseFactory(OperationResponseFactory):
 
@@ -360,9 +364,9 @@ class StartRecording(ControllerOperation):
     def start_recording(self, result):
         self.controller.module_registry.start(module_name='TrafficRecorder',
                                               **self.params)
-        self.response.set_message("Started Recording: { "
-                                  + self.response.get_message() + ", "
-                                  + "}")
+        self.response.set_message({'Started Recording':
+                                    [self.response.get_message()]
+                                  })
 
 
 class ResetPlugins(ControllerOperation):
@@ -419,7 +423,7 @@ class HBProxyController(object):
                  plugins):
 
         self.bind_address = bind_address
-#        self._start_logging()
+        self._start_logging()
         self.protocols = protocols
         self.upstream_host = upstream_host
         self.upstream_port = upstream_port
@@ -452,7 +456,7 @@ class HBProxyController(object):
     def _start_logging(self):
 
         setStdout = True
-        log.startLogging(sys.stdout)
+#        log.startLogging(sys.stdout)
 
     def start_proxy(self, result):
         resource = HBReverseProxyResource(self.upstream_host,

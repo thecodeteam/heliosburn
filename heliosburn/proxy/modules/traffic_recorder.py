@@ -60,8 +60,11 @@ class TrafficRecorder(AbstractModule):
         d.addCallback(self._subscribe)
 
     def stop(self, **params):
-        if self.redis_subscriber:
-            self.redis_subscriber.unsubscribe()
+        try:
+            if self.redis_subscriber:
+                self.redis_subscriber.unsubscribe()
+        except AttributeError:
+            return "not subscribed"
 
 
 traffic_recorder = TrafficRecorder()
