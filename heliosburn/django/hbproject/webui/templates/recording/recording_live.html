@@ -32,7 +32,7 @@
     <!-- page script -->
     <script type="text/javascript">
         $(document).ready(function() {
-            var table = $('#example1').DataTable( {
+            var t = $('#example1').DataTable( {
                 "columnDefs": [
                     {
                         "targets": [ 0 ],
@@ -79,15 +79,62 @@
                 $('#recording-record').addClass('disabled');
                 $('#recording-stop').removeClass('disabled');
                 $('#recording-timer').runner('start');
+
+                recording = true;
+                fetchData();
             }
 
             function onRecordingStopped() {
                 $('#recording-stop').addClass('disabled');
                 $('#recording-timer').runner('stop');
+
+                recording = false;
             }
 
             function onError(XMLHttpRequest, textStatus, errorThrown) {
                 alert( "error: " + textStatus + ' - ' + errorThrown );
+            }
+
+
+            var updateInterval = 2000; //Fetch data ever x milliseconds
+            var recording = false;
+
+            function fetchData() {
+                $.ajax({
+					url: "{% url "ajax_traffic" %}",
+					type: "GET",
+					dataType: "json",
+					success: onDataReceived
+				});
+            }
+
+            function onDataReceived(json) {
+
+                addRow(json.requests);
+
+                if (recording == true)
+                    setTimeout(fetchData, updateInterval);
+
+            }
+
+            function addRow(requests){
+                for (var i = 0; i < requests.length; i++) {
+                    t.row.add( [
+                        "1",
+                        "1",
+                        "2015-06-06",
+                        "GET",
+                        "http://asdasdads.com",
+                        "200 OK"
+                    ] ).draw();
+
+{#                    t.row.add( [#}
+{#                        requests[i].createdAt,#}
+{#                        requests[i].method,#}
+{#                        requests[i].url,#}
+{#                        requests[i].response.statusCode + " " + requests[i].response.statusDescription#}
+{#                    ] ).draw();#}
+                }
             }
 
         } );

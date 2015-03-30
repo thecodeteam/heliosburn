@@ -1,11 +1,11 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse
-from django.http import HttpResponseRedirect, HttpResponseBadRequest, HttpResponse
+from django.http import HttpResponseRedirect, HttpResponseBadRequest, HttpResponse, HttpResponseServerError
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 
-from webui.exceptions import UnauthorizedException, NotFoundException
+from webui.exceptions import UnauthorizedException, NotFoundException, ServerErrorException
 from webui.forms import RecordingForm
 from webui.models import Recording
 from webui.views import signout
@@ -106,6 +106,8 @@ def recording_start(request, recording_id):
         return HttpResponseBadRequest('Unauthorized')
     except NotFoundException:
         return HttpResponseBadRequest('Resource not found')
+    except ServerErrorException:
+        return HttpResponseServerError()
     except Exception as inst:
         message = inst.message if inst.message else 'Unexpected error'
         return HttpResponseBadRequest(message)
@@ -124,6 +126,8 @@ def recording_stop(request, recording_id):
         return HttpResponseBadRequest('Unauthorized')
     except NotFoundException:
         return HttpResponseBadRequest('Resource not found')
+    except ServerErrorException:
+        return HttpResponseServerError()
     except Exception as inst:
         message = inst.message if inst.message else 'Unexpected error'
         return HttpResponseBadRequest(message)
