@@ -44,7 +44,18 @@
             $('#recording-timer').runner({
                 autostart: false,
                 startAt: 0,
-                milliseconds: false
+                milliseconds: false,
+                format: function(value) {
+                    var seconds = parseInt((value/1000)%60)
+                        , minutes = parseInt((value/(1000*60))%60)
+                        , hours = parseInt((value/(1000*60*60))%24);
+
+                    hours = (hours < 10) ? "0" + hours : hours;
+                    minutes = (minutes < 10) ? "0" + minutes : minutes;
+                    seconds = (seconds < 10) ? "0" + seconds : seconds;
+
+                    return hours + ":" + minutes + ":" + seconds;
+                }
             });
 
             $('#recording-record').click(function() {
@@ -79,6 +90,7 @@
                 $('#recording-record').addClass('disabled');
                 $('#recording-stop').removeClass('disabled');
                 $('#recording-timer').runner('start');
+                $('#recording-timer').parent().removeClass('hidden');
 
                 recording = true;
                 fetchData();
@@ -182,7 +194,7 @@
                                 <i class="fa fa-stop"></i> Stop
                             </a>
 
-                        <h3 class="pull-right"><strong>Test run:</strong> <span id="recording-timer">00:31:53</span></h3>
+                        <h3 class="pull-right red hidden"><strong>Recording in progress:</strong> <span id="recording-timer">00:31:53</span></h3>
 
                             <table id="example1" class="table table-bordered table-striped">
                                 <thead>
