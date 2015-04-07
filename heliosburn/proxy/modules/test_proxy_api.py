@@ -9,9 +9,10 @@ class TestControllerAPISuccess(AbstractControllerTestModule):
     def __init__(self):
         AbstractControllerTestModule.__init__(self)
         self.response_key = 'test'
+        message = "execution successful"
         response_factory = OperationResponseFactory()
         self.op_response = response_factory.get_response(200,
-                                                         "execution successful",
+                                                         message,
                                                          self.response_key)
 
     def get_expected(self):
@@ -19,16 +20,51 @@ class TestControllerAPISuccess(AbstractControllerTestModule):
         return json.loads(expected)
 
 
+class TestStopProxyAPI(TestControllerAPISuccess):
+    """
+    Used to teset the proxy controller API call 'stop'.
+    """
+
+    def get_message(self):
+        response_message = "stop " + self.op_response.get_message()
+        self.op_response.set_message(response_message)
+
+        message = self._get_operation_message('stop',
+                                              "n/a",
+                                              self.response_key)
+        return json.dumps(message)
+
+
+test_stop_proxy = TestStopProxyAPI()
+
+
+class TestStartProxyAPI(TestControllerAPISuccess):
+    """
+    Used to teset the proxy controller API call 'start'.
+    """
+
+    def get_message(self):
+        response_message = "start " + self.op_response.get_message()
+        self.op_response.set_message(response_message)
+
+        message = self._get_operation_message('start',
+                                              "n/a",
+                                              self.response_key)
+        return json.dumps(message)
+
+
+test_stop_proxy = TestStopProxyAPI()
+
+
 class TestStartRecordingAPI(TestControllerAPISuccess):
     """
     Used to teset the proxy controller API call 'start_recording'.
     """
 
-
     def get_message(self):
         response_message = {'Started Recording':
                             [self.op_response.get_message()],
-                           }
+                            }
         self.op_response.set_message(response_message)
 
         recording_id = {'recording_id': 1}

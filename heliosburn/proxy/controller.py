@@ -92,6 +92,7 @@ class OperationResponseFactory(object):
                                      key)
         return response
 
+
 class RedisOperationResponseFactory(OperationResponseFactory):
 
     def __init__(self, redis_endpoint, response_channel):
@@ -250,13 +251,13 @@ class StartProxy(ControllerOperation):
         bind_address = self.controller.bind_address
         self.controller.proxy = reactor.listenTCP(protocol, f,
                                                   interface=bind_address)
-        message = "proxy_start: {"
-        message += " bind port: " + str(self.controller.protocol) + ", "
-        message += " bind addr: " + str(self.controller.bind_address) + ", "
-        message += " upstream h: " + str(self.controller.upstream_host) + ", "
-        message += " upstream p: " + str(self.controller.upstream_port) + "} "
-
-        self.response.set_message(message)
+        self.response.set_message("start " + self.response.get_message())
+#        message = "proxy_start: {"
+#        message += " bind port: " + str(self.controller.protocol) + ", "
+#        message += " bind addr: " + str(self.controller.bind_address) + ", "
+#        message += " upstream h: " + str(self.controller.upstream_host) + ", "
+#        message += " upstream p: " + str(self.controller.upstream_port) + "} "
+#        self.response.set_message(message)
 
         return self.controller.proxy
 
@@ -365,8 +366,8 @@ class StartRecording(ControllerOperation):
         self.controller.module_registry.start(module_name='TrafficRecorder',
                                               **self.params)
         self.response.set_message({'Started Recording':
-                                    [self.response.get_message()]
-                                  })
+                                   [self.response.get_message()]
+                                   })
 
 
 class ResetPlugins(ControllerOperation):
