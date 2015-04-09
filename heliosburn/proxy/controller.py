@@ -252,12 +252,6 @@ class StartProxy(ControllerOperation):
         self.controller.proxy = reactor.listenTCP(protocol, f,
                                                   interface=bind_address)
         self.response.set_message("start " + self.response.get_message())
-#        message = "proxy_start: {"
-#        message += " bind port: " + str(self.controller.protocol) + ", "
-#        message += " bind addr: " + str(self.controller.bind_address) + ", "
-#        message += " upstream h: " + str(self.controller.upstream_host) + ", "
-#        message += " upstream p: " + str(self.controller.upstream_port) + "} "
-#        self.response.set_message(message)
 
         return self.controller.proxy
 
@@ -274,10 +268,9 @@ class ChangeUpstreamPort(ControllerOperation):
         d.addCallback(self.respond)
 
     def update_message(self, result):
-        self.response.set_message("Change_upstream_port: { "
-                                  + self.response.get_message() + ", "
-                                  + self.start_op.response.get_message()
-                                  + "}")
+        self.response.set_message({'Change_upstream_port':
+                                  [self.response.get_message()]
+                                   })
 
 
 class ChangeUpstreamHost(ControllerOperation):
@@ -292,10 +285,9 @@ class ChangeUpstreamHost(ControllerOperation):
         d.addCallback(self.respond)
 
     def update_message(self, result):
-        self.response.set_message("Change_upstream_host: { "
-                                  + self.response.get_message() + ", "
-                                  + self.start_op.response.get_message()
-                                  + "}")
+        self.response.set_message({'Change_upstream_host':
+                                  [self.response.get_message()]
+                                   })
 
 
 class ChangeBindAddress(ControllerOperation):
@@ -310,10 +302,9 @@ class ChangeBindAddress(ControllerOperation):
         d.addCallback(self.respond)
 
     def update_message(self, result):
-        self.response.set_message("Change_bind_address: { "
-                                  + self.response.get_message() + ", "
-                                  + self.start_op.response.get_message()
-                                  + "}")
+        self.response.set_message({'Change_bind_address':
+                                  [self.response.get_message()]
+                                   })
 
 
 class ChangeBindPort(ControllerOperation):
@@ -328,10 +319,9 @@ class ChangeBindPort(ControllerOperation):
         d.addCallback(self.respond)
 
     def update_message(self, result):
-        self.response.set_message("Change_bind_port: { "
-                                  + self.response.get_message() + ", "
-                                  + self.start_op.response.get_message()
-                                  + "}")
+        self.response.set_message({'Change_bind_port':
+                                  [self.response.get_message()]
+                                   })
 
 
 class StopRecording(ControllerOperation):
@@ -384,13 +374,12 @@ class ResetPlugins(ControllerOperation):
         d.addCallback(self.respond)
 
     def reset_plugins(self, result):
-        self.controller.module_registry.run_plugins(context='None')
+        self.controller.module_registry.reset()
 
     def update_message(self, result):
-        self.response.set_message("Reset_modules: { "
-                                  + self.response.get_message() + ", "
-                                  + self.start_op.response.get_message()
-                                  + "}")
+        self.response.set_message({'Reset_plugins':
+                                  [self.response.get_message()]
+                                   })
 
 
 class ReloadPlugins(ControllerOperation):
@@ -407,13 +396,12 @@ class ReloadPlugins(ControllerOperation):
         d.addCallback(self.respond)
 
     def reload_plugins(self, result):
-        self.controller.module_registry.run_plugins(context='None')
+        self.controller.module_registry.reload()
 
     def update_message(self, result):
-        self.response.set_message("Reload_plugins: { "
-                                  + self.response.get_message() + ", "
-                                  + self.start_op.response.get_message()
-                                  + "}")
+        self.response.set_message({'Reload_plugins':
+                                  [self.response.get_message()]
+                                   })
 
 
 class HBProxyController(object):
@@ -482,6 +470,7 @@ class HBProxyController(object):
     def test(self):
         self.tests = self.module_registry.test()
         self.tests.addCallback(self._stop_test)
+        self.tests.callback("start test")
         reactor.run()
 
 

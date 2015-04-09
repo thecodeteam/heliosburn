@@ -157,7 +157,7 @@ class AbstractControllerTestModule(AbstractModule, unittest.TestCase):
                                               port=self.redis_port,
                                               db=self.redis_db)
 
-    def start(self):
+    def start(self, options):
         handler_factory = HBRedisTestMessageHandlerFactory(self.evaluate,
                                                            self._failure)
 
@@ -170,10 +170,15 @@ class AbstractControllerTestModule(AbstractModule, unittest.TestCase):
 
         sub_d = d.addCallback(self._subscribe)
         sub_d.addErrback(self._error)
+
         pub_d = sub_d.addCallback(self._publish_message)
         pub_d.addErrback(self._error)
 
-        return handler_factory.get_deferred()
+        handler_d = handler_factory.get_deferred()
+        handler_d.addCallback(self._unsubscribe)
+        handler_d.addErrback(self._error)
+
+        return handler_d
 
     def evaluate(self, result):
         response = json.loads(result)
@@ -197,6 +202,9 @@ class AbstractControllerTestModule(AbstractModule, unittest.TestCase):
     def _subscribe(self, redis):
         self.redis_subscriber = redis
         return redis.subscribe()
+
+    def _unsubscribe(self, result):
+        return self.redis_subscriber.unsubscribe()
 
     def _failure(self, failure):
         result = failure.getErrorMessage()
@@ -327,11 +335,12 @@ class Registry(object):
         """
         Executes the start method of all or one currently active modules
         """
+        test_deferred = defer.Deferred()
         if module_name:
-            test_deferred = self.plugins[module_name].start()
+            test_deferred.addCallback(self.plugins[module_name].start)
         else:
             for module in self.test_modules:
                 name = module['name']
-                test_deferred = self.plugins[name].start()
+                test_deferred.addCallback(self.plugins[name].start)
         return test_deferred
 

@@ -76,5 +76,93 @@ test:
         redis_pub_queue: 'proxy_mgmt_request',
         redis_sub_queue: 'proxy_mgmt_response',
       }
+    },
+    {
+      name: 'TestStopProxyAPI',
+      kwargs:
+      {
+        redis_host: '127.0.0.1',
+        redis_port: 6379,
+        redis_db: 0,
+        redis_pub_queue: 'proxy_mgmt_request',
+        redis_sub_queue: 'proxy_mgmt_response',
+      }
+    },
+    {
+      name: 'TestStartProxyAPI',
+      kwargs:
+      {
+        redis_host: '127.0.0.1',
+        redis_port: 6379,
+        redis_db: 0,
+        redis_pub_queue: 'proxy_mgmt_request',
+        redis_sub_queue: 'proxy_mgmt_response',
+      }
+    },
+    {
+      name: 'TestChangeUpstreamHostAPI',
+      kwargs:
+      {
+        redis_host: '127.0.0.1',
+        redis_port: 6379,
+        redis_db: 0,
+        redis_pub_queue: 'proxy_mgmt_request',
+        redis_sub_queue: 'proxy_mgmt_response',
+      }
+    },
+    {
+      name: 'TestChangeUpstreamPortAPI',
+      kwargs:
+      {
+        redis_host: '127.0.0.1',
+        redis_port: 6379,
+        redis_db: 0,
+        redis_pub_queue: 'proxy_mgmt_request',
+        redis_sub_queue: 'proxy_mgmt_response',
+      }
+    },
+    {
+      name: 'TestChangeBindAddressAPI',
+      kwargs:
+      {
+        redis_host: '127.0.0.1',
+        redis_port: 6379,
+        redis_db: 0,
+        redis_pub_queue: 'proxy_mgmt_request',
+        redis_sub_queue: 'proxy_mgmt_response',
+      }
+    },
+    {
+      name: 'TestChangeBindPortAPI',
+      kwargs:
+      {
+        redis_host: '127.0.0.1',
+        redis_port: 6379,
+        redis_db: 0,
+        redis_pub_queue: 'proxy_mgmt_request',
+        redis_sub_queue: 'proxy_mgmt_response',
+      }
+    },
+    {
+      name: 'TestResetPluginsAPI',
+      kwargs:
+      {
+        redis_host: '127.0.0.1',
+        redis_port: 6379,
+        redis_db: 0,
+        redis_pub_queue: 'proxy_mgmt_request',
+        redis_sub_queue: 'proxy_mgmt_response',
+      }
+    },
+    {
+      name: 'TestReloadPluginsAPI',
+      kwargs:
+      {
+        redis_host: '127.0.0.1',
+        redis_port: 6379,
+        redis_db: 0,
+        redis_pub_queue: 'proxy_mgmt_request',
+        redis_sub_queue: 'proxy_mgmt_response',
+      }
     }
   ]

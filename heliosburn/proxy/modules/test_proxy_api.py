@@ -53,7 +53,133 @@ class TestStartProxyAPI(TestControllerAPISuccess):
         return json.dumps(message)
 
 
-test_stop_proxy = TestStopProxyAPI()
+test_start_proxy = TestStartProxyAPI()
+
+
+class TestChangeUpstreamPortAPI(TestControllerAPISuccess):
+    """
+    Used to teset the proxy controller API call
+    'upstream_port'.
+    """
+
+    def get_message(self):
+        response_message = {'Change_upstream_port':
+                            [self.op_response.get_message()],
+                            }
+        self.op_response.set_message(response_message)
+
+        message = self._get_operation_message('upstream_port',
+                                              "8989",
+                                              self.response_key)
+        return json.dumps(message)
+
+
+test_upstream_port_proxy = TestChangeUpstreamPortAPI()
+
+
+class TestChangeUpstreamHostAPI(TestControllerAPISuccess):
+    """
+    Used to teset the proxy controller API call
+    'upstream_host'.
+    """
+
+    def get_message(self):
+        response_message = {'Change_upstream_host':
+                            [self.op_response.get_message()],
+                            }
+        self.op_response.set_message(response_message)
+
+        message = self._get_operation_message('upstream_host',
+                                              "127.0.0.1",
+                                              self.response_key)
+        return json.dumps(message)
+
+
+test_upstream_host_proxy = TestChangeUpstreamHostAPI()
+
+
+class TestChangeBindAddressAPI(TestControllerAPISuccess):
+    """
+    Used to teset the proxy controller API call
+    'bind_address'.
+    """
+
+    def get_message(self):
+        response_message = {'Change_bind_address':
+                            [self.op_response.get_message()],
+                            }
+        self.op_response.set_message(response_message)
+
+        message = self._get_operation_message('bind_address',
+                                              "127.0.0.1",
+                                              self.response_key)
+        return json.dumps(message)
+
+
+test_bind_address_proxy = TestChangeBindAddressAPI()
+
+
+class TestReloadPluginsAPI(TestControllerAPISuccess):
+    """
+    Used to teset the proxy controller API call
+    'reload'.
+    """
+
+    def get_message(self):
+        response_message = {'Reload_plugins':
+                            [self.op_response.get_message()],
+                            }
+        self.op_response.set_message(response_message)
+
+        message = self._get_operation_message('reload',
+                                              "n/a",
+                                              self.response_key)
+        return json.dumps(message)
+
+
+test_reload_proxy = TestReloadPluginsAPI()
+
+
+class TestResetPluginsAPI(TestControllerAPISuccess):
+    """
+    Used to teset the proxy controller API call
+    'reset'.
+    """
+
+    def get_message(self):
+        response_message = {'Reset_plugins':
+                            [self.op_response.get_message()],
+                            }
+        self.op_response.set_message(response_message)
+
+        message = self._get_operation_message('reset',
+                                              "n/a",
+                                              self.response_key)
+        return json.dumps(message)
+
+
+test_Reset_proxy = TestResetPluginsAPI()
+
+
+class TestChangeBindPortAPI(TestControllerAPISuccess):
+    """
+    Used to teset the proxy controller API call
+    'bind_port'.
+    """
+
+    def get_message(self):
+        response_message = {'Change_bind_port':
+                            [self.op_response.get_message()],
+                            }
+        self.op_response.set_message(response_message)
+
+        message = self._get_operation_message('bind_port',
+                                              8989,
+                                              self.response_key)
+        return json.dumps(message)
+
+
+test_bind_port_proxy = TestChangeBindPortAPI()
 
 
 class TestStartRecordingAPI(TestControllerAPISuccess):
