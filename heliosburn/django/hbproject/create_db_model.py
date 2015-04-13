@@ -77,5 +77,8 @@ def main():
         current_db.template.ensure_index('name', unique=True)
         current_db.traffic.ensure_index('recording_id')
 
+        print("Creating capped collection 'log' in db '%s'" % s.MONGODB_DATABASE[db])
+        current_db.create_collection('log', capped=True, size=250000)
+
 if __name__ == '__main__':
     main()
