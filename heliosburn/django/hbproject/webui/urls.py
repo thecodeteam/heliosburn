@@ -30,6 +30,9 @@ urlpatterns = patterns(
 
     url(r'^recordings/$', 'recording.recording_list', name='recording_list'),
     url(r'^recordings/(?P<recording_id>[\w-]+)$', 'recording.recording_details', name='recording_details'),
+    url(r'^recordings/(?P<recording_id>[\w-]+)/live$', 'recording.recording_live', name='recording_live'),
+    url(r'^recordings/(?P<recording_id>[\w-]+)/start$', 'recording.recording_start', name='recording_start'),
+    url(r'^recordings/(?P<recording_id>[\w-]+)/stop$', 'recording.recording_stop', name='recording_stop'),
     url(r'^recordings/update/$', 'recording.recording_update', name='recording_update'),
     url(r'^recordings/new/$', 'recording.recording_new', name='recording_new'),
 
