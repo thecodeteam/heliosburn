@@ -3,7 +3,7 @@ import json
 from txredis.client import RedisClientFactory
 from twisted.internet import defer
 from twisted.internet import reactor
-from twisted.internet import server
+from twisted.web import server
 from protocols import HBReverseProxyRequest
 from protocols import HBReverseProxyResource
 

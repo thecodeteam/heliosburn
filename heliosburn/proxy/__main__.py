@@ -1,7 +1,7 @@
 
 import yaml
 import argparse
-from controller.service import HBServiceController
+from service.server import HBProxyServer
 
 
 def get_config(config_path):
@@ -84,7 +84,7 @@ def get_arg_parser():
 
 def main():
     """
-    Entry point for starting the proxy
+    Entry point for starting the proxy server
     """
     args = get_arg_parser().parse_args()
     config_path = args.config_path
@@ -122,7 +122,7 @@ def main():
             response_channel = args.response_channel
 
     plugins = get_config("./modules.yaml")
-    proxy_controller = HBServiceController(bind_address, protocols,
+    proxy_server = HBProxyServer(bind_address, protocols,
                                            upstream_host, upstream_port,
                                            args.redis_mgmt, redis_address,
                                            redis_port, request_channel,
@@ -130,9 +130,9 @@ def main():
                                            tcp_mgmt_address, tcp_mgmt_port,
                                            plugins)
     if args.run_tests:
-        proxy_controller.test()
+        proxy_server.test()
     else:
-        proxy_controller.run()
+        proxy_server.run()
 
 if __name__ == "__main__":
     main()

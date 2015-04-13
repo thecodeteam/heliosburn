@@ -7,7 +7,7 @@
 
 import sys
 import json
-from controllerapi import RedisOperationFactory
+from service.api import RedisOperationFactory
 from twisted.internet import reactor
 from twisted.internet import endpoints
 from twisted.internet import defer
