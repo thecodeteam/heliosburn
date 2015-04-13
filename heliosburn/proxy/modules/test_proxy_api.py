@@ -1,6 +1,6 @@
 from twisted.python import log
 import json
-from controller import OperationResponseFactory
+from controller_api import OperationResponseFactory
 from module import AbstractControllerTestModule
 
 

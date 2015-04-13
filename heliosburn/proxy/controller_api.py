@@ -1,34 +1,11 @@
-#!/usr/bin/env python
 
-# proxy_core provides ReverseProxy functionality to HeliosBurn
-# If invoked with the single command line parameter 'unittests',
-# it discards all modules from config.yaml, and loads
-# only the 'unittest_module.py' module, necessary for unit tests.
-# To run unit tests against proxy_core.py, execute `python -m unittest tests`
-
-from os.path import dirname, abspath
-from inspect import getsourcefile
-
-import yaml
-import sys
-import argparse
 import json
-from twisted.internet import reactor
-from twisted.internet import defer
-from twisted.internet.endpoints import TCP4ClientEndpoint
-from twisted.web import proxy
-from twisted.web import server
-from twisted.python import log
 from txredis.client import RedisClientFactory
-from module import Registry
-from protocols import HBProxyClient
-from protocols import HBProxyClientFactory
+from twisted.internet import defer
+from twisted.internet import reactor
+from twisted.internet import server
 from protocols import HBReverseProxyRequest
 from protocols import HBReverseProxyResource
-from protocols import HBProxyMgmtRedisSubscriber
-from protocols import HBProxyMgmtRedisSubscriberFactory
-from protocols import HBProxyMgmtProtocol
-from protocols import HBProxyMgmtProtocolFactory
 
 
 class OperationResponse(object):
@@ -156,16 +133,16 @@ class OperationFactory(object):
                                      op_string['key'])
 
         if "upstream_port" == op_string['operation']:
-            self.controller.upstream_port = op_string['param']
             operation = ChangeUpstreamPort(self.controller,
                                            self.response_factory,
-                                           op_string['key'])
+                                           op_string['key'],
+                                           new_port=op_string['param'])
 
         if "upstream_host" == op_string['operation']:
-            self.controller.upstream_host = op_string['param']
             operation = ChangeUpstreamHost(self.controller,
                                            self.response_factory,
-                                           op_string['key'])
+                                           op_string['key'],
+                                           new_host=op_string['param'])
 
         if "bind_address" == op_string['operation']:
             self.controller.bind_address = op_string['param']
@@ -178,6 +155,12 @@ class OperationFactory(object):
             operation = ChangeBindPort(self.controller,
                                        self.response_factory,
                                        op_string['key'])
+
+        if "test" == op_string['operation']:
+            operation = RunTest(self.controller,
+                                self.response_factory,
+                                op_string['key'],
+                                module_name=op_string['param'])
 
         return operation
 
@@ -258,8 +241,9 @@ class StartProxy(ControllerOperation):
 
 class ChangeUpstreamPort(ControllerOperation):
 
-    def __init__(self, controller, response_factory, key):
+    def __init__(self, controller, response_factory, key, new_port):
         ControllerOperation.__init__(self, controller, response_factory, key)
+        controller.upstream_port = new_port
         stop_op = StopProxy(controller, response_factory, key)
         self.start_op = StartProxy(controller, response_factory, key)
 
@@ -275,8 +259,9 @@ class ChangeUpstreamPort(ControllerOperation):
 
 class ChangeUpstreamHost(ControllerOperation):
 
-    def __init__(self, controller, response_factory, key):
+    def __init__(self, controller, response_factory, key, new_host):
         ControllerOperation.__init__(self, controller, response_factory, key)
+        controller.upstream_host = new_host
         stop_op = StopProxy(controller, response_factory, key)
         self.start_op = StartProxy(controller, response_factory, key)
 
@@ -404,205 +389,26 @@ class ReloadPlugins(ControllerOperation):
                                    })
 
 
-class HBProxyController(object):
+class RunTest(ControllerOperation):
 
-    def __init__(self, bind_address, protocols, upstream_host, upstream_port,
-                 redis_mgmt, redis_host, redis_port, request_channel,
-                 response_channel, tcp_mgmt, tcp_mgmt_address, tcp_mgmt_port,
-                 plugins):
+    def __init__(self, controller, response_factory, key, module_name):
+        ControllerOperation.__init__(self, controller, response_factory, key)
+        self.module_name = module_name
 
-        self.bind_address = bind_address
-        self._start_logging()
-        self.protocols = protocols
-        self.upstream_host = upstream_host
-        self.upstream_port = upstream_port
-        self.redis_host = redis_host
-        self.redis_port = redis_port
-        self.request_channel = request_channel
-        self.response_channel = response_channel
-        self.tcp_mgmt_address = tcp_mgmt_address
-        self.tcp_mgmt_port = tcp_mgmt_port
+        c_port_op = ChangeUpstreamPort(controller,
+                                       response_factory,
+                                       key,
+                                       7599)
 
-        self.module_registry = Registry(plugins)
-        self.site = server.Site(proxy.ReverseProxyResource(self.upstream_host,
-                                self.upstream_port, ''))
+        c_host_op = ChangeUpstreamHost(controller,
+                                       response_factory,
+                                       key,
+                                       '127.0.0.1')
+        d = self.addCallback(self.run_test)
+        d.addCallback(self.respond)
 
-        self.mgmt_protocol_factory = HBProxyMgmtProtocolFactory(self)
-        reactor.listenTCP(self.tcp_mgmt_port, self.mgmt_protocol_factory,
-                          interface=self.tcp_mgmt_address)
-
-        redis_endpoint = TCP4ClientEndpoint(reactor, self.redis_host,
-                                            self.redis_port)
-
-        op_factory = RedisOperationFactory(self, redis_endpoint,
-                                           self.response_channel)
-        self.redis_conn = redis_endpoint.connect(
-            HBProxyMgmtRedisSubscriberFactory(self.request_channel,
-                                              op_factory))
-        self.redis_conn.addCallback(self.subscribe).addCallback(
-            self.start_proxy)
-
-    def _start_logging(self):
-
-        setStdout = True
-#        log.startLogging(sys.stdout)
-
-    def start_proxy(self, result):
-        resource = HBReverseProxyResource(self.upstream_host,
-                                          self.upstream_port, '',
-                                          self.module_registry)
-        f = server.Site(resource)
-        f.requestFactory = HBReverseProxyRequest
-        self.protocol = self.protocols['http']
-        self.proxy = reactor.listenTCP(self.protocol, f,
-                                       interface=self.bind_address)
-        return self.proxy
-
-    def subscribe(self, redis):
-        return redis.subscribe()
-
-    def run(self):
-        reactor.run()
-
-    def _stop_test(self, result):
-        reactor.stop()
-
-    def test(self):
-        self.tests = self.module_registry.test()
-        self.tests.addCallback(self._stop_test)
-        self.tests.callback("start test")
-        reactor.run()
-
-
-def get_config(config_path):
-    with open(config_path, 'r+') as config_file:
-        config = yaml.load(config_file.read())
-
-    return config
-
-
-def get_arg_parser():
-
-    description = " Helios Burn Proxy Server:  \n\n"
-
-    parser = argparse.ArgumentParser(description=description)
-
-    parser.add_argument('--config_path',
-                        default="./config.yaml",
-                        dest='config_path',
-                        help='Path to output config file. Default: '
-                        + ' ./config.yaml')
-
-    parser.add_argument('--tcp_mgmt',
-                        action="store_true",
-                        dest='tcp_mgmt',
-                        help='If set will listen for proxy mgmt commands on'
-                        + ' a TCP port as well as subscribe to the request'
-                        + ' channel. Default: false')
-
-    parser.add_argument('--tcp_address',
-                        dest='tcp_mgmt_address',
-                        help='If the proxy mgmt interface is listening '
-                        + ' on a tcp socket, this option will set the address'
-                        + ' on which to listen.')
-
-    parser.add_argument('--tcp_port',
-                        dest='tcp_mgmt_port',
-                        help='If the proxy mgmt interface is listening '
-                        + ' on a tcp socket, this option will set the port'
-                        + ' on which to listen.')
-
-    parser.add_argument('--redis_mgmt',
-                        action="store_true",
-                        dest='redis_mgmt',
-                        help='If set will subscribe to a given REDIS'
-                        + ' channel for proxy mgmt commands'
-                        + ' Default: true')
-
-    parser.add_argument('--redis_address',
-                        dest='redis_address',
-                        help='If the proxy mgmt interface is listening '
-                        + ' on a tcp socket, this option will set the address'
-                        + ' on which to listen.')
-
-    parser.add_argument('--redis_port',
-                        dest='redis_port',
-                        help='If the proxy mgmt interface is listening '
-                        + ' on a tcp socket, this option will set the port'
-                        + ' on which to listen.')
-
-    parser.add_argument('--request_channel',
-                        dest='request_channel',
-                        help='If the proxy mgmt interface is set to use redis'
-                        + ', this option will set the channel to which it '
-                        + ' should subscribe.')
-
-    parser.add_argument('--response_channel',
-                        dest='response_channel',
-                        help='If the proxy mgmt interface is set to use redis'
-                        + ', this option will set the channel to which it '
-                        + ' should publish.')
-
-    parser.add_argument('--test',
-                        action="store_true",
-                        dest='run_tests',
-                        help='If set will run all proxy tests'
-                        + ' Default: false')
-
-    return parser
-
-
-def main():
-    """
-    Entry point for starting the proxy
-    """
-    args = get_arg_parser().parse_args()
-    config_path = args.config_path
-
-    config = get_config(config_path)
-    proxy_config = config['proxy']
-    mgmt_config = config['mgmt']
-
-    bind_address = proxy_config['bind_address']
-    protocols = proxy_config['protocols']
-    upstream_host = proxy_config['upstream']['address']
-    upstream_port = proxy_config['upstream']['port']
-    tcp_mgmt_address = mgmt_config['tcp']['address']
-    tcp_mgmt_port = mgmt_config['tcp']['port']
-    redis_address = mgmt_config['redis']['address']
-    redis_port = mgmt_config['redis']['port']
-    request_channel = mgmt_config['redis']['request_channel']
-    response_channel = mgmt_config['redis']['response_channel']
-
-    if args.tcp_mgmt:
-        if args.tcp_mgmt_address:
-            tcp_mgmt_address = args.tcp_mgmt_address
-
-        if args.tcp_mgmt_port:
-            tcp_mgmt_port = args.tcp_mgmt_port
-
-    if args.redis_mgmt:
-        if args.redis_address:
-            redis_address = args.redis_address
-        if args.redis_port:
-            redis_port = args.redis_address
-        if args.request_channel:
-            request_channel = args.request_channel
-        if args.response_channel:
-            response_channel = args.response_channel
-
-    plugins = get_config("./modules.yaml")
-    proxy_controller = HBProxyController(bind_address, protocols,
-                                         upstream_host, upstream_port,
-                                         args.redis_mgmt, redis_address,
-                                         redis_port, request_channel,
-                                         response_channel, args.tcp_mgmt,
-                                         tcp_mgmt_address, tcp_mgmt_port,
-                                         plugins)
-    if args.run_tests:
-        proxy_controller.test()
-    else:
-        proxy_controller.run()
-
-if __name__ == "__main__":
-    main()
+    def run_test(self, result):
+        self.controller.module_registry.test(module_name=self.module_name)
+        self.response.set_message({'test started':
+                                   [self.response.get_message()]
+                                   })

@@ -6,6 +6,7 @@ from twisted.web.proxy import ProxyClient
 from twisted.web.proxy import ReverseProxyRequest
 from twisted.web.proxy import ReverseProxyResource
 from twisted.web.proxy import ProxyClientFactory
+from twisted.web import resource
 from twisted.internet import reactor
 from twisted.internet.endpoints import TCP4ClientEndpoint
 from twisted.python import log
@@ -232,3 +233,10 @@ class HBProxyMgmtProtocolFactory(protocol.Factory):
     def buildProtocol(self, addr):
         return HBProxyMgmtProtocol(self.op_factory)
 
+
+class HBProxyEchoServer(resource.Resource):
+    isLeaf = True
+
+    def render_GET(self, request):
+        request.setHeader("content-type", "text/plain")
+        return "Echo\n"

@@ -3,7 +3,7 @@ import os
 import json
 from protocols import HBProxyMgmtRedisSubscriberFactory
 from protocols import HBProxyMgmtProtocolFactory
-from controller import HBProxyController
+from controller import HBServiceController
 from controller import OperationFactory
 from twisted.trial import unittest
 from twisted.test import proto_helpers
@@ -24,7 +24,7 @@ def get_controller():
     redis_port = mgmt_config['redis']['port']
     request_channel = mgmt_config['redis']['request_channel']
     response_channel = mgmt_config['redis']['response_channel']
-    controller = HBProxyController(bind_address,
+    controller = HBServiceController(bind_address,
                                    protocols,
                                    upstream_host,
                                    upstream_port,

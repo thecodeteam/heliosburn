@@ -232,23 +232,32 @@ class AbstractControllerTestModule(AbstractModule, unittest.TestCase):
 class Registry(object):
 
     def __init__(self, plugin_config):
+        self.plugin_config = plugin_config
         self.pipeline_modules = plugin_config['pipeline']
         self.support_modules = plugin_config['support']
         self.test_modules = plugin_config['test']
+        self.test_mode = False
 
         self.plugins = {plugin.get_name(): plugin for plugin in
                         getPlugins(IModule, modules)}
 
+        self._load_pipeline_modules()
+        self._load_support_modules()
+        self._load_test_modules()
+
+    def _load_pipeline_modules(self):
         for module in self.pipeline_modules:
             name = module['name']
             configs = module['kwargs']
             self.plugins[name].configure(**configs)
 
+    def _load_support_modules(self):
         for module in self.support_modules:
             name = module['name']
             configs = module['kwargs']
             self.plugins[name].configure(**configs)
 
+    def _load_test_modules(self):
         for module in self.test_modules:
             name = module['name']
             configs = module['kwargs']
@@ -257,6 +266,7 @@ class Registry(object):
     def _build_request_pipeline(self):
 
         pipeline = defer.Deferred()
+
         for module in self.pipeline_modules:
             module_name = module['name']
             pipeline.addCallback(self.plugins[module_name].handle_request)
@@ -271,6 +281,14 @@ class Registry(object):
             pipeline.addCallback(self.plugins[module_name].handle_response)
 
         return pipeline
+
+    def _test_mode(self, on):
+        if on:
+            self.test_mode = True
+            self.pipeline_modules = self.test_modules
+        else:
+            self.test_mode = False
+            self.pipeline_modules = self.plugin_config['pipeline']
 
     def handle_request(self, request, callback):
 
@@ -333,8 +351,10 @@ class Registry(object):
     def test(self, module_name=None):
 
         """
-        Executes the start method of all or one currently active modules
+        Executes the start method of all test  modules
         """
+        self._test_mode(True)
+
         test_deferred = defer.Deferred()
         if module_name:
             test_deferred.addCallback(self.plugins[module_name].start)
@@ -342,5 +362,7 @@ class Registry(object):
             for module in self.test_modules:
                 name = module['name']
                 test_deferred.addCallback(self.plugins[name].start)
+
+        self._test_mode(False)
         return test_deferred
 
