@@ -1,6 +1,15 @@
 from django.conf import settings
 
 
+def init_log():
+    import logging
+    from redislog import handlers, logger
+    l = logger.RedisLogger('hb.logger')
+    l.setLevel(logging.DEBUG)
+    l.addHandler(handlers.RedisHandler.to('hblog'))
+    return l
+
+
 def init_redis():
     """
     Returns redis connection.

@@ -50,16 +50,15 @@ def get(request, recording_id=None, get_traffic=None):
         recording['id'] = str(recording.pop('_id'))
         recording['count'] = dbc.traffic.find({"recording_id": recording['id']}).count()
 
-
         # Return paginated traffic data
         if get_traffic is not None:
 
-            #Fetch the traffic
+            # Fetch the traffic
             recording['traffic'] = [t for t in dbc.traffic.find({"recording_id": recording['id']})]
             for t in recording['traffic']:
                 t['id'] = str(t.pop('_id'))
 
-            #Paginate the traffic
+            # Paginate the traffic
             start = 0
             offset = 100
             if hasattr(request, 'GET') and ('start' in request.GET) and ('offset' in request.GET):
