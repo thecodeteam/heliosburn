@@ -1,11 +1,11 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse
-from django.http import HttpResponseRedirect, HttpResponseBadRequest, HttpResponse
+from django.http import HttpResponseRedirect, HttpResponseBadRequest, HttpResponse, HttpResponseServerError
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 
-from webui.exceptions import UnauthorizedException, NotFoundException
+from webui.exceptions import UnauthorizedException, NotFoundException, ServerErrorException
 from webui.forms import RecordingForm
 from webui.models import Recording
 from webui.views import signout
@@ -20,12 +20,19 @@ def recording_list(request):
     except Exception as inst:
         return render(request, '500.html', {'message': inst.message})
 
-    return render(request, 'recording/recording_list.html', recordings)
+    form = RecordingForm()
+    data = dict()
+    data['recordings'] = recordings['recordings']
+    data['form'] = form
+    return render(request, 'recording/recording_list.html', data)
 
 
 @login_required
 def recording_new(request):
-    form = RecordingForm(request.POST or None)
+    if not request.POST:
+        return HttpResponseRedirect(reverse('recording_list'))
+
+    form = RecordingForm(request.POST)
     if form.is_valid():
         try:
             recording_id = Recording(auth_token=request.user.password).create(form.cleaned_data)
@@ -38,7 +45,8 @@ def recording_new(request):
         except Exception as inst:
             messages.error(request, inst.message if inst.message else 'Unexpected error')
             return HttpResponseRedirect(reverse('recording_list'))
-    return render(request, 'recording/recording_new.html', {'form': form})
+    messages.error(request, 'Could not create the recording. Invalid fields.')
+    return HttpResponseRedirect(reverse('recording_list'))
 
 
 @login_required
@@ -51,7 +59,10 @@ def recording_details(request, recording_id):
         return render(request, '404.html')
     except Exception as inst:
         messages.error(request, inst.message if inst.message else 'Unexpected error')
-        return HttpResponseRedirect(reverse('testplan_list'))
+        return HttpResponseRedirect(reverse('recording_list'))
+
+    if 'startedAt' not in recording:
+        return HttpResponseRedirect(reverse('recording_live', args=(str(recording_id),)))
 
     data = {'recording': recording}
     return render(request, 'recording/recording_details.html', data)
@@ -67,7 +78,10 @@ def recording_live(request, recording_id):
         return render(request, '404.html')
     except Exception as inst:
         messages.error(request, inst.message if inst.message else 'Unexpected error')
-        return HttpResponseRedirect(reverse('testplan_list'))
+        return HttpResponseRedirect(reverse('recording_list'))
+
+    if 'startedAt' and 'stoppedAt' in recording:
+        return HttpResponseRedirect(reverse('recording_details', args=(str(recording_id),)))
 
     data = {'recording': recording}
     return render(request, 'recording/recording_live.html', data)
@@ -106,10 +120,13 @@ def recording_start(request, recording_id):
         return HttpResponseBadRequest('Unauthorized')
     except NotFoundException:
         return HttpResponseBadRequest('Resource not found')
+    except ServerErrorException:
+        return HttpResponseServerError()
     except Exception as inst:
         message = inst.message if inst.message else 'Unexpected error'
         return HttpResponseBadRequest(message)
     return HttpResponse('started')
+
 
 @login_required
 @csrf_exempt
@@ -124,6 +141,8 @@ def recording_stop(request, recording_id):
         return HttpResponseBadRequest('Unauthorized')
     except NotFoundException:
         return HttpResponseBadRequest('Resource not found')
+    except ServerErrorException:
+        return HttpResponseServerError()
     except Exception as inst:
         message = inst.message if inst.message else 'Unexpected error'
         return HttpResponseBadRequest(message)

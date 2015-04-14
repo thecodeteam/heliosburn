@@ -34,11 +34,11 @@
                     </div><!-- /.box-header -->
                     <div class="box-body table-responsive">
                         {% csrf_token %}
-                        {% bootstrap_form form layout='horizontal' %}
+                        {% bootstrap_form form layout='inline' %}
                     </div><!-- /.box-body -->
                     <div class="box-footer">
                         {% buttons %}
-                            <span class="col-md-2 col-md-offset-1">
+                            <span class="col-md-4 col-md-offset-1">
                                 <button type="submit" class="btn btn-primary bold">Create</button>
                                 <a class="btn btn-default bold lmargin10" href="{% url "testplan_list" %}" role="button">Cancel</a>
                             </span>
