@@ -4,8 +4,8 @@ from txredis.client import RedisClientFactory
 from twisted.internet import defer
 from twisted.internet import reactor
 from twisted.web import server
-from protocols import HBReverseProxyRequest
-from protocols import HBReverseProxyResource
+from protocols.http import HBReverseProxyRequest
+from protocols.http import HBReverseProxyResource
 
 
 class OperationResponse(object):
@@ -180,7 +180,7 @@ class TcpOperationFactory(OperationFactory):
         self.repsponse_factory = TcpOperationResponseFactory()
 
 
-class ControllerOperation(object):
+class ServerOperation(object):
 
     def __init__(self, controller, response_factory, key):
         self.controller = controller
@@ -200,10 +200,10 @@ class ControllerOperation(object):
         return self.operation.addCallback(callback)
 
 
-class StopProxy(ControllerOperation):
+class StopProxy(ServerOperation):
 
     def __init__(self, controller, response_factory, key):
-        ControllerOperation.__init__(self, controller, response_factory, key)
+        ServerOperation.__init__(self, controller, response_factory, key)
 
         self.addCallback(self.stop)
         self.addCallback(self.respond)
@@ -215,11 +215,11 @@ class StopProxy(ControllerOperation):
         return deferred
 
 
-class StartProxy(ControllerOperation):
+class StartProxy(ServerOperation):
 
     def __init__(self, controller, response_factory, key):
 
-        ControllerOperation.__init__(self, controller, response_factory, key)
+        ServerOperation.__init__(self, controller, response_factory, key)
 
         self.addCallback(self.start)
         self.addCallback(self.respond)
@@ -239,10 +239,10 @@ class StartProxy(ControllerOperation):
         return self.controller.proxy
 
 
-class ChangeUpstreamPort(ControllerOperation):
+class ChangeUpstreamPort(ServerOperation):
 
     def __init__(self, controller, response_factory, key, new_port):
-        ControllerOperation.__init__(self, controller, response_factory, key)
+        ServerOperation.__init__(self, controller, response_factory, key)
         controller.upstream_port = new_port
         stop_op = StopProxy(controller, response_factory, key)
         self.start_op = StartProxy(controller, response_factory, key)
@@ -257,10 +257,10 @@ class ChangeUpstreamPort(ControllerOperation):
                                    })
 
 
-class ChangeUpstreamHost(ControllerOperation):
+class ChangeUpstreamHost(ServerOperation):
 
     def __init__(self, controller, response_factory, key, new_host):
-        ControllerOperation.__init__(self, controller, response_factory, key)
+        ServerOperation.__init__(self, controller, response_factory, key)
         controller.upstream_host = new_host
         stop_op = StopProxy(controller, response_factory, key)
         self.start_op = StartProxy(controller, response_factory, key)
@@ -275,10 +275,10 @@ class ChangeUpstreamHost(ControllerOperation):
                                    })
 
 
-class ChangeBindAddress(ControllerOperation):
+class ChangeBindAddress(ServerOperation):
 
     def __init__(self, controller, response_factory, key):
-        ControllerOperation.__init__(self, controller, response_factory, key)
+        ServerOperation.__init__(self, controller, response_factory, key)
         stop_op = StopProxy(controller, response_factory, key)
         self.start_op = StartProxy(controller, response_factory, key)
 
@@ -292,10 +292,10 @@ class ChangeBindAddress(ControllerOperation):
                                    })
 
 
-class ChangeBindPort(ControllerOperation):
+class ChangeBindPort(ServerOperation):
 
     def __init__(self, controller, response_factory, key):
-        ControllerOperation.__init__(self, controller, response_factory, key)
+        ServerOperation.__init__(self, controller, response_factory, key)
         stop_op = StopProxy(controller, response_factory, key)
         self.start_op = StartProxy(controller, response_factory, key)
 
@@ -309,10 +309,10 @@ class ChangeBindPort(ControllerOperation):
                                    })
 
 
-class StopRecording(ControllerOperation):
+class StopRecording(ServerOperation):
 
     def __init__(self, controller, response_factory, key, **params):
-        ControllerOperation.__init__(self, controller, response_factory, key)
+        ServerOperation.__init__(self, controller, response_factory, key)
 
         self.params = params
 
@@ -327,10 +327,10 @@ class StopRecording(ControllerOperation):
                                   + "}")
 
 
-class StartRecording(ControllerOperation):
+class StartRecording(ServerOperation):
 
     def __init__(self, controller, response_factory, key, **params):
-        ControllerOperation.__init__(self, controller, response_factory, key)
+        ServerOperation.__init__(self, controller, response_factory, key)
 
         self.params = params
 
@@ -345,10 +345,10 @@ class StartRecording(ControllerOperation):
                                    })
 
 
-class ResetPlugins(ControllerOperation):
+class ResetPlugins(ServerOperation):
 
     def __init__(self, controller, response_factory, key):
-        ControllerOperation.__init__(self, controller, response_factory, key)
+        ServerOperation.__init__(self, controller, response_factory, key)
         stop_op = StopProxy(controller, response_factory, key)
         self.start_op = StartProxy(controller, response_factory, key)
 
@@ -367,10 +367,10 @@ class ResetPlugins(ControllerOperation):
                                    })
 
 
-class ReloadPlugins(ControllerOperation):
+class ReloadPlugins(ServerOperation):
 
     def __init__(self, controller, response_factory, key):
-        ControllerOperation.__init__(self, controller, response_factory, key)
+        ServerOperation.__init__(self, controller, response_factory, key)
         stop_op = StopProxy(controller, response_factory, key)
         self.start_op = StartProxy(controller, response_factory, key)
 
@@ -389,10 +389,10 @@ class ReloadPlugins(ControllerOperation):
                                    })
 
 
-class RunTest(ControllerOperation):
+class RunTest(ServerOperation):
 
     def __init__(self, controller, response_factory, key, module_name):
-        ControllerOperation.__init__(self, controller, response_factory, key)
+        ServerOperation.__init__(self, controller, response_factory, key)
         self.module_name = module_name
 
         c_port_op = ChangeUpstreamPort(controller,
@@ -408,7 +408,9 @@ class RunTest(ControllerOperation):
         d.addCallback(self.respond)
 
     def run_test(self, result):
-        self.controller.module_registry.test(module_name=self.module_name)
+        tests = self.controller.module_registry.test(
+            module_name=self.module_name)
         self.response.set_message({'test started':
                                    [self.response.get_message()]
                                    })
+        tests.callback(self.response)

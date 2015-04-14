@@ -4,9 +4,9 @@ import uuid
 from module import AbstractModule
 from twisted.internet.endpoints import TCP4ClientEndpoint
 from twisted.internet import reactor
-from redis_subscriber import HBRedisSubscriberFactory
-from redis_subscriber import HBRedisMessageHandlerFactory
-from redis_subscriber import HBRedisMessageHandler
+from protocols.redis import HBRedisSubscriberFactory
+from protocols.redis import HBRedisMessageHandlerFactory
+from protocols.redis import HBRedisMessageHandler
 
 
 class TrafficRecorderHandlerFactory(HBRedisMessageHandlerFactory):

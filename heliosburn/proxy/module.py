@@ -15,9 +15,9 @@ from twisted.trial import unittest
 from twisted.internet.endpoints import TCP4ClientEndpoint
 from twisted.internet import defer
 from twisted.internet import reactor
-from redis_subscriber import HBRedisSubscriberFactory
-from redis_subscriber import HBRedisTestMessageHandlerFactory
-from redis_subscriber import HBRedisTestMessageHandler
+from protocols.redis import HBRedisSubscriberFactory
+from protocols.redis import HBRedisTestMessageHandlerFactory
+from protocols.redis import HBRedisTestMessageHandler
 
 
 class IModule(Interface):
@@ -282,13 +282,14 @@ class Registry(object):
 
         return pipeline
 
-    def _test_mode(self, on):
-        if on:
-            self.test_mode = True
-            self.pipeline_modules = self.test_modules
-        else:
-            self.test_mode = False
-            self.pipeline_modules = self.plugin_config['pipeline']
+    def _test_mode_on(self, ignored):
+        self.test_mode = True
+        self.pipeline_modules = self.test_modules
+
+    def _test_mode_off(self, ignored):
+        self.test_mode = False
+        self.pipeline_modules = self.plugin_config['pipeline']
+        self.test_modules = self.plugin_config['test']
 
     def handle_request(self, request, callback):
 
@@ -353,16 +354,19 @@ class Registry(object):
         """
         Executes the start method of all test  modules
         """
-        self._test_mode(True)
 
         test_deferred = defer.Deferred()
+        test_deferred.addCallback(self._test_mode_on)
         if module_name:
+            self.test_modules = []
+            test_module = {}
+            test_module['name'] = module_name
+            self.test_modules.append(test_module)
             test_deferred.addCallback(self.plugins[module_name].start)
         else:
             for module in self.test_modules:
                 name = module['name']
                 test_deferred.addCallback(self.plugins[name].start)
-
-        self._test_mode(False)
+        test_deferred.addCallback(self._test_mode_off)
         return test_deferred
 

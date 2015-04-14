@@ -17,11 +17,11 @@ from twisted.web import server
 from twisted.web import resource
 from twisted.python import log
 from module import Registry
-from protocols import HBReverseProxyRequest
-from protocols import HBReverseProxyResource
-from protocols import HBProxyMgmtRedisSubscriberFactory
-from protocols import HBProxyMgmtProtocolFactory
-from protocols import HBProxyEchoServer
+from protocols.http import HBReverseProxyRequest
+from protocols.http import HBReverseProxyResource
+from protocols.http import HBProxyMgmtRedisSubscriberFactory
+from protocols.http import HBProxyMgmtProtocolFactory
+from protocols.http import HBProxyEchoServer
 
 
 class HBProxyServer(object):
@@ -67,7 +67,7 @@ class HBProxyServer(object):
     def _start_logging(self):
 
         setStdout = True
-#        log.startLogging(sys.stdout)
+        log.startLogging(sys.stdout)
 
     def start_proxy(self, result):
         resource = HBReverseProxyResource(self.upstream_host,
