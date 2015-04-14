@@ -2,10 +2,9 @@ from django.conf import settings
 
 
 def init_log():
-    import logging
     from redislog import handlers, logger
     l = logger.RedisLogger('hb.logger')
-    l.setLevel(logging.DEBUG)
+    l.setLevel(logger.logging.DEBUG)
     l.addHandler(handlers.RedisHandler.to('hblog'))
     return l
 
@@ -21,3 +20,5 @@ def init_redis():
 def publish_to_proxy(msg):
     r = init_redis()
     r.publish('proxy_mgmt_request', msg)
+
+logger = init_log()  # This line allows `from api.models.redis_wrapper import logger` - for convenience
