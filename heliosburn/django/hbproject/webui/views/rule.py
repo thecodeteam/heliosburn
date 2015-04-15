@@ -1,12 +1,17 @@
+import logging
+
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse
-from django.http import HttpResponseRedirect, HttpResponseBadRequest, HttpResponse, HttpResponseNotFound
+from django.http import HttpResponseRedirect, HttpResponseBadRequest, HttpResponse
 from django.shortcuts import render
+
 from webui.exceptions import UnauthorizedException, NotFoundException
 from webui.forms import RuleRequestForm, RuleForm
 from webui.models import TestPlan, Rule
 from webui.views import signout
+
+logger = logging.getLogger(__name__)
 
 
 @login_required
@@ -19,10 +24,13 @@ def rule_details(request, testplan_id, rule_id):
         # if str(rule['testPlanId']) != testplan_id:
         #     return render(request, '404.html')
     except UnauthorizedException:
+        logger.warning('User unauthorized. Signing out...')
         return signout(request)
     except NotFoundException:
+        logger.warning('The requested Rule "%s" does not exists in the given Test Plan "%s"', rule_id, testplan_id)
         return render(request, '404.html')
     except Exception as inst:
+        logger.error('Unexpected exception', exc_info=True)
         messages.error(request, inst.message if inst.message else 'Unexpected error')
         return HttpResponseRedirect(reverse('testplan_list'))
 
@@ -35,8 +43,10 @@ def rule_details(request, testplan_id, rule_id):
             messages.success(request, "The rule was updated successfully.")
             return HttpResponseRedirect(reverse('rule_details', args=(str(testplan_id), str(rule_id))))
         except UnauthorizedException:
+            logger.warning('User unauthorized. Signing out...')
             return signout(request)
         except Exception as inst:
+            logger.error('Unexpected exception', exc_info=True)
             messages.error(request, inst.message if inst.message else 'Unexpected error')
             return HttpResponseRedirect(reverse('rule_details', args=(str(testplan_id), str(rule_id))))
 
@@ -49,10 +59,12 @@ def rule_new(request, testplan_id):
     try:
         testplan = TestPlan(auth_token=request.user.password).get(testplan_id)
     except UnauthorizedException:
+        logger.warning('User unauthorized. Signing out...')
         return signout(request)
     except NotFoundException:
         return render(request, '404.html')
     except Exception as inst:
+        logger.error('Unexpected exception', exc_info=True)
         messages.error(request, inst.message if inst.message else 'Unexpected error')
         return HttpResponseRedirect(reverse('testplan_list'))
 
@@ -62,6 +74,7 @@ def rule_new(request, testplan_id):
             rule_id = Rule(testplan_id, auth_token=request.user.password).create(form.cleaned_data)
             return HttpResponseRedirect(reverse('rule_details', args=(str(testplan_id), str(rule_id))))
         except UnauthorizedException:
+            logger.warning('User unauthorized. Signing out...')
             return signout(request)
         except Exception as inst:
             messages.error(request, inst.message if inst.message else 'Unexpected error')
@@ -89,6 +102,7 @@ def rule_update(request, testplan_id, rule_id):
     try:
         Rule(testplan_id, auth_token=request.user.password).update(pk, {name: value})
     except Exception as inst:
+        logger.error('Unexpected exception', exc_info=True)
         return HttpResponseBadRequest(content='Error updating the Test Plan. {}'.format(inst.message))
     return HttpResponse()
 

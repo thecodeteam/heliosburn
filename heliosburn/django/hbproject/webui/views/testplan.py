@@ -1,3 +1,4 @@
+import logging
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse
@@ -5,8 +6,10 @@ from django.http import HttpResponseRedirect, HttpResponseBadRequest, HttpRespon
 from django.shortcuts import render
 from webui.exceptions import UnauthorizedException, NotFoundException
 from webui.forms import TestPlanForm
-from webui.models import TestPlan, Rule
+from webui.models import TestPlan
 from webui.views import signout
+
+logger = logging.getLogger(__name__)
 
 
 @login_required
@@ -14,8 +17,10 @@ def testplan_list(request):
     try:
         testplans = TestPlan(auth_token=request.user.password).get_all()
     except UnauthorizedException:
+        logger.warning('User unauthorized. Signing out...')
         return signout(request)
     except Exception as inst:
+        logger.error('Unexpected exception', exc_info=True)
         return render(request, '500.html', {'message': inst.message})
 
     return render(request, 'testplan/testplan_list.html', testplans)
@@ -27,10 +32,13 @@ def testplan_details(request, testplan_id):
         testplan = TestPlan(auth_token=request.user.password).get(testplan_id)
         # rules = Rule(testplan_id, auth_token=request.user.password).get_all()
     except UnauthorizedException:
+        logger.warning('User unauthorized. Signing out...')
         return signout(request)
     except NotFoundException:
+        logger.warning('The requested Test Plan "%s" does not exist', testplan_id)
         return render(request, '404.html')
     except Exception as inst:
+        logger.error('Unexpected exception', exc_info=True)
         messages.error(request, inst.message if inst.message else 'Unexpected error')
         return HttpResponseRedirect(reverse('testplan_list'))
 
@@ -46,10 +54,10 @@ def testplan_new(request):
             testplan_id = TestPlan(auth_token=request.user.password).create(form.cleaned_data)
             return HttpResponseRedirect(reverse('testplan_details', args=(str(testplan_id),)))
         except UnauthorizedException:
+            logger.warning('User unauthorized. Signing out...')
             return signout(request)
-        except NotFoundException:
-            return render(request, '404.html')
         except Exception as inst:
+            logger.error('Unexpected exception', exc_info=True)
             messages.error(request, inst.message if inst.message else 'Unexpected error')
             return HttpResponseRedirect(reverse('testplan_list'))
 
@@ -77,6 +85,7 @@ def testplan_update(request):
     try:
         TestPlan(auth_token=request.user.password).update(pk, {name: value})
     except Exception as inst:
+        logger.error('Unexpected exception', exc_info=True)
         return HttpResponseBadRequest(content='Error updating the Test Plan. {}'.format(inst.message))
     return HttpResponse()
 
@@ -96,7 +105,9 @@ def testplan_delete(request):
         try:
             t.delete(testplan_id)
         except NotFoundException:
+            logger.warning('The requested Test Plan "%s" does not exist', testplan_id)
             return HttpResponseNotFound()
         except Exception as inst:
+            logger.error('Unexpected exception', exc_info=True)
             return HttpResponseBadRequest()
     return HttpResponse()

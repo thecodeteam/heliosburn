@@ -1,3 +1,4 @@
+import logging
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse
@@ -10,14 +11,18 @@ from webui.forms import RecordingForm
 from webui.models import Recording
 from webui.views import signout
 
+logger = logging.getLogger(__name__)
+
 
 @login_required
 def recording_list(request):
     try:
         recordings = Recording(auth_token=request.user.password).get_all()
     except UnauthorizedException:
+        logger.warning('User unauthorized. Signing out...')
         return signout(request)
     except Exception as inst:
+        logger.error('Unexpected exception', exc_info=True)
         return render(request, '500.html', {'message': inst.message})
 
     form = RecordingForm()
@@ -39,10 +44,10 @@ def recording_new(request):
             messages.success(request, 'Recording created successfully')
             return HttpResponseRedirect(reverse('recording_live', args=(str(recording_id),)))
         except UnauthorizedException:
+            logger.warning('User unauthorized. Signing out...')
             return signout(request)
-        except NotFoundException:
-            return render(request, '404.html')
         except Exception as inst:
+            logger.error('Unexpected exception', exc_info=True)
             messages.error(request, inst.message if inst.message else 'Unexpected error')
             return HttpResponseRedirect(reverse('recording_list'))
     messages.error(request, 'Could not create the recording. Invalid fields.')
@@ -54,10 +59,13 @@ def recording_details(request, recording_id):
     try:
         recording = Recording(auth_token=request.user.password).get(recording_id)
     except UnauthorizedException:
+        logger.warning('User unauthorized. Signing out...')
         return signout(request)
     except NotFoundException:
+        logger.warning('The requested Recording "%s" does not exist', recording_id)
         return render(request, '404.html')
     except Exception as inst:
+        logger.error('Unexpected exception', exc_info=True)
         messages.error(request, inst.message if inst.message else 'Unexpected error')
         return HttpResponseRedirect(reverse('recording_list'))
 
@@ -73,10 +81,13 @@ def recording_live(request, recording_id):
     try:
         recording = Recording(auth_token=request.user.password).get(recording_id)
     except UnauthorizedException:
+        logger.warning('User unauthorized. Signing out...')
         return signout(request)
     except NotFoundException:
+        logger.warning('The requested Recording "%s" does not exist', recording_id)
         return render(request, '404.html')
     except Exception as inst:
+        logger.error('Unexpected exception', exc_info=True)
         messages.error(request, inst.message if inst.message else 'Unexpected error')
         return HttpResponseRedirect(reverse('recording_list'))
 
@@ -103,6 +114,7 @@ def recording_update(request):
     try:
         Recording(auth_token=request.user.password).update(pk, {name: value})
     except Exception as inst:
+        logger.error('Unexpected exception', exc_info=True)
         return HttpResponseBadRequest(content='Error updating the recording. {}'.format(inst.message))
     return HttpResponse()
 
@@ -116,13 +128,17 @@ def recording_start(request, recording_id):
     try:
         info = Recording(auth_token=request.user.password).start(recording_id)
     except UnauthorizedException:
+        logger.warning('User unauthorized. Signing out...')
         signout(request)
         return HttpResponseBadRequest('Unauthorized')
     except NotFoundException:
+        logger.warning('The requested Recording "%s" does not exist', recording_id)
         return HttpResponseBadRequest('Resource not found')
     except ServerErrorException:
+        logger.error('Unexpected exception in the API', exc_info=True)
         return HttpResponseServerError()
     except Exception as inst:
+        logger.error('Unexpected exception', exc_info=True)
         message = inst.message if inst.message else 'Unexpected error'
         return HttpResponseBadRequest(message)
     return HttpResponse('started')
@@ -137,13 +153,17 @@ def recording_stop(request, recording_id):
     try:
         info = Recording(auth_token=request.user.password).stop(recording_id)
     except UnauthorizedException:
+        logger.warning('User unauthorized. Signing out...')
         signout(request)
         return HttpResponseBadRequest('Unauthorized')
     except NotFoundException:
+        logger.warning('The requested Recording "%s" does not exist', recording_id)
         return HttpResponseBadRequest('Resource not found')
     except ServerErrorException:
+        logger.error('Unexpected exception in the API', exc_info=True)
         return HttpResponseServerError()
     except Exception as inst:
+        logger.error('Unexpected exception', exc_info=True)
         message = inst.message if inst.message else 'Unexpected error'
         return HttpResponseBadRequest(message)
 
