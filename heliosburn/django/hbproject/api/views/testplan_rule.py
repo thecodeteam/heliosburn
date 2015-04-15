@@ -8,6 +8,7 @@ from django.views.decorators.csrf import csrf_exempt
 from api.models import db_model
 from api.models.auth import RequireLogin
 from api.models import rule_model
+from api.models.redis_wrapper import logger
 
 
 @csrf_exempt
@@ -91,6 +92,7 @@ def post(request, testplan_id):
     dbc.testplan.save(testplan)
     r = JsonResponse({"id": rule['id']}, status=200)
     r['location'] = "/api/testplan/%s/rule/%s" % (testplan_id, rule['id'])
+    logger.info("rule '%s' within testplan '%s' created by '%s'" % (rule['id'], testplan_id, request.user['username']))
     return r
 
 
@@ -130,6 +132,7 @@ def put(request, testplan_id, rule_id):
     dbc.testplan.save(testplan)
     r = HttpResponse(status=200)
     r['location'] = "/api/testplan/%s/rule/%s" % (testplan_id, rule['id'])
+    logger.info("rule '%s' within testplan '%s' updated by '%s'" % (rule['id'], testplan_id, request.user['username']))
     return r
 
 
@@ -152,4 +155,5 @@ def delete(request, testplan_id, rule_id):
             break
 
     dbc.testplan.save(testplan)
+    logger.info("rule '%s' within testplan '%s' deleted by '%s'" % (rule_id, testplan_id, request.user['username']))
     return HttpResponse()

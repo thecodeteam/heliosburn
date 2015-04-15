@@ -5,6 +5,7 @@ from django.http import HttpResponse, HttpResponseBadRequest
 from django.views.decorators.csrf import csrf_exempt
 from django.conf import settings
 from api.models import db_model
+from api.models.redis_wrapper import logger
 
 @csrf_exempt
 def login(request):
@@ -44,6 +45,8 @@ def login(request):
             r.set(token_string, user['username'], settings.TOKEN_TTL)  # Store tokens to expire in 1 hour
             r = HttpResponse()
             r['X-Auth-Token'] = token_string
+            logger.info("login success for user '%s'" % in_json['username'])
             return r
         else:
+            logger.info("login failed for user '%s'" % in_json['username'])
             return HttpResponse(status=401)

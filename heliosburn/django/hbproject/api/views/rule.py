@@ -8,6 +8,7 @@ from api.models.auth import RequireLogin
 from api.models import rule_model
 import json
 from datetime import datetime
+from api.models.redis_wrapper import logger
 
 
 @csrf_exempt
@@ -84,6 +85,7 @@ def post(request):
         rule_id = str(dbc.rule.save(rule))
         r = JsonResponse({"id": rule_id})
         r['location'] = "/api/rule/%s" % rule_id
+        logger.info("rule '%s' created by '%s'" % (rule_id, request.user['username']))
         return r
 
 @RequireLogin()
@@ -115,6 +117,7 @@ def put(request, rule_id):
             dbc.rule.save(rule)
             r = JsonResponse({"id": rule_id})
             r['location'] = "/api/rule/%s" % rule_id
+            logger.info("rule '%s' updated by '%s'" % (rule_id, request.user['username']))
             return r
 
 
@@ -133,4 +136,5 @@ def delete(request, rule_id):
         return HttpResponseNotFound()
     else:
         dbc.rule.remove({"_id": ObjectId(rule_id)})
+        logger.info("rule '%s' deleted by '%s'" % (rule_id, request.user['username']))
         return HttpResponse()

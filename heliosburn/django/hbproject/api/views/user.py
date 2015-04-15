@@ -6,6 +6,7 @@ from api.models.auth import RequireLogin
 import hashlib
 import json
 from datetime import datetime
+from api.models.redis_wrapper import logger
 
 
 @csrf_exempt
@@ -95,6 +96,7 @@ def post(request):
         })
         r = HttpResponse(status=200)
         r['location'] = "/api/user/%s" % new['username']
+        logger.info("user '%s' created by '%s'" % (new['username'], request.user['username']))
         return r
 
 
@@ -126,6 +128,7 @@ def put(request, username):
             user['email'] = in_json['email']
         user['updatedAt'] = datetime.isoformat(datetime.now())
         dbc.hbuser.save(user)
+        logger.info("user '%s' updated by '%s'" % (username, request.user['username']))
         return HttpResponse()
         
 
@@ -141,4 +144,5 @@ def delete(request, username):
         return HttpResponseNotFound("user not found")
     else:
         dbc.hbuser.remove(user)
+        logger.info("user '%s' deleted by '%s'" % (username, request.user['username']))
         return HttpResponse()

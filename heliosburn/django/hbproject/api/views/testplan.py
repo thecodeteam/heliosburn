@@ -8,6 +8,7 @@ from pymongo.helpers import DuplicateKeyError
 from bson import ObjectId
 import json
 from datetime import datetime
+from api.models.redis_wrapper import logger
 
 
 @csrf_exempt
@@ -98,6 +99,7 @@ def post(request):
     testplan_id = str(dbc.testplan.save(new))
     r = JsonResponse({"id": testplan_id}, status=200)
     r['location'] = "/api/testplan/%s" % testplan_id
+    logger.info("test plan '%s' created by '%s'" % (testplan_id, request.user['username']))
     return r
 
 
@@ -138,6 +140,7 @@ def put(request, testplan_id):
             dbc.testplan.save(testplan)
         except DuplicateKeyError:
             return HttpResponseBadRequest("testplan named '%s' already exists" % in_json['name'])
+        logger.info("test plan '%s' updated by '%s'" % (testplan_id, request.user['username']))
         return HttpResponse(status=200)
 
 
@@ -155,4 +158,5 @@ def delete(request, testplan_id):
         return HttpResponseNotFound()
     else:
         dbc.testplan.remove({"_id": ObjectId(testplan_id)})
+        logger.info("test plan '%s' deleted by '%s'" % (testplan_id, request.user['username']))
         return HttpResponse(status=200)

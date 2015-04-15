@@ -7,6 +7,7 @@ from api.models.auth import RequireLogin
 import json
 from datetime import datetime
 import time
+from api.models.redis_wrapper import logger
 
 
 @csrf_exempt
@@ -107,6 +108,7 @@ def post(request):
     recording_id = str(dbc.recording.save(new))
     r = JsonResponse({"id": recording_id})
     r['location'] = "/api/recording/%s" % recording_id
+    logger.info("recording '%s' created by '%s'" % (recording_id, request.user['username']))
     return r
 
 
@@ -137,6 +139,7 @@ def put(request, recording_id):
         dbc.recording.save(recording)
         r = HttpResponse(status=200)
         r['location'] = "/api/recording/%s" % recording_id
+        logger.info("recording '%s' updated by '%s'" % (recording_id, request.user['username']))
         return r
 
 
@@ -155,6 +158,7 @@ def delete(request, recording_id):
     else:
         dbc.recording.remove({"_id": ObjectId(recording_id)})
         dbc.traffic.remove({"recording_id": recording_id}, multi=True)
+        logger.info("recording '%s' deleted by '%s'" % (recording_id, request.user['username']))
         return HttpResponse()
 
 
@@ -172,6 +176,7 @@ def start(request, recording_id):
         "param": recording_id,
         "key": response_key,
     })
+    logger.info("recording '%s' started by '%s'" % (recording_id, request.user['username']))
     for i in range(0, 50):
         response = r.get(response_key)
         if response is not None:
@@ -195,6 +200,7 @@ def stop(request, recording_id):
         "param": recording_id,
         "key": response_key,
     })
+    logger.info("recording '%s' stopped by '%s'" % (recording_id, request.user['username']))
     for i in range(0, 50):
         response = r.get(response_key)
         if response is not None:

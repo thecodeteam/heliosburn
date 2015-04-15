@@ -8,6 +8,7 @@ from api.models.auth import RequireLogin
 from bson import ObjectId
 from pymongo.helpers import DuplicateKeyError
 from datetime import datetime
+from api.models.redis_wrapper import logger
 
 @csrf_exempt
 def rest(request, *pargs):
@@ -110,6 +111,7 @@ def post(request):
         return HttpResponseBadRequest("session name is not unique")
     r = JsonResponse({"id": session_id})
     r['location'] = "/api/session/%s" % session_id
+    logger.info("session '%s' created by '%s'" % (session_id, request.user['username']))
     return r
 
 
@@ -133,6 +135,7 @@ def put(request, session_id):
 
     # Users can only update their own sessions, unless admin
     elif (session['username'] != request.user['username']) and (auth.is_admin(request.user) is False):
+        logger.info("user '%s' attempted to update session '%s', but was forbidden" % (request.user['username'], session_id))
         return HttpResponseForbidden()
     else:
         if "name" in new:
@@ -152,6 +155,7 @@ def put(request, session_id):
             dbc.session.save(session)
         except DuplicateKeyError:
             return HttpResponseBadRequest("session name is not unique")
+        logger.info("session '%s' updated by '%s'" % (session_id, request.user['username']))
         return HttpResponse()
 
 
@@ -170,7 +174,9 @@ def delete(request, session_id):
 
     # Users can only delete their own sessions, unless admin
     elif (session['username'] != request.user['username']) and (auth.is_admin(request.user) is False):
+        logger.info("user '%s' attempted to delete session '%s', but was forbidden" % (request.user['username'], session_id))
         return HttpResponseForbidden()
     else:
         dbc.session.remove(session)
+        logger.info("session '%s' deleted by '%s'" % (session_id, request.user['username']))
         return HttpResponse()

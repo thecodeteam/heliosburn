@@ -4,7 +4,6 @@ from api.views import default, user, session, testplan, auth, traffic, rule, tes
 urlpatterns = patterns('',
     url(r'^$', default.index),
     url(r'^version/{0,1}$', default.version),
-    url(r'^test/{0,1}$', default.test),
     url(r'^user/{0,1}$', user.rest),
     url(r'^user/(\w+?)/{0,1}$', user.rest),
     url(r'^session/{0,1}$', session.rest),
