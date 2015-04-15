@@ -4,7 +4,10 @@ from django.conf import settings
 def init_log():
     from redislog import handlers, logger
     l = logger.RedisLogger('hb.logger')
-    l.setLevel(logger.logging.DEBUG)
+    if settings.DEBUG is True:
+        l.setLevel(logger.logging.DEBUG)
+    else:
+        l.setLevel(logger.logging.INFO)
     l.addHandler(handlers.RedisHandler.to('hblog'))
     return l
 
