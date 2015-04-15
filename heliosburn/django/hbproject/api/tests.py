@@ -711,3 +711,15 @@ class RecordingViewTestCase(APITestCase):
 
         print("Testing DELETE in %s" % self.__class__)
         delete()
+
+
+class LogTestCase(APITestCase):
+    """
+    Test log retrieval.
+    """
+
+    def test_log_get(self):
+        self.login(admin_username, admin_password)
+        response = self.client.get(path=api_url + "/log/",
+                                   HTTP_X_AUTH_TOKEN=self.x_auth_token)
+        pass

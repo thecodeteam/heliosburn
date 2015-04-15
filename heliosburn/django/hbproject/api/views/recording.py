@@ -64,12 +64,12 @@ def get(request, recording_id=None, get_traffic=None):
             offset = 100
             if hasattr(request, 'GET') and ('start' in request.GET) and ('offset' in request.GET):
                 try:
-                    start = int(request.REQUEST['start'][0])
-                    offset = int(request.REQUEST['offset'][0])
+                    start = int(request.REQUEST['start'])
+                    offset = int(request.REQUEST['offset'])
                 except ValueError:
                     return HttpResponseBadRequest()
 
-            recording['traffic'] = recording['traffic'][start:offset]
+            recording['traffic'] = recording['traffic'][start:(start+offset)]
 
         return JsonResponse(recording)
 
