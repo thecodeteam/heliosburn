@@ -12,8 +12,8 @@ To retrieve a list of log entries, an application submits an HTTP GET request to
 ### Request
 
 #### URL
-`/log/`: Retrieve all log entries
-`/log/?start=1&offset=500`: Retrieve the first 500 log entries
+- `/log/`: Retrieve all log entries
+- `/log/?start=1&offset=500`: Retrieve the first 500 log entries
 
 #### Method
 GET
