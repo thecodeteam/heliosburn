@@ -26,7 +26,7 @@ class TestModifyStatus(AbstractModule):
 
     def handle_response(self, response):
         """
-        Alter the statuCode to be 400
+        Alter the statuscode to be 400
         """
         response.setHeader('original_code', response.code)
         response.setResponseCode(400)
