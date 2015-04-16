@@ -24,7 +24,7 @@ GET
 The following query string arguments are supported:
 
 | Field | Required | Type | Description |
-|---|---|
+|-------|----------|------|-------------|
 | start | NO | Integer | Log entries returned begin at this sequence(default is 0). |
 | offset | NO | Integer | Log entries returned end at this offset beyond `start`(default is 1000). |
 | component | NO | String | Restrict log entries returned to a component. |
