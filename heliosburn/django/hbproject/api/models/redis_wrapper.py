@@ -24,4 +24,4 @@ def publish_to_proxy(msg):
     r = init_redis()
     r.publish('proxy_mgmt_request', msg)
 
-logger = init_log()  # This line allows `from api.models.redis_wrapper import logger` - for convenience
+# logger = init_log()  # This line allows `from api.models.redis_wrapper import logger` - for convenience
