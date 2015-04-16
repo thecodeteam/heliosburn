@@ -37,7 +37,7 @@ The response body contains a `log` key containing a list of log entries.
 
 | Status Code | Description |
 |---|---|
-| 200-299 | The request was successful. The list of log entries are in the response body. |
+| 200-299 | The request was successful. The log entries are in the response body. |
 | 400 | Bad request. Typically returned if required information was not provided as input. |
 | 500-599 | Server error. |
 
@@ -110,7 +110,7 @@ The response body contains a JSON representing Log statistics.
 
 | Status Code | Description |
 |---|---|
-| 200-299 | The request was successful. The list of log entries are in the response body. |
+| 200-299 | The request was successful. The log statistics are in the response body. |
 | 400 | Bad request. Typically returned if required information was not provided as input. |
 | 500-599 | Server error. |
 
