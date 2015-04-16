@@ -1,5 +1,6 @@
 - [Log](#log)
   - [Retrieve logs](#retrieve-logs)
+  - [Retrieve log statistics](#retrieve-log-stats)
 
 # Log
 
@@ -76,5 +77,57 @@ The response body contains a `log` key containing a list of log entries.
       "hostname": "heliosburn-vm"
     }
   ]
+}
+```
+
+## Retrieve log statistics
+
+To retrieve statistics about log entries, an application submits an HTTP GET request to the URL that represents the Log resource statistics.
+
+### Request
+
+#### URL
+- `/log/stats/`: Retrieve log entries
+
+#### Method
+GET
+
+### Response
+
+#### Response Header
+The response header includes the following information:
+
+| Field | Description |
+|---|---|
+| Content-Type | The content type and character encoding of the response. |
+| Content-Length | The length of the retrieved content. |
+
+#### Response Body
+
+The response body contains a JSON representing Log statistics.
+
+#### Status Codes
+
+| Status Code | Description |
+|---|---|
+| 200-299 | The request was successful. The list of log entries are in the response body. |
+| 400 | Bad request. Typically returned if required information was not provided as input. |
+| 500-599 | Server error. |
+
+#### Response example
+
+```json
+{
+    "components":[
+        "hb.logger",
+        "api.views.auth",
+        "api.views.recording",
+        "api.views.rule",
+        "api.views.session",
+        "api.views.testplan",
+        "api.views.testplan_rule",
+        "api.views.user"
+    ],
+    "entries": 638
 }
 ```

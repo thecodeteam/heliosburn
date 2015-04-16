@@ -22,8 +22,21 @@ def get(request):
     if 'offset' in request.REQUEST:
         offset = int(request.REQUEST['offset'])
     else:
-        offset = 100
+        offset = 1000
 
     dbc = db_model.connect()
     logs = [l for l in dbc.log.find({}, {"_id": 0})]
     return JsonResponse({"log": logs[start:(start+offset)]})
+
+
+def get_stats(request):
+    """
+    Retrieve log statistics.
+    """
+    if request.method != "GET":
+        return HttpResponse(status=405)
+
+    dbc = db_model.connect()
+    component_names = dbc.log.distinct("name")
+    log_count = dbc.log.count()
+    return JsonResponse({"entries": log_count, "components": component_names})

@@ -22,4 +22,5 @@ urlpatterns = patterns('',
     url(r'^recording/(?P<recording_id>\w+?)/start/{0,1}$', recording.start),
     url(r'^recording/(?P<recording_id>\w+?)/stop/{0,1}$', recording.stop),
     url(r'^log/{0,1}$', log.get),
+    url(r'^log/stats/{0,1}$', log.get_stats),
 )
