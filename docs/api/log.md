@@ -119,7 +119,6 @@ The response body contains a JSON representing Log statistics.
 ```json
 {
     "components":[
-        "hb.logger",
         "api.views.auth",
         "api.views.recording",
         "api.views.rule",
