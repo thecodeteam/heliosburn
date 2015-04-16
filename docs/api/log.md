@@ -8,16 +8,26 @@ The log is a MongoDB persisted record of activity within HeliosBurn. This can be
 
 ## Retrieve logs
 
-To retrieve a list of log entries, an application submits an HTTP GET request to the URL that represents the Log resource. To avoid retrieving more logs than desirable, optional query string arguments `start` and `offset` are available to limit the results.
+To retrieve a list of log entries, an application submits an HTTP GET request to the URL that represents the Log resource. To avoid retrieving more logs than desirable, optional query string arguments are available to limit the results.
 
 ### Request
 
 #### URL
 - `/log/`: Retrieve all log entries
 - `/log/?start=1&offset=500`: Retrieve the first 500 log entries
+- `/log/?component=api.views.user`: Retrieve logs specific to `api.views.user` component
 
 #### Method
 GET
+
+#### Query string arguments to limit results
+The following query string arguments are supported:
+
+| Field | Required | Type | Description |
+|---|---|
+| start | NO | Integer | Log entries returned begin at this sequence(default is 0). |
+| offset | NO | Integer | Log entries returned end at this offset beyond `start`(default is 1000). |
+| component | NO | String | Restrict log entries returned to a component. |
 
 ### Response
 
