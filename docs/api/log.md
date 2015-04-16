@@ -1,6 +1,6 @@
 - [Log](#log)
   - [Retrieve logs](#retrieve-logs)
-  - [Retrieve log statistics](#retrieve-log-stats)
+  - [Retrieve log statistics](#retrieve-log-statistics)
 
 # Log
 
