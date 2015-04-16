@@ -1,8 +1,11 @@
 import json
+import logging
 from django.http import JsonResponse, HttpResponseBadRequest, HttpResponse, HttpResponseServerError
 from django.views.decorators.csrf import csrf_exempt
 from api.models.auth import RequireLogin
 from api.models import redis_wrapper
+
+logger = logging.getLogger(__name__)
 
 
 @csrf_exempt

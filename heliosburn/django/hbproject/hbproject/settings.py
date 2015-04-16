@@ -155,7 +155,7 @@ class Common(Configuration):
             'redis': {
                 'level': 'DEBUG',
                 'class': 'redislog.handlers.RedisHandler',
-                'channel': 'my:channel',
+                'channel': 'hblog',
                 'redis_client': redis.Redis(host=REDIS_HOST, port=REDIS_PORT, db=REDIS_DB),
             }
         },

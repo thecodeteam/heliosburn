@@ -1,5 +1,6 @@
 from bson import ObjectId
 import json
+import logging
 
 from bson.errors import InvalidId
 from django.http import JsonResponse, HttpResponseNotFound, HttpResponseBadRequest, HttpResponse
@@ -8,7 +9,8 @@ from django.views.decorators.csrf import csrf_exempt
 from api.models import db_model
 from api.models.auth import RequireLogin
 from api.models import rule_model
-from api.models.redis_wrapper import logger
+
+logger = logging.getLogger(__name__)
 
 
 @csrf_exempt

@@ -1,7 +1,9 @@
+import logging
 from django.http import JsonResponse, HttpResponse
 from api.models import db_model
 from api.models.auth import RequireLogin
-from api.models.redis_wrapper import logger
+
+logger = logging.getLogger(__name__)
 
 
 @RequireLogin(role='admin')
