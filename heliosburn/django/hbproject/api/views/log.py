@@ -30,7 +30,8 @@ def get(request):
 
     dbc = db_model.connect()
     logs = [l for l in dbc.log.find(query, {"_id": 0})]
-    return JsonResponse({"log": logs[start:(start+offset)]})
+    logs.reverse()
+    return JsonResponse({"log": logs[start:(start+offset)], "matchedEntries": dbc.log.find(query).count()})
 
 
 def get_stats(request):

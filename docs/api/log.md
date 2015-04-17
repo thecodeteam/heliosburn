@@ -41,7 +41,7 @@ The response header includes the following information:
 
 #### Response Body
 
-The response body contains a `log` key containing a list of log entries.
+The response body contains a `log` key containing a list of log entries, ordered most recent to least recent. A `matchedEntries` key provides the number of log entries that matched your query.
 
 #### Status Codes
 
