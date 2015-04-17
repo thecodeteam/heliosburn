@@ -12,7 +12,7 @@
 
 In general proxy tests are twisted plugins that have been added to the proxy modules directory.
 Once added to the modules directory they will be loaded on start-up of the proxy service.
-To make user of the tests they then must be added to the `test` section of `modules.yaml` or be referenced directly through the proxy service API.
+To make use of the tests they then must be added to the `test` section of `modules.yaml` or be referenced directly through the proxy service API.
 
 When executing test cases the proxy service operates as follows:
 
@@ -182,5 +182,3 @@ Pipeline test cases are essentially just special case pipeline modules (so are A
    34
    35 test_modify_status = TestModifyStatus()
 ```
-
-
