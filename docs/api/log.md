@@ -86,7 +86,8 @@ The response body contains a `log` key containing a list of log entries, ordered
       "funcname": "login",
       "hostname": "heliosburn-vm"
     }
-  ]
+  ],
+  "matchedEntries": 231
 }
 ```
 
