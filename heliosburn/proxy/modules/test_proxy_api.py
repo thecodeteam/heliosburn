@@ -1,13 +1,13 @@
 import json
 from twisted.python import log
 from service.api import OperationResponseFactory
-from module import AbstractControllerTestModule
+from module import AbstractAPITestModule
 
 
-class TestControllerAPISuccess(AbstractControllerTestModule):
+class TestAPISuccess(AbstractAPITestModule):
 
     def __init__(self):
-        AbstractControllerTestModule.__init__(self)
+        AbstractAPITestModule.__init__(self)
         self.response_key = 'test'
         message = "execution successful"
         response_factory = OperationResponseFactory()
@@ -20,7 +20,7 @@ class TestControllerAPISuccess(AbstractControllerTestModule):
         return json.loads(expected)
 
 
-class TestStopProxyAPI(TestControllerAPISuccess):
+class TestStopProxyAPI(TestAPISuccess):
     """
     Used to teset the proxy controller API call 'stop'.
     """
@@ -38,7 +38,7 @@ class TestStopProxyAPI(TestControllerAPISuccess):
 test_stop_proxy = TestStopProxyAPI()
 
 
-class TestStartProxyAPI(TestControllerAPISuccess):
+class TestStartProxyAPI(TestAPISuccess):
     """
     Used to teset the proxy controller API call 'start'.
     """
@@ -56,7 +56,7 @@ class TestStartProxyAPI(TestControllerAPISuccess):
 test_start_proxy = TestStartProxyAPI()
 
 
-class TestChangeUpstreamPortAPI(TestControllerAPISuccess):
+class TestChangeUpstreamPortAPI(TestAPISuccess):
     """
     Used to teset the proxy controller API call
     'upstream_port'.
@@ -77,7 +77,7 @@ class TestChangeUpstreamPortAPI(TestControllerAPISuccess):
 test_upstream_port_proxy = TestChangeUpstreamPortAPI()
 
 
-class TestChangeUpstreamHostAPI(TestControllerAPISuccess):
+class TestChangeUpstreamHostAPI(TestAPISuccess):
     """
     Used to teset the proxy controller API call
     'upstream_host'.
@@ -98,7 +98,7 @@ class TestChangeUpstreamHostAPI(TestControllerAPISuccess):
 test_upstream_host_proxy = TestChangeUpstreamHostAPI()
 
 
-class TestChangeBindAddressAPI(TestControllerAPISuccess):
+class TestChangeBindAddressAPI(TestAPISuccess):
     """
     Used to teset the proxy controller API call
     'bind_address'.
@@ -119,7 +119,7 @@ class TestChangeBindAddressAPI(TestControllerAPISuccess):
 test_bind_address_proxy = TestChangeBindAddressAPI()
 
 
-class TestReloadPluginsAPI(TestControllerAPISuccess):
+class TestReloadPluginsAPI(TestAPISuccess):
     """
     Used to teset the proxy controller API call
     'reload'.
@@ -140,7 +140,7 @@ class TestReloadPluginsAPI(TestControllerAPISuccess):
 test_reload_proxy = TestReloadPluginsAPI()
 
 
-class TestResetPluginsAPI(TestControllerAPISuccess):
+class TestResetPluginsAPI(TestAPISuccess):
     """
     Used to teset the proxy controller API call
     'reset'.
@@ -161,7 +161,7 @@ class TestResetPluginsAPI(TestControllerAPISuccess):
 test_Reset_proxy = TestResetPluginsAPI()
 
 
-class TestChangeBindPortAPI(TestControllerAPISuccess):
+class TestChangeBindPortAPI(TestAPISuccess):
     """
     Used to teset the proxy controller API call
     'bind_port'.
@@ -182,7 +182,7 @@ class TestChangeBindPortAPI(TestControllerAPISuccess):
 test_bind_port_proxy = TestChangeBindPortAPI()
 
 
-class TestStartRecordingAPI(TestControllerAPISuccess):
+class TestStartRecordingAPI(TestAPISuccess):
     """
     Used to teset the proxy controller API call 'start_recording'.
     """
@@ -203,7 +203,7 @@ class TestStartRecordingAPI(TestControllerAPISuccess):
 test_start_recording = TestStartRecordingAPI()
 
 
-class TestStopRecordingAPI(TestControllerAPISuccess):
+class TestStopRecordingAPI(TestAPISuccess):
     """
     Used to teset the proxy controller API call 'stop_recording'.
     """

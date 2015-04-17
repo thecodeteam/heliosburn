@@ -18,10 +18,10 @@ def get_arg_parser():
     parser = argparse.ArgumentParser(description=description)
 
     parser.add_argument('--config_path',
-                        default="./config.yaml",
+                        default="proxy/config.yaml",
                         dest='config_path',
                         help='Path to output config file. Default: '
-                        + ' ./config.yaml')
+                        + ' proxy/config.yaml')
 
     parser.add_argument('--tcp_mgmt',
                         action="store_true",
@@ -121,14 +121,14 @@ def main():
         if args.response_channel:
             response_channel = args.response_channel
 
-    plugins = get_config("./modules.yaml")
+    plugins = get_config("proxy/modules.yaml")
     proxy_server = HBProxyServer(bind_address, protocols,
-                                           upstream_host, upstream_port,
-                                           args.redis_mgmt, redis_address,
-                                           redis_port, request_channel,
-                                           response_channel, args.tcp_mgmt,
-                                           tcp_mgmt_address, tcp_mgmt_port,
-                                           plugins)
+                                 upstream_host, upstream_port,
+                                 args.redis_mgmt, redis_address,
+                                 redis_port, request_channel,
+                                 response_channel, args.tcp_mgmt,
+                                 tcp_mgmt_address, tcp_mgmt_port,
+                                 plugins)
     if args.run_tests:
         proxy_server.test()
     else:
