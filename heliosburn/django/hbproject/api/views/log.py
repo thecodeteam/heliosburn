@@ -1,7 +1,9 @@
+import logging
 from django.http import JsonResponse, HttpResponse
 from api.models import db_model
 from api.models.auth import RequireLogin
-from api.models.redis_wrapper import logger
+
+logger = logging.getLogger(__name__)
 
 
 @RequireLogin(role='admin')
@@ -20,8 +22,26 @@ def get(request):
     if 'offset' in request.REQUEST:
         offset = int(request.REQUEST['offset'])
     else:
-        offset = 100
+        offset = 1000
+
+    query = {}
+    if 'component' in request.REQUEST:
+        query['name'] = request.REQUEST['component']
 
     dbc = db_model.connect()
-    logs = [l for l in dbc.log.find({}, {"_id": 0})]
-    return JsonResponse({"log": logs[start:(start+offset)]})
+    logs = [l for l in dbc.log.find(query, {"_id": 0})]
+    logs.reverse()
+    return JsonResponse({"log": logs[start:(start+offset)], "matchedEntries": dbc.log.find(query).count()})
+
+
+def get_stats(request):
+    """
+    Retrieve log statistics.
+    """
+    if request.method != "GET":
+        return HttpResponse(status=405)
+
+    dbc = db_model.connect()
+    component_names = dbc.log.distinct("name")
+    log_count = dbc.log.count()
+    return JsonResponse({"entries": log_count, "components": component_names})

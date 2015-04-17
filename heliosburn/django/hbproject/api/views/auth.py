@@ -1,11 +1,14 @@
 import json
 import hashlib
+import logging
 import os
 from django.http import HttpResponse, HttpResponseBadRequest
 from django.views.decorators.csrf import csrf_exempt
 from django.conf import settings
 from api.models import db_model
-from api.models.redis_wrapper import logger
+
+logger = logging.getLogger(__name__)
+
 
 @csrf_exempt
 def login(request):

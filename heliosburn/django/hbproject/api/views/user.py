@@ -1,4 +1,4 @@
-from bson.errors import InvalidId
+import logging
 from django.http import JsonResponse, HttpResponseBadRequest, HttpResponseNotFound, HttpResponse, HttpResponseForbidden
 from django.views.decorators.csrf import csrf_exempt
 from api.models import auth
@@ -6,7 +6,8 @@ from api.models.auth import RequireLogin
 import hashlib
 import json
 from datetime import datetime
-from api.models.redis_wrapper import logger
+
+logger = logging.getLogger(__name__)
 
 
 @csrf_exempt

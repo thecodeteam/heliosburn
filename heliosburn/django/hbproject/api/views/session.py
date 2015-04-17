@@ -1,3 +1,4 @@
+import logging
 from bson.errors import InvalidId
 from django.http import JsonResponse, HttpResponseBadRequest, HttpResponseNotFound, HttpResponse, \
     HttpResponseForbidden
@@ -8,7 +9,8 @@ from api.models.auth import RequireLogin
 from bson import ObjectId
 from pymongo.helpers import DuplicateKeyError
 from datetime import datetime
-from api.models.redis_wrapper import logger
+
+logger = logging.getLogger(__name__)
 
 @csrf_exempt
 def rest(request, *pargs):
