@@ -2,6 +2,7 @@ import logging
 from django.http import JsonResponse, HttpResponse
 from api.models import db_model
 from api.models.auth import RequireLogin
+import re
 
 logger = logging.getLogger(__name__)
 
@@ -26,11 +27,13 @@ def get(request):
 
     query = {}
     if 'component' in request.REQUEST:
-        query['name'] = request.REQUEST['component']
+        regx = re.compile(r'^' + request.REQUEST['component'] + r'.*')
+        query['name'] = regx
 
     dbc = db_model.connect()
     logs = [l for l in dbc.log.find(query, {"_id": 0})]
-    return JsonResponse({"log": logs[start:(start+offset)]})
+    logs.reverse()
+    return JsonResponse({"log": logs[start:(start+offset)], "matchedEntries": dbc.log.find(query).count()})
 
 
 def get_stats(request):

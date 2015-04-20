@@ -15,7 +15,7 @@ To retrieve a list of log entries, an application submits an HTTP GET request to
 #### URL
 - `/log/`: Retrieve all log entries
 - `/log/?start=1&offset=500`: Retrieve the first 500 log entries
-- `/log/?component=api.views.user`: Retrieve logs specific to `api.views.user` component
+- `/log/?component=api.views.user`: Retrieve logs specific to `api.views` component(s)
 
 #### Method
 GET
@@ -27,7 +27,7 @@ The following query string arguments are supported:
 |-------|----------|------|-------------|
 | start | NO | Integer | Log entries returned begin at this sequence(default is 0). |
 | offset | NO | Integer | Log entries returned end at this offset beyond `start`(default is 1000). |
-| component | NO | String | Restrict log entries returned to a component. |
+| component | NO | String | Restrict log entries returned to a component, matching the expression provided. |
 
 ### Response
 
@@ -41,7 +41,7 @@ The response header includes the following information:
 
 #### Response Body
 
-The response body contains a `log` key containing a list of log entries.
+The response body contains a `log` key containing a list of log entries, ordered most recent to least recent. A `matchedEntries` key provides the number of log entries that matched your query.
 
 #### Status Codes
 
@@ -86,7 +86,8 @@ The response body contains a `log` key containing a list of log entries.
       "funcname": "login",
       "hostname": "heliosburn-vm"
     }
-  ]
+  ],
+  "matchedEntries": 231
 }
 ```
 

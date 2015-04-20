@@ -144,7 +144,7 @@ class AbstractModule(object):
         """
 
 
-class AbstractControllerTestModule(AbstractModule, unittest.TestCase):
+class AbstractAPITestModule(AbstractModule, unittest.TestCase):
     implements(IPlugin, IModule)
 
     def configure(self, **configs):
@@ -352,7 +352,7 @@ class Registry(object):
     def test(self, module_name=None):
 
         """
-        Executes the start method of all test  modules
+        Executes the start method of all test modules
         """
 
         test_deferred = defer.Deferred()
