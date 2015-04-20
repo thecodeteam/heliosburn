@@ -30,6 +30,10 @@ def get(request):
         regx = re.compile(r'^' + request.REQUEST['component'] + r'.*')
         query['name'] = regx
 
+    if 'levels' in request.REQUEST:
+        levels = request.REQUEST['levels'].split(',')
+        query['level'] = {"$in": levels}
+
     dbc = db_model.connect()
     logs = [l for l in dbc.log.find(query, {"_id": 0})]
     logs.reverse()
@@ -45,5 +49,6 @@ def get_stats(request):
 
     dbc = db_model.connect()
     component_names = dbc.log.distinct("name")
+    levels = dbc.log.distinct("level")
     log_count = dbc.log.count()
-    return JsonResponse({"entries": log_count, "components": component_names})
+    return JsonResponse({"entries": log_count, "components": component_names, "levels": levels})
