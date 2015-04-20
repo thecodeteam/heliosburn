@@ -1,7 +1,7 @@
 from django.conf.urls import patterns, url
-from django.views.generic import TemplateView
 from webui.views.dashboard import DashboardView
 from webui.views.login import LoginView
+from webui.views.logs import LogsView
 
 urlpatterns = patterns(
     'webui.views',
@@ -37,6 +37,8 @@ urlpatterns = patterns(
     url(r'^recordings/new/$', 'recording.recording_new', name='recording_new'),
 
     url(r'^ajax/traffic/$', 'ajax_traffic', name='ajax_traffic'),
+
+    url(r'^logs/$', LogsView.as_view(), name='logs'),
 
     url(r'^settings/$', 'settings_view', name='settings'),
 )

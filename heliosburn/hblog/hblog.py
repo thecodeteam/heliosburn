@@ -9,6 +9,7 @@ mongodb_host = 'localhost'
 mongodb_port = 27017
 mongodb_database = 'heliosburn'
 
+
 def main():
     import json
     import redis
