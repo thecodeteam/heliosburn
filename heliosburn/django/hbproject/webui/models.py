@@ -227,8 +227,8 @@ class Logs(Base):
         stats = json.loads(response.text)
         return stats
 
-    def get(self):
-        url = self.get_url()
+    def get(self, start, length, component):
+        url = self.get_url(extra='?start={}&offset={}&component={}'.format(start, length, component))
         headers = {'X-Auth-Token': self.auth_token}
         response = requests.get(url, headers=headers)
         if not validate_response(response):

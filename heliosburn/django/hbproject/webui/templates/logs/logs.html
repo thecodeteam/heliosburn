@@ -26,9 +26,21 @@
     <script type="text/javascript">
         $(document).ready(function () {
             var table = $('#logs-table').DataTable({
-                {#                bFilter: false#}
+                "order": [[ 0, "desc" ]],
+                "bSort" : false,
+                "bFilter": false,
+                "processing": true,
+                "serverSide": true,
+                "ajax": {
+                    "url": "{% url "logs" %}",
+                    "data": function ( d ) {
+                        d.component = $('#component').val();
+                    }
+                }
+            });
 
-
+            $('#component').on('change', function() {
+                table.ajax.reload();
             });
         });
     </script>
@@ -52,8 +64,8 @@
                         <div class="col-sm-6">
                             <div class="dataTables_length text-right" id="logs-table_length">
                                 <label>Component:
-                                    <select name="logs-table_length" class="form-control input-sm">
-                                        <option value="all">All</option>
+                                    <select id="component" name="logs-table_length" class="form-control input-sm">
+                                        <option value="">All</option>
                                         {% for component in stats.components %}
                                             <option value="{{ component }}">{{ component }}</option>
                                         {% endfor %}
@@ -67,29 +79,21 @@
                             <table id="logs-table" class="table table-bordered table-striped">
                                 <thead>
                                 <tr>
+                                    <th>Date</th>
                                     <th>Component</th>
                                     <th>Level</th>
-                                    <th>Date</th>
                                     <th>Message</th>
                                 </tr>
                                 </thead>
                                 <tfoot>
                                 <tr>
+                                    <th>Date</th>
                                     <th>Component</th>
                                     <th>Level</th>
-                                    <th>Date</th>
                                     <th>Message</th>
                                 </tr>
                                 </tfoot>
                                 <tbody>
-                                    {% for log in logs.log %}
-                                        <tr>
-                                            <td>{{ log.name }}</td>
-                                            <td>{{ log.level }}</td>
-                                            <td>{{ log.time }}</td>
-                                            <td>{{ log.msg }}</td>
-                                        </tr>
-                                    {% endfor %}
                                 </tbody>
                             </table>
                         </div>

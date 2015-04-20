@@ -1,7 +1,8 @@
+import json
 import logging
 from django.contrib import messages
 from django.core.urlresolvers import reverse
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, HttpResponse, JsonResponse, HttpResponseBadRequest
 
 from django.shortcuts import render
 from django.views.generic import View
@@ -17,9 +18,12 @@ class LogsView(View):
     template_name = 'logs/logs.html'
 
     def get(self, request):
+
+        if 'application/json' in request.META.get('HTTP_ACCEPT'):
+            return self._handle_ajax(request)
+
         try:
             stats = Logs(auth_token=request.user.password).stats()
-            logs = Logs(auth_token=request.user.password).get()
         except UnauthorizedException:
             logger.warning('User unauthorized. Signing out...')
             return signout(request)
@@ -30,6 +34,25 @@ class LogsView(View):
 
         data = dict()
         data['stats'] = stats
-        data['logs'] = logs
 
         return render(request, self.template_name, data)
+
+    def _handle_ajax(self, request):
+
+        start = request.GET.get('start', '0')
+        length = request.GET.get('length', '10')
+        component = request.GET.get('component', '')
+
+        try:
+            logs = Logs(auth_token=request.user.password).get(start, length, component)
+        except Exception as inst:
+            return HttpResponseBadRequest(inst)
+
+        data = dict()
+        data['recordsTotal'] = logs['matchedEntries']
+        data['recordsFiltered'] = logs['matchedEntries']
+        data['data'] = []
+        for entry in logs['log']:
+            log_entry = [entry['time'], entry['name'], entry['level'], entry['msg']]
+            data['data'].append(log_entry)
+        return JsonResponse(data)
