@@ -1,11 +1,11 @@
-import json
 import logging
+
 from django.contrib import messages
 from django.core.urlresolvers import reverse
-from django.http import HttpResponseRedirect, HttpResponse, JsonResponse, HttpResponseBadRequest
-
+from django.http import HttpResponseRedirect, JsonResponse, HttpResponseBadRequest
 from django.shortcuts import render
 from django.views.generic import View
+
 from webui.exceptions import UnauthorizedException
 from webui.models import Logs
 from webui.views import signout
@@ -42,9 +42,10 @@ class LogsView(View):
         start = request.GET.get('start', '0')
         length = request.GET.get('length', '10')
         component = request.GET.get('component', '')
+        levels = request.GET.get('levels', '')
 
         try:
-            logs = Logs(auth_token=request.user.password).get(start, length, component)
+            logs = Logs(auth_token=request.user.password).get(start, length, component, levels)
         except Exception as inst:
             return HttpResponseBadRequest(inst)
 
