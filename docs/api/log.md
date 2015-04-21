@@ -31,6 +31,7 @@ The following query string arguments are supported:
 | limit | NO | Integer | Log entries returned end at this limit beyond `start`(default is 1000). |
 | component | NO | String | Restrict log entries returned to a component, matching the expression provided. |
 | levels | NO | String | Comma separated list of log levels to return. |
+| msg | NO | String | String to match in the `msg` field of log entries. |
 | from | NO | ISODate | Time stamp that logs should be retrieved *after* |
 | to | NO | ISODate | Time stamp that logs should be retrieved *before* |
 
