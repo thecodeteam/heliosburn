@@ -12,10 +12,11 @@ To retrieve a list of log entries, an application submits an HTTP GET request to
 
 ### Request
 
-#### URL
+#### URL examples
 - `/log/`: Retrieve all log entries
-- `/log/?start=1&offset=500`: Retrieve the first 500 log entries
+- `/log/?start=1&limit=500`: Retrieve the first 500 log entries
 - `/log/?component=api.views.user`: Retrieve logs specific to `api.views` component(s)
+- `/log/?component=api.views.user&levels=info,debug`: Retrieve logs specific to `api.views` component(s) with `info` or `debug` levels.
 
 #### Method
 GET
@@ -26,8 +27,9 @@ The following query string arguments are supported:
 | Field | Required | Type | Description |
 |-------|----------|------|-------------|
 | start | NO | Integer | Log entries returned begin at this sequence(default is 0). |
-| offset | NO | Integer | Log entries returned end at this offset beyond `start`(default is 1000). |
+| limit | NO | Integer | Log entries returned end at this limit beyond `start`(default is 1000). |
 | component | NO | String | Restrict log entries returned to a component, matching the expression provided. |
+| levels | NO | String | Comma separated list of log levels to return. |
 
 ### Response
 
@@ -129,7 +131,12 @@ The response body contains a JSON representing Log statistics.
 
 ```json
 {
+    "levels":[
+        "info"
+        ],
     "components":[
+        "heliosburn",
+        "hb.logger",
         "api.views.auth",
         "api.views.recording",
         "api.views.rule",
@@ -137,7 +144,7 @@ The response body contains a JSON representing Log statistics.
         "api.views.testplan",
         "api.views.testplan_rule",
         "api.views.user"
-    ],
-    "entries": 638
+        ],
+    "entries": 572
 }
 ```
