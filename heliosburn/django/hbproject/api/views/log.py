@@ -30,7 +30,7 @@ def get(request):
         regx = re.compile(r'^' + request.REQUEST['component'] + r'.*')
         query['name'] = regx
 
-    if 'levels' in request.REQUEST:
+    if 'levels' in request.REQUEST and request.REQUEST['levels']:
         levels = request.REQUEST['levels'].split(',')
         query['level'] = {"$in": levels}
 
