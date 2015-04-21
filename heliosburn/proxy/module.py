@@ -4,6 +4,7 @@ import collections
 import redis
 import modules
 import json
+import datetime
 from zope.interface import implements
 from zope.interface import Interface
 from twisted.internet import defer
@@ -91,6 +92,8 @@ class AbstractModule(object):
 
         self.name = self.__class__.__name__
         self.log = log
+        self.state = "loaded"
+        self.status = datetime.datetime.now()
 
     def get_name(self):
         """
@@ -137,11 +140,32 @@ class AbstractModule(object):
         """
         this method is called to start the module execution
         """
+        self.state = "running"
+        self.status = datetime.datetime.now()
 
     def stop(self, **params):
         """
         this method is called to stop the module execution
         """
+        self.state = "stopped"
+        self.status = datetime.datetime.now()
+
+    def test(self, module_name=None):
+        """
+        this method is called to run the module(s) tests
+        """
+
+    def state(self):
+        """
+        this method is called to  get the module(s) current state
+        """
+        return self.state
+
+    def status(self):
+        """
+        this method is called to  get the module(s) current status
+        """
+        return self.status
 
 
 class AbstractAPITestModule(AbstractModule, unittest.TestCase):
@@ -369,4 +393,29 @@ class Registry(object):
                 test_deferred.addCallback(self.plugins[name].start)
         test_deferred.addCallback(self._test_mode_off)
         return test_deferred
+
+    def status(self, module_name=None, **params):
+
+        """
+        Executes the status method of all plugins
+        """
+
+        if module_name:
+            status = {
+                "module": module_name,
+                "state": self.plugins[module_name].state(),
+                "status": self.plugins[module_name].status()
+            }
+
+        else:
+            status = []
+            for plugin in self.plugins.values():
+                p_status = {
+                    "module": module_name,
+                    "state": plugin.state(),
+                    "status": plugin.status()
+                }
+                status.append(p_status)
+
+        return status
 

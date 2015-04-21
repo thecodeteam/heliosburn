@@ -162,6 +162,12 @@ class OperationFactory(object):
                                 op_string['key'],
                                 module_name=op_string['param'])
 
+        if "status" == op_string['operation']:
+            operation = Status(self.controller,
+                               self.response_factory,
+                               op_string['key'],
+                               module_name=op_string['param'])
+
         return operation
 
 
@@ -338,11 +344,20 @@ class StartRecording(ServerOperation):
         d.addCallback(self.respond)
 
     def start_recording(self, result):
-        self.controller.module_registry.start(module_name='TrafficRecorder',
-                                              **self.params)
-        self.response.set_message({'Started Recording':
-                                   [self.response.get_message()]
-                                   })
+        status = self.controller.module_registry.status(
+            module_name='TrafficRecorder',
+            **self.params)
+        if status['state'] != "running":
+            self.controller.module_registry.start(
+                module_name='TrafficRecorder',
+                **self.params)
+            self.response.set_message({'Started Recording':
+                                    [self.response.get_message()]
+                                    })
+        else:
+            self.response.set_message({'Started Recording':
+                                    [self.response.get_message()]
+                                    })
 
 
 class ResetPlugins(ServerOperation):
@@ -414,3 +429,18 @@ class RunTest(ServerOperation):
                                    [self.response.get_message()]
                                    })
         tests.callback(self.response)
+
+
+class Status(ServerOperation):
+
+    def __init__(self, controller, response_factory, key, module_name):
+        ServerOperation.__init__(self, controller, response_factory, key)
+        self.module_name = module_name
+
+        d = self.addCallback(self.get_status)
+        d.addCallback(self.respond)
+
+    def get_status(self, result):
+        status = self.controller.module_registry.status(
+            module_name=self.module_name)
+        self.response.set_message({'status': status})

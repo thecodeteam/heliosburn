@@ -7,6 +7,7 @@
 
 import sys
 import json
+import logging
 from service.api import RedisOperationFactory
 from twisted.internet import reactor
 from twisted.internet import endpoints
@@ -15,7 +16,6 @@ from twisted.internet.endpoints import TCP4ClientEndpoint
 from twisted.web import proxy
 from twisted.web import server
 from twisted.web import resource
-from twisted.python import log
 from module import Registry
 from protocols.http import HBReverseProxyRequest
 from protocols.http import HBReverseProxyResource
@@ -23,6 +23,8 @@ from protocols.http import HBProxyMgmtRedisSubscriberFactory
 from protocols.http import HBProxyMgmtProtocolFactory
 from protocols.http import HBProxyEchoServer
 
+
+log = logging.getLogger(__name__)
 
 class HBProxyServer(object):
 
@@ -65,9 +67,8 @@ class HBProxyServer(object):
         self._start_echo_server()
 
     def _start_logging(self):
-
-        setStdout = True
-        log.startLogging(sys.stdout)
+        observer = log.PythonLoggingObserver()
+        observer.start()
 
     def start_proxy(self, result):
         resource = HBReverseProxyResource(self.upstream_host,

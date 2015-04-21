@@ -6,7 +6,10 @@ The Helios Burn Proxy Interface API is used to control the state of the proxy. T
 - [Set Upstream Host](#upstream_host)
 - [Set Upstream Port](#upstream_port)
 - [Set Bind Host](#bind_host)
-- [Set Bind port](#bind_port)
+- [Set Bind Port](#bind_port)
+- [Set Start Recording](#start_recording)
+- [Set Stop Recording](#stop_recording)
+- [Get Status](#stop_recording)
 - [Run Tests](#test)
 
 
@@ -62,7 +65,7 @@ The proxy can be stopped by publishing a proxy API operation message to the `pro
 
 | Status Code | Description                                                                        |
 |:------------|:-----------------------------------------------------------------------------------|
-| 200-299     | The request was successful. The proxy was successfully stopped.                  |
+| 200-299     | The request was successful. The proxy was successfully stopped.                    |
 | 400         | Bad request. Typically returned if required information was not provided as input. |
 | 500-599     | Server error.                                                                      |
 
@@ -95,7 +98,7 @@ The proxy can be started by publishing a proxy interface operation message to th
 
 | Status Code | Description                                                                        |
 |:------------|:-----------------------------------------------------------------------------------|
-| 200-299     | The request was successful. The proxy was successfully started.                  |
+| 200-299     | The request was successful. The proxy was successfully started.                    |
 | 400         | Bad request. Typically returned if required information was not provided as input. |
 | 500-599     | Server error.                                                                      |
 
@@ -128,7 +131,7 @@ The currently running models can be reset to their default state by publishing a
 
 | Status Code | Description                                                                        |
 |:------------|:-----------------------------------------------------------------------------------|
-| 200-299     | The request was successful. The modules were successfully reset.                  |
+| 200-299     | The request was successful. The modules were successfully reset.                   |
 | 400         | Bad request. Typically returned if required information was not provided as input. |
 | 500-599     | Server error.                                                                      |
 
@@ -233,6 +236,122 @@ The proxy service bind port can be changed by publishing a proxy interface opera
 | 500-599     | Server error.                                                                      |
 
 
+# Start_Recording
+
+The proxy service will start recording proxy traffic when a `start_recording` interface operation message is published to the `proxy_mgmt_request` REDIS pubs channel. This will cause the proxy service to start recording traffic using the given recording_id in `param`. If the the proxy is already recording traffice, an error will be returned.
+
+  ## Message
+
+  ```json
+  {
+      "operation": "start_recording",
+      "param": "<recording_id>",
+      "key": string
+  }
+  ```
+  ## Example Response
+
+  ## Message
+
+  ```json
+  {
+      "code": 200,
+      "message": "The request was successful",
+      "key": string
+  }
+  ```
+  ### Response Codes
+
+  | Status Code | Description                                                                        |
+  |:------------|:-----------------------------------------------------------------------------------|
+  | 200-299     | The request was successful. The bind port was successfully changed.                |
+  | 400         | Bad request. Typically returned if required information was not provided as input. |
+  | 500-599     | Server error.                                                                      |
+
+
+  # Stop_Recording
+
+  The proxy service will stop recording proxy traffic when a `stop_recording` interface operation message is published to the `proxy_mgmt_request` REDIS pubs channel. This will cause the proxy service to stop recording traffic.
+
+  ## Message
+
+  ```json
+  {
+      "operation": "stop_recording",
+      "param": "n/a",
+      "key": string
+  }
+  ```
+  ## Example Response
+
+  ## Message
+
+  ```json
+  {
+      "code": 200,
+      "message": "The request was successful",
+      "key": string
+  }
+  ```
+  ### Response Codes
+
+  | Status Code | Description                                                                        |
+  |:------------|:-----------------------------------------------------------------------------------|
+  | 200-299     | The request was successful. The bind port was successfully changed.                |
+  | 400         | Bad request. Typically returned if required information was not provided as input. |
+  | 500-599     | Server error.                                                                      |
+
+
+  # Status
+
+The proxy service will return the current status of the proxy a `status` interface operation message is published to the `proxy_mgmt_request` REDIS pubs channel. This will cause the proxy service to query all of the currently running modules for status and aggregate them into a response or if a module name is given in `param`, then status for only the given module is returned
+
+## Message
+
+```json
+{
+    "operation": "status",
+    "param": "<module_name>",
+    "key": string
+}
+```
+## Example Response
+
+## Message
+
+```json
+{
+    "code": 200,
+    "message":
+      {
+        "module": TrafficRecorder:
+          {
+            "state": running,
+            "status": 4/20/2015 8:00:00 am
+          },
+        "module": FaultInjection:
+          {
+            "state": Error,
+            "status": "failed to load"
+          },
+        "module": Latency:
+          {
+            "state": stopped,
+            "status": 4/20/2015 8:00:00 am
+          }
+      },
+    "key": string
+}
+```
+### Response Codes
+
+| Status Code | Description                                                                        |
+|:------------|:-----------------------------------------------------------------------------------|
+| 200-299     | The request was successful. The bind port was successfully changed.                |
+| 400         | Bad request. Typically returned if required information was not provided as input. |
+| 500-599     | Server error.                                                                      |
+
+
 # Test
 Proxy test cases can be ran by sending publising a proxy interface operation message to the `proxy_mgmt_request` REDIS pubs channel with an operation of `test`. This will case the proxy service to run all configured tests or run the ttest provided as a `param`
 ## Message
@@ -259,7 +378,6 @@ Proxy test cases can be ran by sending publising a proxy interface operation mes
 
 | Status Code | Description                                                                        |
 |:------------|:-----------------------------------------------------------------------------------|
-| 200-299     | The request was successful. The test was successfully executed.                  |
+| 200-299     | The request was successful. The test was successfully executed.                    |
 | 400         | Bad request. Typically returned if required information was not provided as input. |
 | 500-599     | Server error.                                                                      |
-
