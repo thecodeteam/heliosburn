@@ -47,16 +47,23 @@
                             });
                             return selected.join()
                         }
+                        d.date = $('#daterange').val();
+                        d.msg = $('#message').val();
                     }
                 }
             });
 
             $( "#filters" ).submit(function( event ) {
+
                 table.ajax.reload();
                 event.preventDefault();
             });
 
-            $('#reservation').daterangepicker();
+            $('#daterange').daterangepicker(
+                {
+                    format: 'YYYY-MM-DD'
+                }
+            );
         });
     </script>
 
@@ -113,7 +120,7 @@
                                         <div class="input-group-addon">
                                             <i class="fa fa-calendar"></i>
                                         </div>
-                                        <input type="text" class="form-control" id="reservation">
+                                        <input type="text" class="form-control" id="daterange">
                                     </div>
                                     <!-- /.input group -->
                                 </div>
@@ -121,7 +128,7 @@
                                 <div class="form-group">
                                     <label class="col-sm-2 control-label">Message</label>
                                     <div class="col-sm-10">
-                                        <input type="text" class="form-control" id="reservation">
+                                        <input id="message" type="text" class="form-control">
                                     </div>
                                     <!-- /.input group -->
                                 </div>

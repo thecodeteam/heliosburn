@@ -35,21 +35,21 @@ def get(request):
         levels = request.REQUEST['levels'].split(',')
         query['level'] = {"$in": levels}
 
-    if 'msg' in request.REQUEST:
+    if 'msg' in request.REQUEST and request.REQUEST['msg']:
         regx = re.compile(r'^.*' + request.REQUEST['msg'] + r'.*$')
         query['msg'] = regx
 
     # Create a 'time' key to hold one or both parts of our time query
-    if ('from' in request.REQUEST) or ('to' in request.REQUEST):
+    if ('from' or 'to' in request.REQUEST) and (request.REQUEST['from'] or request.REQUEST['to']):
         query['time'] = {}
 
-    if 'from' in request.REQUEST:
+    if 'from' in request.REQUEST and request.REQUEST['from']:
         try:
             query['time']['$gte'] = parser.parse(request.REQUEST['from'])
         except ValueError:
             return HttpResponseBadRequest()
 
-    if 'to' in request.REQUEST:
+    if 'to' in request.REQUEST and request.REQUEST['to']:
         try:
             query['time']['$lte'] = parser.parse(request.REQUEST['to'])
         except ValueError:

@@ -43,9 +43,16 @@ class LogsView(View):
         length = request.GET.get('length', '10')
         component = request.GET.get('component', '')
         levels = request.GET.get('levels', '')
+        date = request.GET.get('date', '').split(' - ')
+        if len(date) == 2:
+            date_from, date_to = date[0], date[1]
+        else:
+            date_from = date_to = ''
+        msg = request.GET.get('msg', '')
 
         try:
-            logs = Logs(auth_token=request.user.password).get(start, length, component, levels)
+            logs = Logs(auth_token=request.user.password).get(start, length, component, levels,
+                                                              date_from, date_to, msg)
         except Exception as inst:
             return HttpResponseBadRequest(inst)
 
