@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 @RequireLogin(role='admin')
 def get(request):
     """
-    Retrieve logs, limited by start/limit query string parameters.
+    Retrieve logs, optionally limited by query string parameters.
     """
     if request.method != "GET":
         return HttpResponse(status=405)
