@@ -3,6 +3,7 @@ from django.http import JsonResponse, HttpResponse, HttpResponseBadRequest
 from api.models import db_model
 from api.models.auth import RequireLogin
 from dateutil import parser
+from datetime import timedelta
 import re
 
 logger = logging.getLogger(__name__)
@@ -40,18 +41,18 @@ def get(request):
         query['msg'] = regx
 
     # Create a 'time' key to hold one or both parts of our time query
-    if ('from' or 'to' in request.REQUEST) and (request.REQUEST['from'] or request.REQUEST['to']):
+    if ('from' in request.REQUEST) or ('to' in request.REQUEST):
         query['time'] = {}
 
-    if 'from' in request.REQUEST and request.REQUEST['from']:
+    if ('from' in request.REQUEST) and (len(request.REQUEST['from']) > 0):
         try:
             query['time']['$gte'] = parser.parse(request.REQUEST['from'])
         except ValueError:
             return HttpResponseBadRequest()
 
-    if 'to' in request.REQUEST and request.REQUEST['to']:
+    if ('to' in request.REQUEST) and (len(request.REQUEST['to']) > 0):
         try:
-            query['time']['$lte'] = parser.parse(request.REQUEST['to'])
+            query['time']['$lte'] = parser.parse(request.REQUEST['to']) + timedelta(days=1)
         except ValueError:
             return HttpResponseBadRequest()
 
