@@ -7,6 +7,9 @@
 
 import sys
 import json
+import logging
+import logging.config
+from settings import Common
 from service.api import RedisOperationFactory
 from twisted.internet import reactor
 from twisted.internet import endpoints
@@ -22,6 +25,9 @@ from protocols.http import HBReverseProxyResource
 from protocols.http import HBProxyMgmtRedisSubscriberFactory
 from protocols.http import HBProxyMgmtProtocolFactory
 from protocols.http import HBProxyEchoServer
+
+logging.config.dictConfig(Common.LOGGING)
+logger = logging.getLogger("proxy")
 
 
 class HBProxyServer(object):
@@ -65,9 +71,9 @@ class HBProxyServer(object):
         self._start_echo_server()
 
     def _start_logging(self):
-
-        setStdout = True
-        log.startLogging(sys.stdout)
+        self.observer = log.PythonLoggingObserver(loggerName="proxy")
+        self.observer.start()
+        logger.info("started twisted logging observer")
 
     def start_proxy(self, result):
         resource = HBReverseProxyResource(self.upstream_host,
@@ -78,6 +84,7 @@ class HBProxyServer(object):
         self.protocol = self.protocols['http']
         self.proxy = reactor.listenTCP(self.protocol, f,
                                        interface=self.bind_address)
+        log.msg("Proxy Started")
         return self.proxy
 
     def _start_echo_server(self):

@@ -1,9 +1,11 @@
 import pymongo
 import json
 import uuid
+import datetime
 from module import AbstractModule
 from twisted.internet.endpoints import TCP4ClientEndpoint
 from twisted.internet import reactor
+from twisted.python import log
 from protocols.redis import HBRedisSubscriberFactory
 from protocols.redis import HBRedisMessageHandlerFactory
 from protocols.redis import HBRedisMessageHandler
@@ -30,6 +32,7 @@ class TrafficHandler(HBRedisMessageHandler):
         db.traffic.update({'transaction_id': self.message['transaction_id']},
                           self.message,
                           upsert=True)
+        log.msg("traffic recorded: " + self.message)
 
 
 class TrafficRecorder(AbstractModule):
@@ -58,11 +61,15 @@ class TrafficRecorder(AbstractModule):
                                         handler_factory))
 
         d.addCallback(self._subscribe)
+        self.state = "running"
+        self.status = datetime.datetime.now()
 
     def stop(self, **params):
         try:
             if self.redis_subscriber:
                 self.redis_subscriber.unsubscribe()
+            self.state = "stopped"
+            self.status = datetime.datetime.now()
         except AttributeError:
             return "not subscribed"
 

@@ -4,6 +4,7 @@ import collections
 import redis
 import modules
 import json
+import datetime
 from zope.interface import implements
 from zope.interface import Interface
 from twisted.internet import defer
@@ -91,6 +92,8 @@ class AbstractModule(object):
 
         self.name = self.__class__.__name__
         self.log = log
+        self.state = "loaded"
+        self.status = datetime.datetime.now()
 
     def get_name(self):
         """
@@ -137,11 +140,32 @@ class AbstractModule(object):
         """
         this method is called to start the module execution
         """
+        self.state = "running"
+        self.status = datetime.datetime.now()
 
     def stop(self, **params):
         """
         this method is called to stop the module execution
         """
+        self.state = "stopped"
+        self.status = datetime.datetime.now()
+
+    def test(self, module_name=None):
+        """
+        this method is called to run the module(s) tests
+        """
+
+    def state(self):
+        """
+        this method is called to  get the module(s) current state
+        """
+        return self.state
+
+    def status(self):
+        """
+        this method is called to  get the module(s) current status
+        """
+        return self.status
 
 
 class AbstractAPITestModule(AbstractModule, unittest.TestCase):
@@ -250,18 +274,21 @@ class Registry(object):
             name = module['name']
             configs = module['kwargs']
             self.plugins[name].configure(**configs)
+            log.msg(name + " loaded into proxy processing pipeline")
 
     def _load_support_modules(self):
         for module in self.support_modules:
             name = module['name']
             configs = module['kwargs']
             self.plugins[name].configure(**configs)
+            log.msg("Proxy support module: " + name + " loaded")
 
     def _load_test_modules(self):
         for module in self.test_modules:
             name = module['name']
             configs = module['kwargs']
             self.plugins[name].configure(**configs)
+            log.msg(name + " loaded into proxy test pipeline")
 
     def _build_request_pipeline(self):
 
@@ -285,11 +312,13 @@ class Registry(object):
     def _test_mode_on(self, ignored):
         self.test_mode = True
         self.pipeline_modules = self.test_modules
+        log.msg("Test mode: on")
 
     def _test_mode_off(self, ignored):
         self.test_mode = False
         self.pipeline_modules = self.plugin_config['pipeline']
         self.test_modules = self.plugin_config['test']
+        log.msg("Test mode: off")
 
     def handle_request(self, request, callback):
 
@@ -318,6 +347,7 @@ class Registry(object):
         """
         for plugin in self.plugins.values():
             plugin.reset()
+            log.msg("Reseting module: " + plugin.name)
 
     def reload(self):
 
@@ -325,6 +355,7 @@ class Registry(object):
         Executes the reload method of all currently active modules
         """
         for plugin in self.plugins.values():
+            log.msg("Reloading module: " + plugin.name)
             plugin.reload()
 
     def start(self, module_name=None, **params):
@@ -334,9 +365,11 @@ class Registry(object):
         """
         if module_name:
             self.plugins[module_name].start(**params)
+            log.msg("Starting  module: " + module_name.name)
         else:
             for plugin in self.plugins.values():
                 plugin.start(**params)
+                log.msg("Starting module: " + plugin.name)
 
     def stop(self, module_name=None, **params):
 
@@ -345,9 +378,11 @@ class Registry(object):
         """
         if module_name:
             self.plugins[module_name].stop(**params)
+            log.msg("Stopping  module: " + module_name.name)
         else:
             for plugin in self.pipeline_modules.values():
                 plugin.stop(**params)
+                log.msg("Stopping module: " + plugin.name)
 
     def test(self, module_name=None):
 
@@ -369,4 +404,30 @@ class Registry(object):
                 test_deferred.addCallback(self.plugins[name].start)
         test_deferred.addCallback(self._test_mode_off)
         return test_deferred
+
+    def status(self, module_name=None, **params):
+
+        """
+        Executes the status method of all plugins
+        """
+
+        if module_name:
+            status = {
+                "module": module_name,
+                "state": self.plugins[module_name].state(),
+                "status": self.plugins[module_name].status()
+            }
+
+        else:
+            status = []
+            for plugin in self.plugins.values():
+                p_status = {
+                    "module": module_name,
+                    "state": plugin.state(),
+                    "status": plugin.status()
+                }
+                status.append(p_status)
+
+        log.msg("Status retrieved: " + status)
+        return status
 
