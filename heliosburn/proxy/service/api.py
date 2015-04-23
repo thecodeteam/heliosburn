@@ -4,6 +4,7 @@ from txredis.client import RedisClientFactory
 from twisted.internet import defer
 from twisted.internet import reactor
 from twisted.web import server
+from twisted.python import log
 from protocols.http import HBReverseProxyRequest
 from protocols.http import HBReverseProxyResource
 
@@ -56,6 +57,7 @@ class RedisOperationResponse(OperationResponse):
         self.redis_client.publish(self.response_channel,
                                   json.dumps(self.response))
         self.redis_client.set(self.response['key'], self.response)
+        log.msg("Response posted to redis key: " + self.response['key'])
 
     def send(self):
         self.redis_conn.addCallback(self._send)
@@ -352,12 +354,10 @@ class StartRecording(ServerOperation):
                 module_name='TrafficRecorder',
                 **self.params)
             self.response.set_message({'Started Recording':
-                                    [self.response.get_message()]
-                                    })
+                                      [self.response.get_message()]})
         else:
-            self.response.set_message({'Started Recording':
-                                    [self.response.get_message()]
-                                    })
+            self.response.set_code(501)
+            self.response.set_message({'Busy': status})
 
 
 class ResetPlugins(ServerOperation):

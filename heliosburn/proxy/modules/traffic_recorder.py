@@ -5,6 +5,7 @@ import datetime
 from module import AbstractModule
 from twisted.internet.endpoints import TCP4ClientEndpoint
 from twisted.internet import reactor
+from twisted.python import log
 from protocols.redis import HBRedisSubscriberFactory
 from protocols.redis import HBRedisMessageHandlerFactory
 from protocols.redis import HBRedisMessageHandler
@@ -31,6 +32,7 @@ class TrafficHandler(HBRedisMessageHandler):
         db.traffic.update({'transaction_id': self.message['transaction_id']},
                           self.message,
                           upsert=True)
+        log.msg("traffic recorded: " + self.message)
 
 
 class TrafficRecorder(AbstractModule):

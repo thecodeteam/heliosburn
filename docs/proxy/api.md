@@ -269,7 +269,7 @@ The proxy service will start recording proxy traffic when a `start_recording` in
   | 500-599     | Server error.                                                                      |
 
 
-  # Stop_Recording
+# Stop_Recording
 
   The proxy service will stop recording proxy traffic when a `stop_recording` interface operation message is published to the `proxy_mgmt_request` REDIS pubs channel. This will cause the proxy service to stop recording traffic.
 
@@ -302,7 +302,7 @@ The proxy service will start recording proxy traffic when a `start_recording` in
   | 500-599     | Server error.                                                                      |
 
 
-  # Status
+# Status
 
 The proxy service will return the current status of the proxy a `status` interface operation message is published to the `proxy_mgmt_request` REDIS pubs channel. This will cause the proxy service to query all of the currently running modules for status and aggregate them into a response or if a module name is given in `param`, then status for only the given module is returned
 
@@ -324,25 +324,26 @@ The proxy service will return the current status of the proxy a `status` interfa
     "code": 200,
     "message":
       {
-        "module": TrafficRecorder:
-          {
-            "state": running,
-            "status": 4/20/2015 8:00:00 am
-          },
-        "module": FaultInjection:
-          {
-            "state": Error,
-            "status": "failed to load"
-          },
-        "module": Latency:
-          {
-            "state": stopped,
-            "status": 4/20/2015 8:00:00 am
-          }
+        {
+          "module": TrafficRecorder:
+          "state": running,
+          "status": 4/20/2015 8:00:00 am
+        },
+        {
+          "module": FaultInjection:
+          "state": Error,
+          "status": "failed to load"
+        },
+        {
+          "module": Latency:
+          "state": stopped,
+          "status": 4/20/2015 8:00:00 am
+        }
       },
     "key": string
 }
 ```
+
 ### Response Codes
 
 | Status Code | Description                                                                        |
@@ -351,6 +352,13 @@ The proxy service will return the current status of the proxy a `status` interfa
 | 400         | Bad request. Typically returned if required information was not provided as input. |
 | 500-599     | Server error.                                                                      |
 
+### States
+| Status Code | Description                                                                        |
+|:------------|:-----------------------------------------------------------------------------------|
+| running     | The module is currently running. Status will indicate when it started running      |
+| stopped     | The module is currently stopped. Implying it was once running. Status will indicate when it was stopped. |
+| error       | The module stopped due to an error                                                 |
+| loaded      | The module has been loaded, but not started.                                       |
 
 # Test
 Proxy test cases can be ran by sending publising a proxy interface operation message to the `proxy_mgmt_request` REDIS pubs channel with an operation of `test`. This will case the proxy service to run all configured tests or run the ttest provided as a `param`

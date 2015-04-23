@@ -274,18 +274,21 @@ class Registry(object):
             name = module['name']
             configs = module['kwargs']
             self.plugins[name].configure(**configs)
+            log.msg(name + " loaded into proxy processing pipeline")
 
     def _load_support_modules(self):
         for module in self.support_modules:
             name = module['name']
             configs = module['kwargs']
             self.plugins[name].configure(**configs)
+            log.msg("Proxy support module: " + name + " loaded")
 
     def _load_test_modules(self):
         for module in self.test_modules:
             name = module['name']
             configs = module['kwargs']
             self.plugins[name].configure(**configs)
+            log.msg(name + " loaded into proxy test pipeline")
 
     def _build_request_pipeline(self):
 
@@ -309,11 +312,13 @@ class Registry(object):
     def _test_mode_on(self, ignored):
         self.test_mode = True
         self.pipeline_modules = self.test_modules
+        log.msg("Test mode: on")
 
     def _test_mode_off(self, ignored):
         self.test_mode = False
         self.pipeline_modules = self.plugin_config['pipeline']
         self.test_modules = self.plugin_config['test']
+        log.msg("Test mode: off")
 
     def handle_request(self, request, callback):
 
@@ -342,6 +347,7 @@ class Registry(object):
         """
         for plugin in self.plugins.values():
             plugin.reset()
+            log.msg("Reseting module: " + plugin.name)
 
     def reload(self):
 
@@ -349,6 +355,7 @@ class Registry(object):
         Executes the reload method of all currently active modules
         """
         for plugin in self.plugins.values():
+            log.msg("Reloading module: " + plugin.name)
             plugin.reload()
 
     def start(self, module_name=None, **params):
@@ -358,9 +365,11 @@ class Registry(object):
         """
         if module_name:
             self.plugins[module_name].start(**params)
+            log.msg("Starting  module: " + module_name.name)
         else:
             for plugin in self.plugins.values():
                 plugin.start(**params)
+                log.msg("Starting module: " + plugin.name)
 
     def stop(self, module_name=None, **params):
 
@@ -369,9 +378,11 @@ class Registry(object):
         """
         if module_name:
             self.plugins[module_name].stop(**params)
+            log.msg("Stopping  module: " + module_name.name)
         else:
             for plugin in self.pipeline_modules.values():
                 plugin.stop(**params)
+                log.msg("Stopping module: " + plugin.name)
 
     def test(self, module_name=None):
 
@@ -417,5 +428,6 @@ class Registry(object):
                 }
                 status.append(p_status)
 
+        log.msg("Status retrieved: " + status)
         return status
 

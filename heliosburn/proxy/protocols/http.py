@@ -132,6 +132,8 @@ class HBReverseProxyRequest(ReverseProxyRequest):
 
         self.reactor.connectTCP(self.upstream_host, self.upstream_port,
                                 clientFactory)
+        log.msg("Forwarding request to: " + self.upstream_host
+                +":"+ self.upstream_port)
 
     def process(self):
         """
