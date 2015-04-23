@@ -9,10 +9,13 @@ mongodb_host = 'localhost'
 mongodb_port = 27017
 mongodb_database = 'heliosburn'
 
+
 def main():
     import json
     import redis
     from pymongo import MongoClient
+    from dateutil import parser
+
     print(">> connecting to redis")
     r = redis.StrictRedis(host=redis_host, port=redis_port)
     s = r.pubsub()
@@ -28,9 +31,15 @@ def main():
         print("Received msg '%s'" % msg)
         try:
             data = json.loads(msg['data'])
-            dbc.log.insert(data)
         except ValueError:
             print("!! could not deserialize JSON: %s" % msg['data'])
+            continue
+
+        try:
+            data['time'] = parser.parse(data['time'])
+            dbc.log.insert(data)
+        except ValueError:
+            print("!! could not parse timestamp: %s" % data['time'])
 
 
 if __name__ == "__main__":

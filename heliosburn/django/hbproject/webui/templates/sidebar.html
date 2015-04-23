@@ -50,6 +50,11 @@
                 <i class="fa fa-building-o"></i> <span>Templates</span>
             </a>
         </li>
+        <li class="{% active request "logs" %}">
+            <a href="{% url 'logs' %}">
+                <i class="fa fa-search"></i> <span>Logs</span>
+            </a>
+        </li>
         <li class="{% active request "settings" %}">
             <a href="{% url 'settings' %}">
                 <i class="fa fa-cog"></i> <span>Settings</span>

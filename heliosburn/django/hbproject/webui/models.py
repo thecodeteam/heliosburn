@@ -210,3 +210,33 @@ class Recording(Base):
             exception = status_code_to_exception(response.status_code)
             exception.message = response.text
             raise exception
+
+
+class Logs(Base):
+    __endpoint__ = '/log/'
+    __resourcename__ = 'log'
+
+    def stats(self):
+        url = self.get_url(extra='stats')
+        headers = {'X-Auth-Token': self.auth_token}
+        response = requests.get(url, headers=headers)
+        if not validate_response(response):
+            exception = status_code_to_exception(response.status_code)
+            exception.message = response.text
+            raise exception
+        stats = json.loads(response.text)
+        return stats
+
+    def get(self, start, length, component, levels, date_from, date_to, msg):
+        url = self.get_url(
+            extra='?start={}&limit={}&component={}&levels={}&from={}&to={}&msg={}'.format(start, length, component,
+                                                                                          levels,
+                                                                                          date_from, date_to, msg))
+        headers = {'X-Auth-Token': self.auth_token}
+        response = requests.get(url, headers=headers)
+        if not validate_response(response):
+            exception = status_code_to_exception(response.status_code)
+            exception.message = response.text
+            raise exception
+        logs = json.loads(response.text)
+        return logs

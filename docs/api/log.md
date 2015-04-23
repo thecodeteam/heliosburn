@@ -17,6 +17,7 @@ To retrieve a list of log entries, an application submits an HTTP GET request to
 - `/log/?start=1&limit=500`: Retrieve the first 500 log entries
 - `/log/?component=api.views.user`: Retrieve logs specific to `api.views` component(s)
 - `/log/?component=api.views.user&levels=info,debug`: Retrieve logs specific to `api.views` component(s) with `info` or `debug` levels.
+- `/log/?from=2015-04-01&to=2015-04-02`: Retrieve logs between *2015-04-01* and *2015-04-02*
 
 #### Method
 GET
@@ -30,6 +31,9 @@ The following query string arguments are supported:
 | limit | NO | Integer | Log entries returned end at this limit beyond `start`(default is 1000). |
 | component | NO | String | Restrict log entries returned to a component, matching the expression provided. |
 | levels | NO | String | Comma separated list of log levels to return. |
+| msg | NO | String | String to match in the `msg` field of log entries. |
+| from | NO | ISO 8601 Date/time string | Time stamp that logs should be retrieved *after* |
+| to | NO | ISO 8601 Date/time string | Time stamp that logs should be retrieved *before* |
 
 ### Response
 
@@ -64,7 +68,7 @@ The response body contains a `log` key containing a list of log entries, ordered
       "name": "hb.logger",
       "level": "info",
       "args": [
-        
+
       ],
       "filename": "/home/vagrant/HeliosBurn/heliosburn/django/hbproject/api/views/auth.py",
       "line_no": 48,
@@ -79,7 +83,7 @@ The response body contains a `log` key containing a list of log entries, ordered
       "name": "hb.logger",
       "level": "info",
       "args": [
-        
+
       ],
       "filename": "/home/vagrant/HeliosBurn/heliosburn/django/hbproject/api/views/auth.py",
       "line_no": 48,
