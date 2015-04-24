@@ -224,6 +224,41 @@ class TestStopRecordingAPI(TestAPISuccess):
 test_stop_recording = TestStopRecordingAPI()
 
 
+class TestBusyRecordingAPI(TestAPISuccess):
+    """
+    Used to teset the proxy controller API call 'start_recording',
+    for a busy response.
+    """
+    def __init__(self):
+        super(TestBusyRecordingAPI, self).__init__()
+        start_recording = TestStartRecordingAPI()
+
+    def get_message(self):
+        response_message = {'Busy':
+                            [self.op_response.get_message()],
+                            }
+        self.op_response.set_message(response_message)
+
+        recording_id = {'recording_id': 1}
+        message = self._get_operation_message('start_recording',
+                                              recording_id,
+                                              self.response_key)
+        return json.dumps(message)
+
+    def _publish_message(self, result):
+        recording_id = {'recording_id': 1}
+        start_m = self._get_operation_message('start_recording',
+                                              recording_id,
+                                              'abc123')
+        self.redis_client.publish(self.redis_pub_queue, json.dumps(start_m))
+        message = self.get_message()
+        if message:
+            self.redis_client.publish(self.redis_pub_queue, message)
+        return result
+
+test_busy_recording = TestBusyRecordingAPI()
+
+
 class TestStatusAPI(TestAPISuccess):
     """
     Used to teset the proxy controller API call 'status'.
@@ -232,11 +267,10 @@ class TestStatusAPI(TestAPISuccess):
     def get_message(self):
         response_message = {"status":
                             {
-                              "module": "TrafficRecorder",
-                              "state": "stopped",
-                              "status": " "
-                            }
-                           }
+                                "module": "TrafficRecorder",
+                                "state": "stopped",
+                                "status": " "
+                            }}
 
         self.op_response.set_message(response_message)
         message = self._get_operation_message('status',
@@ -255,4 +289,3 @@ class TestStatusAPI(TestAPISuccess):
         print(success_message)
 
 test_status_proxy = TestStatusAPI()
-
