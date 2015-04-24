@@ -229,9 +229,6 @@ class TestBusyRecordingAPI(TestAPISuccess):
     Used to teset the proxy controller API call 'start_recording',
     for a busy response.
     """
-    def __init__(self):
-        super(TestBusyRecordingAPI, self).__init__()
-        start_recording = TestStartRecordingAPI()
 
     def get_message(self):
         response_message = {'Busy':
@@ -244,6 +241,15 @@ class TestBusyRecordingAPI(TestAPISuccess):
                                               recording_id,
                                               self.response_key)
         return json.dumps(message)
+
+    def evaluate(self, result):
+        response = json.loads(result)
+        expected = self.get_expected()
+        result = self.assertEqual(501, response['code'])
+        success_message = self.__class__.__name__ + ": "
+        success_message += "SUCCESS!\n"
+        success_message += "Result: " + str(result)
+        print(success_message)
 
     def _publish_message(self, result):
         recording_id = {'recording_id': 1}
