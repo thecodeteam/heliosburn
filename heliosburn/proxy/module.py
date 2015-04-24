@@ -365,7 +365,7 @@ class Registry(object):
         """
         if module_name:
             self.plugins[module_name].start(**params)
-            log.msg("Starting  module: " + module_name.name)
+            log.msg("Starting  module: " + module_name)
         else:
             for plugin in self.plugins.values():
                 plugin.start(**params)
@@ -378,7 +378,7 @@ class Registry(object):
         """
         if module_name:
             self.plugins[module_name].stop(**params)
-            log.msg("Stopping  module: " + module_name.name)
+            log.msg("Stopping  module: " + module_name)
         else:
             for plugin in self.pipeline_modules.values():
                 plugin.stop(**params)
@@ -414,8 +414,8 @@ class Registry(object):
         if module_name:
             status = {
                 "module": module_name,
-                "state": self.plugins[module_name].state(),
-                "status": self.plugins[module_name].status()
+                "state": self.plugins[module_name].state,
+                "status": self.plugins[module_name].status
             }
 
         else:
@@ -423,11 +423,11 @@ class Registry(object):
             for plugin in self.plugins.values():
                 p_status = {
                     "module": module_name,
-                    "state": plugin.state(),
-                    "status": plugin.status()
+                    "state": plugin.state,
+                    "status": plugin.status
                 }
                 status.append(p_status)
 
-        log.msg("Status retrieved: " + status)
+        log.msg("Status retrieved: " + str(status))
         return status
 

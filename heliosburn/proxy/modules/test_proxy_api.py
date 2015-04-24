@@ -223,3 +223,36 @@ class TestStopRecordingAPI(TestAPISuccess):
 
 test_stop_recording = TestStopRecordingAPI()
 
+
+class TestStatusAPI(TestAPISuccess):
+    """
+    Used to teset the proxy controller API call 'status'.
+    """
+
+    def get_message(self):
+        response_message = {"status":
+                            {
+                              "module": "TrafficRecorder",
+                              "state": "stopped",
+                              "status": " "
+                            }
+                           }
+
+        self.op_response.set_message(response_message)
+        message = self._get_operation_message('status',
+                                              "TrafficRecorder",
+                                              self.response_key)
+        return json.dumps(message)
+
+    def evaluate(self, result):
+        response = json.loads(result)
+        expected = self.get_expected()
+        result = self.assertEqual(expected['message']['status']['state'],
+                                  response['message']['status']['state'])
+        success_message = self.__class__.__name__ + ": "
+        success_message += "SUCCESS!\n"
+        success_message += "Result: " + str(result)
+        print(success_message)
+
+test_status_proxy = TestStatusAPI()
+
