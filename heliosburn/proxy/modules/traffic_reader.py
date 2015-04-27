@@ -64,6 +64,7 @@ class TrafficReader(AbstractModule):
         message['request'] = self._get_request_message(request)
 
         self.redis_client.publish(self.redis_pub_queue, json.dumps(message))
+        log.msg("traffic read: " + message)
         return request
 
     def handle_response(self, response):
@@ -73,6 +74,7 @@ class TrafficReader(AbstractModule):
         message['response'] = self._get_response_message(response)
 
         self.redis_client.publish(self.redis_pub_queue, json.dumps(message))
+        log.msg("traffic read: " + message)
         return response
 
 traffic_reader = TrafficReader()

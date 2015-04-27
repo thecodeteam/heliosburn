@@ -7,6 +7,7 @@ from protocols.redis import HBRedisMessageHandlerFactory
 from protocols.redis import HBRedisMessageHandler
 from twisted.internet.endpoints import TCP4ClientEndpoint
 from twisted.internet import reactor
+from twisted.python import log
 
 
 class TrafficHandler(HBRedisMessageHandler):
