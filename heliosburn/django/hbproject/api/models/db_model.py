@@ -4,5 +4,12 @@ def connect(database_name='production'):
     """
     from pymongo import MongoClient
     from hbproject import settings as s
+
+
+    # Reliably test if django unit tests are being ran and use test database if so
+    import sys
+    if 'test' in sys.argv:
+        database_name = 'test'
+
     client = MongoClient(host=s.MONGODB_HOST, port=s.MONGODB_PORT)
     return client[s.MONGODB_DATABASE[database_name]]
