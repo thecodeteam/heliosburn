@@ -8,7 +8,7 @@ fi
 if [ -d /opt/HeliosBurn ]
 then
     echo ">> Installing supervisord profiles under /etc/supervisor/conf.d/"
-    install -b heliosburn/supervisord_conf_d/*.conf /etc/supervisor/conf.d/
+    install -b install/etc/supervisor/conf.d/*.conf /etc/supervisor/conf.d/
     echo ">> Setting up database - executing: 'python heliosburn/django/hbproject/create_db_model.py'"
     python heliosburn/django/hbproject/create_db_model.py
     echo ""
