@@ -197,11 +197,11 @@ def stop(request, recording_id):
     from api.models import redis_wrapper
     r = redis_wrapper.init_redis()
     response_key = str(ObjectId())
-    redis_wrapper.publish_to_proxy({
+    redis_wrapper.publish_to_proxy(json.dumps({
         "operation": "stop_recording",
         "param": recording_id,
         "key": response_key,
-    })
+    }))
     logger.info("recording '%s' stopped by '%s'" % (recording_id, request.user['username']))
     for i in range(0, 50):
         response = r.get(response_key)
@@ -210,3 +210,4 @@ def stop(request, recording_id):
         else:
             time.sleep(.1)  # sleep 100ms
     return JsonResponse({"proxyResponse": None}, status=503)
+
