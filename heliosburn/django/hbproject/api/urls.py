@@ -1,5 +1,5 @@
 from django.conf.urls import patterns, url
-from api.views import default, user, session, testplan, auth, traffic, rule, testplan_rule, recording, log
+from api.views import default, user, session, testplan, auth, traffic, rule, testplan_rule, recording, log, proxy
 
 urlpatterns = patterns('',
     url(r'^$', default.index),
@@ -23,4 +23,5 @@ urlpatterns = patterns('',
     url(r'^recording/(?P<recording_id>\w+?)/stop/{0,1}$', recording.stop),
     url(r'^log/{0,1}$', log.get),
     url(r'^log/stats/{0,1}$', log.get_stats),
+    url(r'^proxy/status/{0,1}$', proxy.status_get),
 )
