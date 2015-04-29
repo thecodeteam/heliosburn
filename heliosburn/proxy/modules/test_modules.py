@@ -2,6 +2,7 @@ from module import AbstractModule
 from twisted.internet import reactor
 from twisted.web.client import Agent
 from twisted.web.http_headers import Headers
+from twisted.python import log
 
 
 class TestModifyStatus(AbstractModule):

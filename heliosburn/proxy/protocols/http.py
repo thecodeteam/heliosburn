@@ -132,8 +132,8 @@ class HBReverseProxyRequest(ReverseProxyRequest):
 
         self.reactor.connectTCP(self.upstream_host, self.upstream_port,
                                 clientFactory)
-        log.msg("Forwarding request to: " + self.upstream_host
-                +":"+ self.upstream_port)
+        log.msg("Forwarding request to: " + str(self.upstream_host)
+                + ":" + str(self.upstream_port))
 
     def process(self):
         """
@@ -236,9 +236,3 @@ class HBProxyMgmtProtocolFactory(protocol.Factory):
         return HBProxyMgmtProtocol(self.op_factory)
 
 
-class HBProxyEchoServer(resource.Resource):
-    isLeaf = True
-
-    def render_GET(self, request):
-        request.setHeader("content-type", "text/plain")
-        return "Echo\n"
