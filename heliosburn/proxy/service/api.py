@@ -426,22 +426,10 @@ class RunTest(ServerOperation):
         self.orig_upstream_host = server.upstream_host
         self.orig_upstream_port = server.upstream_port
 
-#        r_port_op = ChangeUpstreamPort(server,
-#                                       response_factory,
-#                                       key,
-#                                       self.orig_upstream_port)
-
-#        r_host_op = ChangeUpstreamHost(server,
-#                                       response_factory,
-#                                       key,
-#                                       self.orig_upstream_host)
-
-#        d = self.addCallback(c_host_op.execute).addCallback(c_port_op.execute)
         d = self._connect_echo_server()
-#        d.addCallback(r_port_op.update)
-#        d.addCallback(r_host_op.update)
         d.addCallback(self.run_test)
         d.addCallback(self.respond)
+        d.addCallback(self._disconnect_echo_server)
 
     def run_test(self, result):
         tests = self.controller.module_registry.test(
@@ -453,11 +441,23 @@ class RunTest(ServerOperation):
 
     def _connect_echo_server(self):
         self.server.upstream_host = '127.0.0.1'
-        self.server.upstream_port = '7599'
+        self.server.upstream_port = 7599
         stop_op = StopProxy(self.server, self.response_factory, self.key)
         start_op = StartProxy(self.server, self.response_factory, self.key)
 
         log.msg("Upstream host changed to echo server: " +
+                str(self.server.upstream_host) +
+                ":" + str(self.server.upstream_port))
+
+        return self.addCallback(stop_op.stop).addCallback(start_op.start)
+
+    def _disconnect_echo_server(self, unused):
+        self.server.upstream_host = self.orig_upstream_host
+        self.server.upstream_port = self.orig_upstream_port
+        stop_op = StopProxy(self.server, self.response_factory, self.key)
+        start_op = StartProxy(self.server, self.response_factory, self.key)
+
+        log.msg("Upstream host changed to previous server: " +
                 str(self.server.upstream_host) +
                 ":" + str(self.server.upstream_port))
 

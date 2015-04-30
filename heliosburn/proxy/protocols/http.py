@@ -43,11 +43,16 @@ class HBProxyClient(ProxyClient):
         self.father.response_createdAt = now.strftime('%Y-%m-%d %H:%M:%S')
 
     def _forward_response(self, response):
-        ProxyClient.handleResponsePart(self, self.father.response_content)
-        ProxyClient.handleResponseEnd(self)
+        content = self.father.response_content
+        # fix this... odd that it must exist
+        if not self._finished:
+            ProxyClient.handleResponsePart(self, content)
+            ProxyClient.handleResponseEnd(self)
+        log.msg("Response forwarded: " + str(response))
 
     def handleResponsePart(self, buffer):
         self.buffer += buffer
+        log.msg("handled partial response: " + str(buffer))
 
     def handleResponseEnd(self):
         self.father.response_content = self.buffer
@@ -56,6 +61,8 @@ class HBProxyClient(ProxyClient):
                                                        response_content)])
         self.module_registry.handle_response(self.father,
                                              self._forward_response)
+
+        log.msg("handled end of response: " + str(self.buffer))
 
     def handleHeader(self, key, val):
         self.header[key] = val

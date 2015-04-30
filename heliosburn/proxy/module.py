@@ -27,10 +27,9 @@ class HBProxyEchoServer(resource.Resource):
     isLeaf = True
 
     def render_GET(self, request):
-        print("hello")
         request.setHeader("content-type", "text/plain")
         response = self._get_response()
-        log.msg("EchoServer: Sending response:\n " + response)
+        log.msg("EchoServer: Sent response:\n " + response)
         return response
 
     def _get_response(self):
