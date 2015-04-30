@@ -131,10 +131,17 @@ p50
 asg20
 g43
 sg21
+<<<<<<< HEAD
+S'test_status_proxy'
+p51
+sg10
+S"\n    Used to teset the proxy controller API call 'status'.\n    "
+=======
 S'test_start_recording'
 p51
 sg10
 S"\n    Used to teset the proxy controller API call 'start_recording'.\n    "
+>>>>>>> echo_serv_response
 p52
 sbag3
 (g13
@@ -149,10 +156,17 @@ ag50
 asg20
 g43
 sg21
+<<<<<<< HEAD
+S'test_start_recording'
+p56
+sg10
+S"\n    Used to teset the proxy controller API call 'start_recording'.\n    "
+=======
 S'test_start_proxy'
 p56
 sg10
 S"\n    Used to teset the proxy controller API call 'start'.\n    "
+>>>>>>> echo_serv_response
 p57
 sbag3
 (g13
@@ -167,10 +181,17 @@ ag50
 asg20
 g43
 sg21
+<<<<<<< HEAD
+S'test_busy_recording'
+p61
+sg10
+S"\n    Used to teset the proxy controller API call 'start_recording',\n    for a busy response.\n    "
+=======
 S'test_reload_proxy'
 p61
 sg10
 S"\n    Used to teset the proxy controller API call\n    'reload'.\n    "
+>>>>>>> echo_serv_response
 p62
 sbag3
 (g13
@@ -185,10 +206,17 @@ ag50
 asg20
 g43
 sg21
+<<<<<<< HEAD
+S'test_start_proxy'
+p66
+sg10
+S"\n    Used to teset the proxy controller API call 'start'.\n    "
+=======
 S'test_upstream_port_proxy'
 p66
 sg10
 S"\n    Used to teset the proxy controller API call\n    'upstream_port'.\n    "
+>>>>>>> echo_serv_response
 p67
 sbag3
 (g13
@@ -203,10 +231,17 @@ ag50
 asg20
 g43
 sg21
+<<<<<<< HEAD
+S'test_reload_proxy'
+p71
+sg10
+S"\n    Used to teset the proxy controller API call\n    'reload'.\n    "
+=======
 S'test_stop_proxy'
 p71
 sg10
 S"\n    Used to teset the proxy controller API call 'stop'.\n    "
+>>>>>>> echo_serv_response
 p72
 sbag3
 (g13
@@ -221,10 +256,17 @@ ag50
 asg20
 g43
 sg21
+<<<<<<< HEAD
+S'test_upstream_port_proxy'
+p76
+sg10
+S"\n    Used to teset the proxy controller API call\n    'upstream_port'.\n    "
+=======
 S'test_stop_recording'
 p76
 sg10
 S"\n    Used to teset the proxy controller API call 'stop_recording'.\n    "
+>>>>>>> echo_serv_response
 p77
 sbag3
 (g13
@@ -239,10 +281,17 @@ ag50
 asg20
 g43
 sg21
+<<<<<<< HEAD
+S'test_stop_proxy'
+p81
+sg10
+S"\n    Used to teset the proxy controller API call 'stop'.\n    "
+=======
 S'test_bind_address_proxy'
 p81
 sg10
 S"\n    Used to teset the proxy controller API call\n    'bind_address'.\n    "
+>>>>>>> echo_serv_response
 p82
 sbag3
 (g13
@@ -257,10 +306,17 @@ ag50
 asg20
 g43
 sg21
+<<<<<<< HEAD
+S'test_stop_recording'
+p86
+sg10
+S"\n    Used to teset the proxy controller API call 'stop_recording'.\n    "
+=======
 S'test_upstream_host_proxy'
 p86
 sg10
 S"\n    Used to teset the proxy controller API call\n    'upstream_host'.\n    "
+>>>>>>> echo_serv_response
 p87
 sbag3
 (g13
@@ -275,10 +331,17 @@ ag50
 asg20
 g43
 sg21
+<<<<<<< HEAD
+S'test_bind_address_proxy'
+p91
+sg10
+S"\n    Used to teset the proxy controller API call\n    'bind_address'.\n    "
+=======
 S'test_Reset_proxy'
 p91
 sg10
 S"\n    Used to teset the proxy controller API call\n    'reset'.\n    "
+>>>>>>> echo_serv_response
 p92
 sbag3
 (g13
@@ -293,6 +356,32 @@ ag50
 asg20
 g43
 sg21
+<<<<<<< HEAD
+S'test_upstream_host_proxy'
+p96
+sg10
+S"\n    Used to teset the proxy controller API call\n    'upstream_host'.\n    "
+p97
+sbag3
+(g13
+g5
+NtRp98
+(dp99
+g16
+(lp100
+g18
+ag19
+ag50
+asg20
+g43
+sg21
+S'test_Reset_proxy'
+p101
+sg10
+S"\n    Used to teset the proxy controller API call\n    'reset'.\n    "
+p102
+sbag3
+=======
 S'test_bind_port_proxy'
 p96
 sg10
@@ -312,6 +401,7 @@ sg10
 Nsg11
 (lp102
 g3
+>>>>>>> echo_serv_response
 (g13
 g5
 NtRp103
@@ -320,6 +410,18 @@ g16
 (lp105
 g18
 ag19
+<<<<<<< HEAD
+ag50
+asg20
+g43
+sg21
+S'test_bind_port_proxy'
+p106
+sg10
+S"\n    Used to teset the proxy controller API call\n    'bind_port'.\n    "
+p107
+sbasbsS'traffic_reader'
+=======
 asg20
 g99
 sg21
@@ -329,6 +431,7 @@ sg10
 S'\n    Extension of AbstractModule class used to serialize traffic\n    to a Redis pubsub channel.\n    '
 p107
 sbasbsS'unittest_module'
+>>>>>>> echo_serv_response
 p108
 g3
 (g4
@@ -336,7 +439,11 @@ g5
 NtRp109
 (dp110
 g8
+<<<<<<< HEAD
+S'modules.traffic_reader'
+=======
 S'modules.unittest_module'
+>>>>>>> echo_serv_response
 p111
 sg10
 Nsg11
@@ -353,12 +460,21 @@ ag19
 asg20
 g109
 sg21
+<<<<<<< HEAD
+S'traffic_reader'
+p116
+sg10
+S'\n    Extension of AbstractModule class used to serialize traffic\n    to a Redis pubsub channel.\n    '
+p117
+sbasbsS'unittest_module'
+=======
 S'unit_test_module'
 p116
 sg10
 S'\n    This module injects specific header/body attributes that proxy_core\n    unittests looks for.\n    '
 p117
 sbasbsS'traffic_recorder'
+>>>>>>> echo_serv_response
 p118
 g3
 (g4
@@ -366,7 +482,11 @@ g5
 NtRp119
 (dp120
 g8
+<<<<<<< HEAD
+S'modules.unittest_module'
+=======
 S'modules.traffic_recorder'
+>>>>>>> echo_serv_response
 p121
 sg10
 Nsg11
@@ -383,6 +503,42 @@ ag19
 asg20
 g119
 sg21
+<<<<<<< HEAD
+S'unit_test_module'
+p126
+sg10
+S'\n    This module injects specific header/body attributes that proxy_core\n    unittests looks for.\n    '
+p127
+sbasbsS'traffic_recorder'
+p128
+g3
+(g4
+g5
+NtRp129
+(dp130
+g8
+S'modules.traffic_recorder'
+p131
+sg10
+Nsg11
+(lp132
+g3
+(g13
+g5
+NtRp133
+(dp134
+g16
+(lp135
+g18
+ag19
+asg20
+g129
+sg21
+S'traffic_recorder'
+p136
+sg10
+NsbasbsS'test_modules'
+=======
 S'traffic_recorder'
 p126
 sg10
@@ -417,6 +573,7 @@ sg10
 S'\n    This module changes the status code of the response\n    '
 p136
 sbasbsS'fault_intection'
+>>>>>>> echo_serv_response
 p137
 g3
 (g4
@@ -424,7 +581,11 @@ g5
 NtRp138
 (dp139
 g8
+<<<<<<< HEAD
+S'modules.test_modules'
+=======
 S'modules.fault_intection'
+>>>>>>> echo_serv_response
 p140
 sg10
 Nsg11
@@ -441,8 +602,73 @@ ag19
 asg20
 g138
 sg21
+<<<<<<< HEAD
 S'fault_injection'
 p145
+=======
+<<<<<<< HEAD
+S'test_modify_status'
+p145
+sg10
+S'\n    This module changes the status code of the response\n    '
+p146
+sbasbsS'fault_intection'
+p147
+g3
+(g4
+g5
+NtRp148
+(dp149
+g8
+S'modules.fault_intection'
+p150
+sg10
+Nsg11
+(lp151
+g3
+(g13
+g5
+NtRp152
+(dp153
+g16
+(lp154
+g18
+ag19
+asg20
+g148
+sg21
+g41
+sg10
+NsbasbsS'samplemodule'
+p155
+g3
+(g4
+g5
+NtRp156
+(dp157
+g8
+S'modules.samplemodule'
+p158
+sg10
+Nsg11
+(lp159
+g3
+(g13
+g5
+NtRp160
+(dp161
+g16
+(lp162
+g18
+ag19
+asg20
+g156
+sg21
+S'sample_module'
+p163
+=======
+g41
+>>>>>>> master
 sg10
 NsbasbsS'samplemodule'
 p146
@@ -470,6 +696,11 @@ asg20
 g147
 sg21
 S'sample_module'
+<<<<<<< HEAD
 p154
+=======
+p153
+>>>>>>> echo_serv_response
+>>>>>>> master
 sg10
 Nsbasbs.

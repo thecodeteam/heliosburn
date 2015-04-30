@@ -62,14 +62,14 @@ class TrafficRecorder(AbstractModule):
 
         d.addCallback(self._subscribe)
         self.state = "running"
-        self.status = datetime.datetime.now()
+        self.status = str(datetime.datetime.now())
 
     def stop(self, **params):
         try:
             if self.redis_subscriber:
                 self.redis_subscriber.unsubscribe()
             self.state = "stopped"
-            self.status = datetime.datetime.now()
+            self.status = str(datetime.datetime.now())
         except AttributeError:
             return "not subscribed"
 

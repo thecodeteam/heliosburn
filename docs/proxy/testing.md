@@ -175,7 +175,7 @@ Pipeline test cases are essentially just special case pipeline modules (so are A
    25         print(response.code)
    26
    27     def handle_response(self, response):
-   28         Alter the statuscode to be 400 ------------------------------------------------------------------------------------------------------------------------- 2-
+   28         Alter the statuscode to be 400
    31         response.setHeader('original_code', response.code)
    32         response.setResponseCode(400)
    33         return response
