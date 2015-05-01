@@ -24,4 +24,5 @@ urlpatterns = patterns('',
     url(r'^log/{0,1}$', log.get),
     url(r'^log/stats/{0,1}$', log.get_stats),
     url(r'^proxy/status/{0,1}$', proxy.status_get),
+    url(r'^/status/{0,1}$', proxy.status_get),  #TODO: This should be removed in the future
 )

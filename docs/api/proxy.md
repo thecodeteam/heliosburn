@@ -13,7 +13,7 @@ To retrieve information the status of the HeliosBurn proxy server, an applicatio
 ### Request
 
 #### URL
-`/status`
+`/proxy/status`
 
 #### Method
 GET
