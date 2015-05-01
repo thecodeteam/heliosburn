@@ -23,6 +23,8 @@ urlpatterns = patterns('',
     url(r'^recording/(?P<recording_id>\w+?)/stop/{0,1}$', recording.stop),
     url(r'^log/{0,1}$', log.get),
     url(r'^log/stats/{0,1}$', log.get_stats),
-    url(r'^proxy/status/{0,1}$', proxy.status_get),
-    url(r'^/status/{0,1}$', proxy.status_get),  #TODO: This should be removed in the future
+    url(r'^proxy/status/{0,1}$', proxy.status),
+    url(r'^proxy/start/{0,1}$', proxy.start),
+    url(r'^proxy/stop/{0,1}$', proxy.stop),
+    url(r'^status/{0,1}$', proxy.status),  #TODO: This should be removed in the future
 )

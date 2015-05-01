@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 
 @RequireLogin(role='admin')
-def status_get(request):
+def status(request):
     """
     Return status of proxy.
     """
@@ -28,7 +28,7 @@ def status_get(request):
         "param": None,
         "key": response_key,
     }))
-    for i in range(0,50):
+    for i in range(0, 50):
         response = r.get(response_key)
         if response is not None:
             return JsonResponse({"proxyStatus": response})
@@ -36,3 +36,52 @@ def status_get(request):
             time.sleep(.1)  # sleep 100ms
     return JsonResponse({"proxyStatus": None}, status=503)
 
+
+@RequireLogin(role='admin')
+def start(request):
+    """
+    Start the proxy.
+    """
+    if request.method != "GET":
+        return HttpResponse(status=405)
+
+    from api.models import redis_wrapper
+    r = redis_wrapper.init_redis()
+    response_key = str(ObjectId())
+    redis_wrapper.publish_to_proxy(json.dumps({
+        "operation": "start",
+        "param": None,
+        "key": response_key,
+    }))
+    for i in range(0, 50):
+        response = r.get(response_key)
+        if response is not None:
+            return JsonResponse({"proxyResponse": response})
+        else:
+            time.sleep(.1)  # sleep 100ms
+    return JsonResponse({"proxyResponse": None}, status=503)
+
+
+@RequireLogin(role='admin')
+def stop(request):
+    """
+    Stop the proxy.
+    """
+    if request.method != "GET":
+        return HttpResponse(status=405)
+
+    from api.models import redis_wrapper
+    r = redis_wrapper.init_redis()
+    response_key = str(ObjectId())
+    redis_wrapper.publish_to_proxy(json.dumps({
+        "operation": "stop",
+        "param": None,
+        "key": response_key,
+    }))
+    for i in range(0, 50):
+        response = r.get(response_key)
+        if response is not None:
+            return JsonResponse({"proxyResponse": response})
+        else:
+            time.sleep(.1)  # sleep 100ms
+    return JsonResponse({"proxyResponse": None}, status=503)

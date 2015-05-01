@@ -1,6 +1,8 @@
 - [Proxy](#proxy)
   - [Get the proxy status](#get-the-proxy-status)
   - [Get current traffic](#get-current-traffic)
+  - [Start the proxy](#start-heliosburn-proxy)
+  - [Stop the proxy](#stop-heliosburn-proxy)
 
 
 # Proxy
@@ -215,3 +217,55 @@ Server: Noelios-Restlet-Engine/1.1.5
 	]
 }
 ```
+
+## Start HeliosBurn proxy
+
+To start the proxy server, an application submits an HTTP GET request to the URL that represents the Proxy Start resource.
+
+### Request
+
+#### URL
+`/proxy/start`
+
+#### Method
+GET
+
+### Response
+
+#### Response Header
+The response header includes the following information:
+
+| Field | Description |
+|---|---|
+| Content-Type | The content type and character encoding of the response. |
+| Content-Length | The length of the retrieved content. |
+
+#### Response Body
+
+The response body contains the Proxy response, as detailed in `docs/proxy/api.md`. The API returns this message as a JSON, with the original response within the key `proxyResponse`.
+
+## Stop HeliosBurn proxy
+
+To stop the proxy server, an application submits an HTTP GET request to the URL that represents the Proxy Stop resource.
+
+### Request
+
+#### URL
+`/proxy/stop`
+
+#### Method
+GET
+
+### Response
+
+#### Response Header
+The response header includes the following information:
+
+| Field | Description |
+|---|---|
+| Content-Type | The content type and character encoding of the response. |
+| Content-Length | The length of the retrieved content. |
+
+#### Response Body
+
+The response body contains the Proxy response, as detailed in `docs/proxy/api.md`. The API returns this message as a JSON, with the original response within the key `proxyResponse`.
