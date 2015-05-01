@@ -7,12 +7,12 @@ Explaining arguments to `process_request(http_metadata, session)`
 `http_metadata` Request example:
 ```json
   "request": {
-    "url", "http://foo.com",
+    "url": "http://foo.com",
     "httpProtocol": "HTTP/1.1",
     "method": "POST",
     "headers": [
-      ("Content-Length", "way too long"),
-      ("....", "....")
+      ["Content-Length", "way too long"],
+      ["....", "...."]
     ]
   }
 ```
@@ -20,12 +20,12 @@ Explaining arguments to `process_request(http_metadata, session)`
 `http_metadata` Response example:
 ```json
   "request": {
-    "url", "http://foo.com",
+    "url": "http://foo.com",
     "httpProtocol": "HTTP/1.1",
     "method": "POST",
     "headers": [
-      ("Content-Length", "way too long"),
-      ("....", "....")
+      ["Content-Length", "way too long"],
+      ["....", "...."]
     ]
   },
   "response": {
@@ -33,8 +33,8 @@ Explaining arguments to `process_request(http_metadata, session)`
     "statusCode": 200,
     "statusDescription": "OK",
     "headers": [
-      ("Content-Length", "way too long"),
-      ("....", "....")
+      ["Content-Length", "way too long"],
+      ["....", "...."]
     ]
   }
 ```
