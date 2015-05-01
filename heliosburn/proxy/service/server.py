@@ -24,7 +24,6 @@ from protocols.http import HBReverseProxyRequest
 from protocols.http import HBReverseProxyResource
 from protocols.http import HBProxyMgmtRedisSubscriberFactory
 from protocols.http import HBProxyMgmtProtocolFactory
-from protocols.http import HBProxyEchoServer
 
 logging.config.dictConfig(Common.LOGGING)
 logger = logging.getLogger("proxy")
@@ -68,7 +67,6 @@ class HBProxyServer(object):
         self.redis_conn.addCallback(self.subscribe).addCallback(
             self.start_proxy)
 
-        self._start_echo_server()
 
     def _start_logging(self):
         self.observer = log.PythonLoggingObserver(loggerName="proxy")
@@ -86,12 +84,6 @@ class HBProxyServer(object):
                                        interface=self.bind_address)
         log.msg("Proxy Started")
         return self.proxy
-
-    def _start_echo_server(self):
-
-        endpoints.serverFromString(reactor,
-                                   "tcp:7599").listen(
-                                       server.Site(HBProxyEchoServer()))
 
     def subscribe(self, redis):
         return redis.subscribe()

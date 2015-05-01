@@ -311,7 +311,7 @@ The proxy service will return the current status of the proxy a `status` interfa
 ```json
 {
     "operation": "status",
-    "param": "<module_name>",
+    "param": "<module_name>" | null,
     "key": string
 }
 ```
@@ -323,7 +323,7 @@ The proxy service will return the current status of the proxy a `status` interfa
 {
     "code": 200,
     "message":
-      {
+      [
         {
           "module": TrafficRecorder:
           "state": running,
@@ -339,7 +339,7 @@ The proxy service will return the current status of the proxy a `status` interfa
           "state": stopped,
           "status": 4/20/2015 8:00:00 am
         }
-      },
+    ],
     "key": string
 }
 ```
@@ -353,12 +353,12 @@ The proxy service will return the current status of the proxy a `status` interfa
 | 500-599     | Server error.                                                                      |
 
 ### States
-| Status Code | Description                                                                        |
-|:------------|:-----------------------------------------------------------------------------------|
-| running     | The module is currently running. Status will indicate when it started running      |
+| Status Code | Description                                                                                              |
+|:------------|:---------------------------------------------------------------------------------------------------------|
+| running     | The module is currently running. Status will indicate when it started running                            |
 | stopped     | The module is currently stopped. Implying it was once running. Status will indicate when it was stopped. |
-| error       | The module stopped due to an error                                                 |
-| loaded      | The module has been loaded, but not started.                                       |
+| error       | The module stopped due to an error. The status will contain an error message                             |
+| loaded      | The module has been loaded, but not started. The status will indicate when it was loaded                 |
 
 # Test
 Proxy test cases can be ran by sending publising a proxy interface operation message to the `proxy_mgmt_request` REDIS pubs channel with an operation of `test`. This will case the proxy service to run all configured tests or run the ttest provided as a `param`
@@ -367,7 +367,7 @@ Proxy test cases can be ran by sending publising a proxy interface operation mes
 ```json
 {
     "operation": "test",
-    "param": "<test module name>",
+    "param": { "module": ""<test module name>", "response":"<asis file name containing response>" | null},
     "key": string
 }
 ```

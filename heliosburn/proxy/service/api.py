@@ -162,7 +162,8 @@ class OperationFactory(object):
             operation = RunTest(self.controller,
                                 self.response_factory,
                                 op_string['key'],
-                                module_name=op_string['param'])
+                                module_name=op_string['param']['module'],
+                                response_file=op_string['param']['response'])
 
         if "status" == op_string['operation']:
             operation = Status(self.controller,
@@ -251,36 +252,40 @@ class ChangeUpstreamPort(ServerOperation):
 
     def __init__(self, controller, response_factory, key, new_port):
         ServerOperation.__init__(self, controller, response_factory, key)
-        controller.upstream_port = new_port
         stop_op = StopProxy(controller, response_factory, key)
-        self.start_op = StartProxy(controller, response_factory, key)
+        start_op = StartProxy(controller, response_factory, key)
 
-        d = self.addCallback(stop_op.stop).addCallback(self.start_op.start)
-        d.addCallback(self.update_message)
+        self.new_port = new_port
+        controller.upstream_port = new_port
+        d = self.addCallback(stop_op.stop).addCallback(start_op.start)
+        d.addCallback(self.update)
         d.addCallback(self.respond)
 
-    def update_message(self, result):
+    def update(self, result):
         self.response.set_message({'Change_upstream_port':
                                   [self.response.get_message()]
                                    })
+        log.msg("Upstream port changed to: " + str(self.new_port))
 
 
 class ChangeUpstreamHost(ServerOperation):
 
     def __init__(self, controller, response_factory, key, new_host):
         ServerOperation.__init__(self, controller, response_factory, key)
+        self.new_host = new_host
         controller.upstream_host = new_host
         stop_op = StopProxy(controller, response_factory, key)
-        self.start_op = StartProxy(controller, response_factory, key)
+        start_op = StartProxy(controller, response_factory, key)
 
-        d = self.addCallback(stop_op.stop).addCallback(self.start_op.start)
-        d.addCallback(self.update_message)
+        d = self.addCallback(stop_op.stop).addCallback(start_op.start)
+        d.addCallback(self.update)
         d.addCallback(self.respond)
 
-    def update_message(self, result):
+    def update(self, result):
         self.response.set_message({'Change_upstream_host':
                                   [self.response.get_message()]
                                    })
+        log.msg("Upstream host changed to: " + str(self.new_host))
 
 
 class ChangeBindAddress(ServerOperation):
@@ -288,9 +293,9 @@ class ChangeBindAddress(ServerOperation):
     def __init__(self, controller, response_factory, key):
         ServerOperation.__init__(self, controller, response_factory, key)
         stop_op = StopProxy(controller, response_factory, key)
-        self.start_op = StartProxy(controller, response_factory, key)
+        start_op = StartProxy(controller, response_factory, key)
 
-        d = self.addCallback(stop_op.stop).addCallback(self.start_op.start)
+        d = self.addCallback(stop_op.stop).addCallback(start_op.start)
         d.addCallback(self.update_message)
         d.addCallback(self.respond)
 
@@ -305,9 +310,9 @@ class ChangeBindPort(ServerOperation):
     def __init__(self, controller, response_factory, key):
         ServerOperation.__init__(self, controller, response_factory, key)
         stop_op = StopProxy(controller, response_factory, key)
-        self.start_op = StartProxy(controller, response_factory, key)
+        start_op = StartProxy(controller, response_factory, key)
 
-        d = self.addCallback(stop_op.stop).addCallback(self.start_op.start)
+        d = self.addCallback(stop_op.stop).addCallback(start_op.start)
         d.addCallback(self.update_message)
         d.addCallback(self.respond)
 
@@ -365,10 +370,10 @@ class ResetPlugins(ServerOperation):
     def __init__(self, controller, response_factory, key):
         ServerOperation.__init__(self, controller, response_factory, key)
         stop_op = StopProxy(controller, response_factory, key)
-        self.start_op = StartProxy(controller, response_factory, key)
+        start_op = StartProxy(controller, response_factory, key)
 
         d = self.addCallback(stop_op.stop)
-        d = d.addCallback(self.start_op.start)
+        d = d.addCallback(start_op.start)
         d.addCallback(self.reset_plugins)
         d.addCallback(self.update_message)
         d.addCallback(self.respond)
@@ -387,10 +392,10 @@ class ReloadPlugins(ServerOperation):
     def __init__(self, controller, response_factory, key):
         ServerOperation.__init__(self, controller, response_factory, key)
         stop_op = StopProxy(controller, response_factory, key)
-        self.start_op = StartProxy(controller, response_factory, key)
+        start_op = StartProxy(controller, response_factory, key)
 
         d = self.addCallback(stop_op.stop)
-        d = d.addCallback(self.start_op.start)
+        d = d.addCallback(start_op.start)
         d.addCallback(self.reload_plugins)
         d.addCallback(self.update_message)
         d.addCallback(self.respond)
@@ -406,29 +411,57 @@ class ReloadPlugins(ServerOperation):
 
 class RunTest(ServerOperation):
 
-    def __init__(self, controller, response_factory, key, module_name):
-        ServerOperation.__init__(self, controller, response_factory, key)
+    def __init__(self,
+                 server,
+                 response_factory,
+                 key,
+                 module_name,
+                 response_file):
+        ServerOperation.__init__(self, server, response_factory, key)
         self.module_name = module_name
+        self.response_file = response_file
+        self.server = server
+        self.response_factory = response_factory
+        self.key = key
+        self.orig_upstream_host = server.upstream_host
+        self.orig_upstream_port = server.upstream_port
 
-        c_port_op = ChangeUpstreamPort(controller,
-                                       response_factory,
-                                       key,
-                                       7599)
-
-        c_host_op = ChangeUpstreamHost(controller,
-                                       response_factory,
-                                       key,
-                                       '127.0.0.1')
-        d = self.addCallback(self.run_test)
+        d = self._connect_echo_server()
+        d.addCallback(self.run_test)
         d.addCallback(self.respond)
+        d.addCallback(self._disconnect_echo_server)
 
     def run_test(self, result):
         tests = self.controller.module_registry.test(
-            module_name=self.module_name)
+            module_name=self.module_name, response_file=self.response_file)
         self.response.set_message({'test started':
                                    [self.response.get_message()]
                                    })
         tests.callback(self.response)
+
+    def _connect_echo_server(self):
+        self.server.upstream_host = '127.0.0.1'
+        self.server.upstream_port = 7599
+        stop_op = StopProxy(self.server, self.response_factory, self.key)
+        start_op = StartProxy(self.server, self.response_factory, self.key)
+
+        log.msg("Upstream host changed to echo server: " +
+                str(self.server.upstream_host) +
+                ":" + str(self.server.upstream_port))
+
+        return self.addCallback(stop_op.stop).addCallback(start_op.start)
+
+    def _disconnect_echo_server(self, unused):
+        self.server.upstream_host = self.orig_upstream_host
+        self.server.upstream_port = self.orig_upstream_port
+        stop_op = StopProxy(self.server, self.response_factory, self.key)
+        start_op = StartProxy(self.server, self.response_factory, self.key)
+
+        log.msg("Upstream host changed to previous server: " +
+                str(self.server.upstream_host) +
+                ":" + str(self.server.upstream_port))
+
+        return self.addCallback(stop_op.stop).addCallback(start_op.start)
 
 
 class Status(ServerOperation):

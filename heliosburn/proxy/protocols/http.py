@@ -43,11 +43,16 @@ class HBProxyClient(ProxyClient):
         self.father.response_createdAt = now.strftime('%Y-%m-%d %H:%M:%S')
 
     def _forward_response(self, response):
-        ProxyClient.handleResponsePart(self, self.father.response_content)
-        ProxyClient.handleResponseEnd(self)
+        content = self.father.response_content
+        # fix this... odd that it must exist
+        if not self._finished:
+            ProxyClient.handleResponsePart(self, content)
+            ProxyClient.handleResponseEnd(self)
+        log.msg("Response forwarded: " + str(response))
 
     def handleResponsePart(self, buffer):
         self.buffer += buffer
+        log.msg("handled partial response: " + str(buffer))
 
     def handleResponseEnd(self):
         self.father.response_content = self.buffer
@@ -56,6 +61,8 @@ class HBProxyClient(ProxyClient):
                                                        response_content)])
         self.module_registry.handle_response(self.father,
                                              self._forward_response)
+
+        log.msg("handled end of response: " + str(self.buffer))
 
     def handleHeader(self, key, val):
         self.header[key] = val
@@ -132,8 +139,8 @@ class HBReverseProxyRequest(ReverseProxyRequest):
 
         self.reactor.connectTCP(self.upstream_host, self.upstream_port,
                                 clientFactory)
-        log.msg("Forwarding request to: " + self.upstream_host
-                +":"+ self.upstream_port)
+        log.msg("Forwarding request to: " + str(self.upstream_host)
+                + ":" + str(self.upstream_port))
 
     def process(self):
         """
@@ -236,9 +243,3 @@ class HBProxyMgmtProtocolFactory(protocol.Factory):
         return HBProxyMgmtProtocol(self.op_factory)
 
 
-class HBProxyEchoServer(resource.Resource):
-    isLeaf = True
-
-    def render_GET(self, request):
-        request.setHeader("content-type", "text/plain")
-        return "Echo\n"

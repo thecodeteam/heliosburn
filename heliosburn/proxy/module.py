@@ -16,9 +16,33 @@ from twisted.trial import unittest
 from twisted.internet.endpoints import TCP4ClientEndpoint
 from twisted.internet import defer
 from twisted.internet import reactor
+from twisted.web import server
+from twisted.web import resource
 from protocols.redis import HBRedisSubscriberFactory
 from protocols.redis import HBRedisTestMessageHandlerFactory
 from protocols.redis import HBRedisTestMessageHandler
+
+
+class HBProxyEchoServer(resource.Resource):
+    isLeaf = True
+
+    def render_GET(self, request):
+        request.setHeader("content-type", "text/plain")
+        response = self._get_response()
+        log.msg("EchoServer: Sent response:\n " + response)
+        return response
+
+    def _get_response(self):
+        if self.response_file is None:
+            with open("proxy/default.asis", 'r+') as data:
+                    response = data.read()
+        else:
+            with open("proxy/" + self.response_file, 'r+') as data:
+                    response = data.read()
+        return response
+
+    def set_response(self, response_file):
+        self.response_file = response_file
 
 
 class IModule(Interface):
@@ -155,13 +179,13 @@ class AbstractModule(object):
         this method is called to run the module(s) tests
         """
 
-    def state(self):
+    def get_state(self):
         """
         this method is called to  get the module(s) current state
         """
         return self.state
 
-    def status(self):
+    def get_status(self):
         """
         this method is called to  get the module(s) current status
         """
@@ -170,6 +194,7 @@ class AbstractModule(object):
 
 class AbstractAPITestModule(AbstractModule, unittest.TestCase):
     implements(IPlugin, IModule)
+    _testMethodName = "temp"
 
     def configure(self, **configs):
         self.redis_host = configs['redis_host']
@@ -319,6 +344,20 @@ class Registry(object):
         self.pipeline_modules = self.plugin_config['pipeline']
         self.test_modules = self.plugin_config['test']
         log.msg("Test mode: off")
+        self._stop_echo_server()
+
+    def _start_echo_server(self, response_file=None):
+        echo_resource = HBProxyEchoServer()
+        echo_resource.set_response(response_file)
+
+        echo_site = server.Site(echo_resource)
+        self.echo_server = reactor.listenTCP(7599, echo_site)
+
+        log.msg("Echo Server Started")
+
+    def _stop_echo_server(self):
+        self.echo_server.stopListening()
+        log.msg("Echo Server Stopped")
 
     def handle_request(self, request, callback):
 
@@ -365,7 +404,7 @@ class Registry(object):
         """
         if module_name:
             self.plugins[module_name].start(**params)
-            log.msg("Starting  module: " + module_name.name)
+            log.msg("Starting  module: " + module_name)
         else:
             for plugin in self.plugins.values():
                 plugin.start(**params)
@@ -378,18 +417,19 @@ class Registry(object):
         """
         if module_name:
             self.plugins[module_name].stop(**params)
-            log.msg("Stopping  module: " + module_name.name)
+            log.msg("Stopping  module: " + module_name)
         else:
             for plugin in self.pipeline_modules.values():
                 plugin.stop(**params)
                 log.msg("Stopping module: " + plugin.name)
 
-    def test(self, module_name=None):
+    def test(self, module_name=None, response_file=None):
 
         """
         Executes the start method of all test modules
         """
 
+        self._start_echo_server(response_file)
         test_deferred = defer.Deferred()
         test_deferred.addCallback(self._test_mode_on)
         if module_name:
@@ -414,20 +454,19 @@ class Registry(object):
         if module_name:
             status = {
                 "module": module_name,
-                "state": self.plugins[module_name].state(),
-                "status": self.plugins[module_name].status()
+                "state": self.plugins[module_name].get_state(),
+                "status": self.plugins[module_name].get_status()
             }
-
         else:
             status = []
             for plugin in self.plugins.values():
                 p_status = {
-                    "module": module_name,
-                    "state": plugin.state(),
-                    "status": plugin.status()
+                    "module": plugin.get_name(),
+                    "state": plugin.get_state(),
+                    "status": str(plugin.get_status())
                 }
                 status.append(p_status)
 
-        log.msg("Status retrieved: " + status)
+        log.msg("Status retrieved: " + str(status))
         return status
 

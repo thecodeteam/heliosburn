@@ -2,6 +2,7 @@ from module import AbstractModule
 from twisted.internet import reactor
 from twisted.web.client import Agent
 from twisted.web.http_headers import Headers
+from twisted.python import log
 
 
 class TestModifyStatus(AbstractModule):
@@ -28,8 +29,8 @@ class TestModifyStatus(AbstractModule):
         """
         Alter the statuscode to be 400
         """
-        response.setHeader('original_code', response.code)
-        response.setResponseCode(400)
+#        response.setHeader('original_code', response.code)
+#        response.setResponseCode(400)
         return response
 
 test_modify_status = TestModifyStatus()
