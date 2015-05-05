@@ -1,52 +1,73 @@
 from module import AbstractModule
 from twisted.python import log
+from traffic_eval.traffic_evaluator import TrafficEvaluator
 
 
 # Dummy function used to test until engine exists
-def process_request(http_metadata, session):
+drop_test = {
+    "action": {
+        "type": "drop",
+        "payload": "Intercepted by HeliosBurn"
+    }}
 
-    action = {
-        "action": {
-            "type": "newResponse",
-            "httpProtocol": "HTTP/1.1",
-            "statusCode": 400,
-            "statusDescription": "Bad Request",
-            "headers": [
-                {
-                    "key": "E-Tag",
-                    "value": "9384253245"
-                },
-                {
-                    "key": "Server",
-                    "value": "HeliosBurn"
-                }
-            ],
-            "payload": "Intercepted by HeliosBurn"
-        }}
+reset_test = {
+    "action": {
+        "type": "reset",
+        "payload": "Intercepted by HeliosBurn"
+    }}
+
+new_request_test = {
+    "action": {
+        "type": "newRequest",
+        "httpProtocol": "HTTP/1.1",
+        "statusCode": 400,
+        "statusDescription": "Bad Request",
+        "headers": [
+            {
+                "key": "E-Tag",
+                "value": "9384253245"
+            },
+            {
+                "key": "Server",
+                "value": "HeliosBurn"
+            }
+        ],
+        "payload": "Intercepted by HeliosBurn"
+    }}
+
+config = {
+    "config": {
+        "redis": {
+            "db": 0,
+            "port": 6379,
+            "host": "localhost"
+        },
+        "mongodb": {
+            "host": "localhost",
+            "db": {
+                "production": "heliosburn",
+                "test": "heliosburng_test"
+            },
+            "port": 27017
+        }
+    }
+}
+
+
+def process_request(http_metadata, session):
+    injection_engine = TrafficEvaluator(config)
+    injection_engine.get_action("", "")
+    action = drop_test
 
     return action
 
 
 # Dummy function used to test until engine exists
 def process_response(http_metadata, session):
-    action = {
-        "action": {
-            "type": "newRequest",
-            "httpProtocol": "HTTP/1.1",
-            "statusCode": 400,
-            "statusDescription": "Bad Request",
-            "headers": [
-                {
-                    "key": "E-Tag",
-                    "value": "9384253245"
-                },
-                {
-                    "key": "Server",
-                    "value": "HeliosBurn"
-                }
-            ],
-            "payload": "Intercepted by HeliosBurn"
-        }}
+    injection_engine = TrafficEvaluator(config)
+    injection_engine.get_action("", "")
+
+    action = reset_test
 
     return action
 
@@ -57,6 +78,7 @@ class InjectionAction(object):
         self.action_dict = action_dict
         self.request = request
         self.response = response
+        self.injection_engine = TrafficEvaluator(config)
 
     def execute(self):
         pass
@@ -82,10 +104,25 @@ class NewRequestAction(InjectionAction):
 
 class DropAction(InjectionAction):
     def execute(self):
-        return None
+        if self.request:
+            self.request.drop_connection = True
+            return self.request
+        else:
+            self.request.drop_connection = True
+            return self.response
 
 
 class ResetAction(InjectionAction):
+    def execute(self):
+        if self.request:
+            self.request.reset_connection = True
+            return self.request
+        else:
+            self.request.reset_connection = True
+            return self.response
+
+
+class NullAction(InjectionAction):
     def execute(self):
         if self.request:
             return self.request
@@ -99,12 +136,17 @@ class Injection(AbstractModule):
         'newResponse': NewResponseAction,
         'newRequest': NewRequestAction,
         'drop': DropAction,
-        'reset': ResetAction
+        'reset': ResetAction,
+        'null': NullAction
     }
 
     def handle_request(self, request):
         action_dict = process_request("", "")
-        action_type = action_dict['action']['type']
+        if action_dict:
+            action_type = action_dict['action']['type']
+        else:
+            action_type = 'null'
+
         action = self.actions[action_type](action_dict=action_dict,
                                            request=request)
         result = action.execute()
@@ -113,7 +155,10 @@ class Injection(AbstractModule):
 
     def handle_response(self, response):
         action_dict = process_response("", "")
-        action_type = action_dict['action']['type']
+        if action_dict:
+            action_type = action_dict['action']['type']
+        else:
+            action_type = 'null'
         action = self.actions[action_type](action_dict=action_dict,
                                            response=response)
         result = action.execute()

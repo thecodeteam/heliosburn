@@ -19,7 +19,7 @@ pipeline:
       }
     },
     {
-      name: 'FaultInjection',
+      name: 'Injection',
       kwargs:
       {
       }

@@ -2,6 +2,8 @@ import yaml
 import uuid
 import datetime
 from io import BytesIO
+from twisted.internet.protocol import Protocol
+from twisted.internet.protocol import ClientFactory
 from twisted.web.proxy import ProxyClient
 from twisted.web.proxy import ReverseProxyRequest
 from twisted.web.proxy import ReverseProxyResource
@@ -16,6 +18,11 @@ from txredis.client import RedisSubscriber
 from django.utils.http import urlquote
 from twisted.internet import protocol
 from module import Registry
+
+
+class DropConnectionClient(Protocol):
+    def dataReceived(self, data):
+        pass
 
 
 class HBProxyClient(ProxyClient):
@@ -120,6 +127,9 @@ class HBReverseProxyRequest(ReverseProxyRequest):
         self.upstream_host = channel.site.resource.host
         self.upstream_port = channel.site.resource.port
 
+        self.drop_connection = False
+        self.reset_connection = False
+
     def __repr__(self):
         request = {}
         request['createdAt'] = self.createdAt
@@ -131,16 +141,28 @@ class HBReverseProxyRequest(ReverseProxyRequest):
 
     def _forward_request(self, request):
 
-        clientFactory = self.proxyClientFactoryClass(self.method, self.uri,
-                                                     self.clientproto,
-                                                     self.getAllHeaders(),
-                                                     self.content.read(),
-                                                     request)
+        if not request.drop_connection and not request.reset_connection:
+            clientFactory = self.proxyClientFactoryClass(self.method, self.uri,
+                                                         self.clientproto,
+                                                         self.getAllHeaders(),
+                                                         self.content.read(),
+                                                         request)
 
-        self.reactor.connectTCP(self.upstream_host, self.upstream_port,
-                                clientFactory)
-        log.msg("Forwarding request to: " + str(self.upstream_host)
-                + ":" + str(self.upstream_port))
+            self.reactor.connectTCP(self.upstream_host, self.upstream_port,
+                                    clientFactory)
+            log.msg("Forwarding request to: " + str(self.upstream_host)
+                    + ":" + str(self.upstream_port))
+        else:
+            if request.drop_connection:
+                log.msg("Dropping connection to: " + str(self.upstream_host)
+                        + ":" + str(self.upstream_port))
+#                log.msg(self.getClient)
+#                log.msg(self.client)
+#                log.msg(self.client.type)
+#                self.client.abortConnection()
+            else:
+                log.msg("Reseting connection to: " + str(self.upstream_host)
+                        + ":" + str(self.upstream_port))
 
     def process(self):
         """
