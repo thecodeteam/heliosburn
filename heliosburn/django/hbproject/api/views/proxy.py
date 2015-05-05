@@ -45,12 +45,20 @@ def start(request):
     if request.method != "GET":
         return HttpResponse(status=405)
 
+    if "session_id" not in request.GET:
+        return HttpResponse("session_id required in GET", status=400)
+    else:
+        try:
+            session_id = request.GET['session_id']
+        except ValueError:
+            return HttpResponse("session_id must be a string", status=400)
+
     from api.models import redis_wrapper
     r = redis_wrapper.init_redis()
     response_key = str(ObjectId())
     redis_wrapper.publish_to_proxy(json.dumps({
         "operation": "start",
-        "param": None,
+        "param": {"session": session_id},
         "key": response_key,
     }))
     for i in range(0, 50):
