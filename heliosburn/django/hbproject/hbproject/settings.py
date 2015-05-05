@@ -29,6 +29,8 @@ class Common(Configuration):
     # SECURITY WARNING: keep the secret key used in production secret!
     SECRET_KEY = values.SecretValue()
 
+    API_KEY = "deadbeef"
+
     # SECURITY WARNING: don't run with debug turned on in production!
     DEBUG = values.BooleanValue(False)
 
