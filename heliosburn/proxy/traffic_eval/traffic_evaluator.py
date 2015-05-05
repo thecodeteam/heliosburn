@@ -33,14 +33,14 @@ class TrafficEvaluator(object):
             if type == rule['ruleType']:
                 relevant_rules.append(rule)
 
-        # Test rule components against http_metadata
+        # Test rule components against subject
         for rule in relevant_rules:
             # Test rule.enabled
             if self._eval_rule_enabled(rule) is False:
                 return None
 
             # Test rule.filter components
-            if self._eval_rule_filter(rule['filter'], http_metadata) is True:
+            if self._eval_rule_filter(rule['filter'], subject) is True:
                 return rule['action']
 
     def _eval_rule_enabled(self, rule):
