@@ -35,6 +35,25 @@ new_request_test = {
         "payload": "Intercepted by HeliosBurn"
     }}
 
+new_response_test = {
+    "action": {
+        "type": "newResponse",
+        "httpProtocol": "HTTP/1.1",
+        "statusCode": 400,
+        "statusDescription": "Bad Request",
+        "headers": [
+            {
+                "key": "E-Tag",
+                "value": "9384253245"
+            },
+            {
+                "key": "Server",
+                "value": "HeliosBurn"
+            }
+        ],
+        "payload": "Intercepted by HeliosBurn"
+    }}
+
 config = {
     "config": {
         "redis": {
@@ -57,7 +76,7 @@ config = {
 def process_request(http_metadata, session):
     injection_engine = TrafficEvaluator(config)
     injection_engine.get_action("", "")
-    action = drop_test
+    action = reset_test
 
     return action
 
@@ -67,7 +86,7 @@ def process_response(http_metadata, session):
     injection_engine = TrafficEvaluator(config)
     injection_engine.get_action("", "")
 
-    action = reset_test
+    action = drop_test
 
     return action
 
