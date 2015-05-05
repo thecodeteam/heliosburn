@@ -20,9 +20,14 @@ from twisted.internet import protocol
 from module import Registry
 
 
-class DropConnectionClient(Protocol):
+class DRConnectionClient(Protocol):
     def dataReceived(self, data):
         pass
+
+
+class DRConnectionClientFactory(ClientFactory):
+    def buildProtocol(self, addr):
+        return DRConnectionClient()
 
 
 class HBProxyClient(ProxyClient):
@@ -154,15 +159,13 @@ class HBReverseProxyRequest(ReverseProxyRequest):
                     + ":" + str(self.upstream_port))
         else:
             if request.drop_connection:
-                log.msg("Dropping connection to: " + str(self.upstream_host)
-                        + ":" + str(self.upstream_port))
-#                log.msg(self.getClient)
-#                log.msg(self.client)
-#                log.msg(self.client.type)
-#                self.client.abortConnection()
+                request.transport.loseConnection()
+                log.msg("Connection to: " + str(self.upstream_host)
+                        + ":" + str(self.upstream_port) + " dropped")
             else:
-                log.msg("Reseting connection to: " + str(self.upstream_host)
-                        + ":" + str(self.upstream_port))
+                request.transport.abortConnection()
+                log.msg("Connection to: " + str(self.upstream_host)
+                        + ":" + str(self.upstream_port) + " reset")
 
     def process(self):
         """
