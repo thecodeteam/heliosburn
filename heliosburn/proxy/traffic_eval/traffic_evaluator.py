@@ -12,7 +12,6 @@ class TrafficEvaluator(object):
         config = config['config']
         client = MongoClient(host=config['mongodb']['host'], port=config['mongodb']['port'])
         self.dbc = client[config['mongodb']['db']['production']]
-        return None
 
     def _eval_rules(self, http_metadata, rules):
         """
@@ -33,14 +32,14 @@ class TrafficEvaluator(object):
             if type == rule['ruleType']:
                 relevant_rules.append(rule)
 
-        # Test rule components against http_metadata
+        # Test rule components against subject
         for rule in relevant_rules:
             # Test rule.enabled
             if self._eval_rule_enabled(rule) is False:
                 return None
 
             # Test rule.filter components
-            if self._eval_rule_filter(rule['filter'], http_metadata) is True:
+            if self._eval_rule_filter(rule['filter'], subject) is True:
                 return rule['action']
 
     def _eval_rule_enabled(self, rule):
@@ -54,21 +53,21 @@ class TrafficEvaluator(object):
         elif ('enabled' in rule) and (rule['enabled'] is False):
             return False
 
-    def _eval_rule_filter(self, filter, http_metadata):
+    def _eval_rule_filter(self, rule_filter, http_metadata):
         """
         Test `filter` components against `http_metadata`. Return `True` if any match, else `False`.
         """
         import re
 
         # Separate filter headers from filter if they exist
-        if 'headers' in filter:
-            filter_headers = filter.pop('headers')
+        if 'headers' in rule_filter:
+            filter_headers = rule_filter.pop('headers')
         else:
             filter_headers = []
 
         # Test everything EXCEPT headers, which are evaluated later
-        for filter_key in filter.keys():
-            if (filter_key in http_metadata) and (re.match(filter[filter_key], http_metadata[filter_key]) is not None):
+        for filter_key in rule_filter.keys():
+            if (filter_key in http_metadata) and (re.match(rule_filter[filter_key], http_metadata[filter_key]) is not None):
                 return True
 
         if 'headers' not in http_metadata:  # No headers? This shouldn't happen, but if it does, return False.
