@@ -56,11 +56,23 @@ class HBProxyClient(ProxyClient):
 
     def _forward_response(self, response):
         content = self.father.response_content
-        # fix this... odd that it must exist
-        if not self._finished:
-            ProxyClient.handleResponsePart(self, content)
-            ProxyClient.handleResponseEnd(self)
-        log.msg("Response forwarded: " + str(response))
+        if not response.drop_connection and not response.reset_connection:
+            # fix this... odd that it must exist
+            if not self._finished:
+                ProxyClient.handleResponsePart(self, content)
+                ProxyClient.handleResponseEnd(self)
+            log.msg("Response forwarded: " + str(response))
+        else:
+            if response.drop_connection:
+                ProxyClient.handleResponsePart(self, content)
+                ProxyClient.handleResponseEnd(self)
+                response.transport.loseConnection()
+                log.msg("Connection to: " + str(self.upstream_host)
+                        + ":" + str(self.upstream_port) + " dropped")
+            else:
+                response.transport.abortConnection()
+                log.msg("Connection to: " + str(self.upstream_host)
+                        + ":" + str(self.upstream_port) + " reset")
 
     def handleResponsePart(self, buffer):
         self.buffer += buffer

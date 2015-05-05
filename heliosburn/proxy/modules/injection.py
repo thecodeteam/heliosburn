@@ -16,6 +16,8 @@ reset_test = {
         "payload": "Intercepted by HeliosBurn"
     }}
 
+null_test = None
+
 new_request_test = {
     "action": {
         "type": "newRequest",
@@ -75,8 +77,8 @@ config = {
 
 def process_request(http_metadata, session):
     injection_engine = TrafficEvaluator(config)
-    injection_engine.get_action("", "")
-    action = reset_test
+#    injection_engine.get_action("", "")
+    action = null_test
 
     return action
 
@@ -84,7 +86,7 @@ def process_request(http_metadata, session):
 # Dummy function used to test until engine exists
 def process_response(http_metadata, session):
     injection_engine = TrafficEvaluator(config)
-    injection_engine.get_action("", "")
+#    injection_engine.get_action("", "")
 
     action = drop_test
 
@@ -127,7 +129,7 @@ class DropAction(InjectionAction):
             self.request.drop_connection = True
             return self.request
         else:
-            self.request.drop_connection = True
+            self.response.drop_connection = True
             return self.response
 
 
@@ -137,7 +139,7 @@ class ResetAction(InjectionAction):
             self.request.reset_connection = True
             return self.request
         else:
-            self.request.reset_connection = True
+            self.response.reset_connection = True
             return self.response
 
 
@@ -178,6 +180,7 @@ class Injection(AbstractModule):
             action_type = action_dict['action']['type']
         else:
             action_type = 'null'
+
         action = self.actions[action_type](action_dict=action_dict,
                                            response=response)
         result = action.execute()
