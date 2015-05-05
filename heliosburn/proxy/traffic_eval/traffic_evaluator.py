@@ -10,7 +10,8 @@ class TrafficEvaluator(object):
         """
         config = config['config']
         client = MongoClient(host=config['mongodb']['host'], port=config['mongodb']['port'])
-        return client[config['mongodb']['db']['production']]
+        self.dbc = client
+        return self
 
     def process_traffic(self, http_metadata, session):
         """
