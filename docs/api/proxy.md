@@ -224,8 +224,8 @@ To start the proxy server, an application submits an HTTP GET request to the URL
 
 ### Request
 
-#### URL
-`/proxy/start`
+#### URLs
+- `/proxy/start` Start the proxy
 
 #### Method
 GET

@@ -9,6 +9,8 @@ from api.models.auth import RequireLogin
 from bson import ObjectId
 from pymongo.helpers import DuplicateKeyError
 from datetime import datetime
+import time
+from api.models import redis_wrapper
 
 logger = logging.getLogger(__name__)
 
@@ -182,3 +184,49 @@ def delete(request, session_id):
         dbc.session.remove(session)
         logger.info("session '%s' deleted by '%s'" % (session_id, request.user['username']))
         return HttpResponse()
+
+@csrf_exempt
+@RequireLogin()
+def start(request, session_id):
+    """
+    Inform the proxy to start a session based on session_id.
+    """
+    if request.method != "GET":
+        return HttpResponse(status=405)
+    r = redis_wrapper.init_redis()
+    response_key = str(ObjectId())
+    redis_wrapper.publish_to_proxy(json.dumps({
+        "operation": "start",
+        "param": {"session": session_id},
+        "key": response_key,
+    }))
+    for i in range(0, 50):
+        response = r.get(response_key)
+        if response is not None:
+            return JsonResponse({"proxyResponse": response})
+        else:
+            time.sleep(.1)  # sleep 100ms
+    return JsonResponse({"proxyResponse": None}, status=503)
+
+@csrf_exempt
+@RequireLogin()
+def stop(request, session_id):
+    """
+    Inform the proxy to stop a session based on session_id.
+    """
+    if request.method != "GET":
+        return HttpResponse(status=405)
+    r = redis_wrapper.init_redis()
+    response_key = str(ObjectId())
+    redis_wrapper.publish_to_proxy(json.dumps({
+        "operation": "stop",
+        "param": {"session": session_id},
+        "key": response_key,
+    }))
+    for i in range(0, 50):
+        response = r.get(response_key)
+        if response is not None:
+            return JsonResponse({"proxyResponse": response})
+        else:
+            time.sleep(.1)  # sleep 100ms
+    return JsonResponse({"proxyResponse": None}, status=503)
