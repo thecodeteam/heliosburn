@@ -224,8 +224,8 @@ To start the proxy server, an application submits an HTTP GET request to the URL
 
 ### Request
 
-#### URL
-`/proxy/start?session_id=<session_id>`
+#### URLs
+- `/proxy/start` Start the proxy
 
 #### Method
 GET
