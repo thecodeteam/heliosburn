@@ -13,7 +13,7 @@ class TrafficEvaluator(object):
         self.dbc = client[config['mongodb']['db']['production']]
         return None
 
-    def process_traffic(self, http_metadata, session):
+    def get_action(self, http_metadata, session):
         """
         Matches traffic against the rule associated with a session's testplan.
 
