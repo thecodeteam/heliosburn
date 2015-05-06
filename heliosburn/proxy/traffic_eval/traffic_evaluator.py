@@ -81,10 +81,10 @@ class TrafficEvaluator(object):
                 for header in http_metadata['headers']:
                     if re.match(filter_header['key'], header[0]) is not None:
                         return True
-            # Match header filter that specifies a key and a value, keys must be a 100% string match to compare values
+            # Match header filter that specifies a key and a value
             if ('key' in filter_header) and ('value' in filter_header):
                 for header in http_metadata['headers']:
-                    if filter_header['key'] == header[0] and (re.match(filter_header['value'], header[1]) is not None):
+                    if (re.match(filter_header['key'], header[0]) is not None) and (re.match(filter_header['value'], header[1]) is not None):
                         return True
 
         return False
