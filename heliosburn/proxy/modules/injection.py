@@ -75,22 +75,6 @@ config = {
 }
 
 
-def process_request(http_metadata, session):
-    injection_engine = TrafficEvaluator(config)
-#    injection_engine.get_action("", "")
-    action = null_test
-
-    return action
-
-
-# Dummy function used to test until engine exists
-def process_response(http_metadata, session):
-    injection_engine = TrafficEvaluator(config)
-#    injection_engine.get_action("", "")
-
-    action = drop_test
-
-    return action
 
 
 class InjectionAction(object):
@@ -161,8 +145,46 @@ class Injection(AbstractModule):
         'null': NullAction
     }
 
+    def __init__(self):
+        AbstractModule.__init__(self)
+        self.injection_engine = TrafficEvaluator(config)
+
+    def _process_request(self, http_metadata, session):
+        injection_engine = TrafficEvaluator(config)
+        log.msg("calling traffic evaluator with:\n" +
+                "http_metadata: " + str(http_metadata) + "\n"
+                "      session: " + str(session))
+        self.injection_engine.get_action(http_metadata, session)
+        action = null_test
+
+        return action
+
+
+    # Dummy function used to test until engine exists
+    def _process_response(self, http_metadata, session):
+        injection_engine = TrafficEvaluator(config)
+        log.msg("calling traffic evaluator with:\n" +
+                "http_metadata: " + str(http_metadata) + "\n"
+                "      session: " + str(session))
+        self.injection_engine.get_action(http_metadata, session)
+
+        action = drop_test
+
+        return action
+
     def handle_request(self, request):
-        action_dict = process_request("", "")
+        request_headers = [[k, v] for (k, v)
+                           in request.requestHeaders.getAllRawHeaders()]
+        http_metadata = {
+            "request": {
+                "url": request.uri,
+                "httpProtocol": request.clientproto,
+                "method": request.method,
+                "headers": request_headers
+            }
+        }
+
+        action_dict = self._process_request(http_metadata, 1)
         if action_dict:
             action_type = action_dict['action']['type']
         else:
@@ -175,7 +197,29 @@ class Injection(AbstractModule):
             return request
 
     def handle_response(self, response):
-        action_dict = process_response("", "")
+        response_headers = [[k, v] for (k, v)
+                            in response.responseHeaders.getAllRawHeaders()]
+
+        request_headers = [[k, v] for (k, v)
+                           in response.requestHeaders.getAllRawHeaders()]
+
+        http_metadata = {
+            "request": {
+                "url": response.uri,
+                "httpProtocol": response.clientproto,
+                "method": response.method,
+                "headers": request_headers
+            },
+            "response": {
+                "url": response.uri,
+                "httpProtocol": response.clientproto,
+                "stausCode": response.code,
+                "stausDescription": response.code_message,
+                "headers": response_headers
+            }
+        }
+
+        action_dict = self._process_response(http_metadata, 1)
         if action_dict:
             action_type = action_dict['action']['type']
         else:

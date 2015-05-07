@@ -67,16 +67,15 @@ class HBProxyClient(ProxyClient):
                 ProxyClient.handleResponsePart(self, content)
                 ProxyClient.handleResponseEnd(self)
                 response.transport.loseConnection()
-                log.msg("Connection to: " + str(self.upstream_host)
-                        + ":" + str(self.upstream_port) + " dropped")
+                log.msg("Connection dropped")
             else:
                 response.transport.abortConnection()
-                log.msg("Connection to: " + str(self.upstream_host)
-                        + ":" + str(self.upstream_port) + " reset")
+                log.msg("Connection reset")
 
     def handleResponsePart(self, buffer):
         self.buffer += buffer
-        log.msg("handled partial response: " + str(buffer))
+#        log.msg("handled partial response: " + str(buffer))
+        log.msg("handled partial response")
 
     def handleResponseEnd(self):
         self.father.response_content = self.buffer
@@ -86,7 +85,8 @@ class HBProxyClient(ProxyClient):
         self.module_registry.handle_response(self.father,
                                              self._forward_response)
 
-        log.msg("handled end of response: " + str(self.buffer))
+#        log.msg("handled end of response: " + str(self.buffer))
+        log.msg("handled end of response")
 
     def handleHeader(self, key, val):
         self.header[key] = val
