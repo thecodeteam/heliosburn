@@ -148,12 +148,18 @@ class HBReverseProxyRequest(ReverseProxyRequest):
         self.reset_connection = False
 
     def __repr__(self):
+        request_headers = [[k, v] for (k, v)
+                           in self.requestHeaders.getAllRawHeaders()]
+        response_headers = [[k, v] for (k, v)
+                            in self.responseHeaders.getAllRawHeaders()]
         request = {}
         request['createdAt'] = self.createdAt
         request['httpProtocol'] = self.clientproto
         request['method'] = self.method
         request['url'] = self.uri
-        request['headers'] = self.getAllHeaders()
+        request['headers'] = {}
+        request['headers']['request'] = request_headers
+        request['headers']['response'] = response_headers
         return str(request)
 
     def _forward_request(self, request):

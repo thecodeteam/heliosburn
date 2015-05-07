@@ -3,7 +3,6 @@ from twisted.python import log
 from traffic_eval.traffic_evaluator import TrafficEvaluator
 
 
-# Dummy function used to test until engine exists
 drop_test = {
     "action": {
         "type": "drop",
@@ -17,6 +16,23 @@ reset_test = {
     }}
 
 null_test = None
+
+modify_test = {
+    "action": {
+        "type": "modify",
+        "method": "PUT",
+        "setHeaders": [
+            {
+                "key": "X-Auth-Token",
+                "value": "k54l3b6k6b43l56b346"
+            }
+        ],
+        "deleteHeaders": [
+            {
+                "key": "User-Agent"
+            }
+        ]
+    }}
 
 new_request_test = {
     "action": {
@@ -75,8 +91,6 @@ config = {
 }
 
 
-
-
 class InjectionAction(object):
 
     def __init__(self, action_dict, request=None, response=None):
@@ -85,25 +99,75 @@ class InjectionAction(object):
         self.response = response
         self.injection_engine = TrafficEvaluator(config)
 
+        self.element_map = {
+            "httpProtocol": "clientproto",
+            "method": "method",
+            "url": "uri",
+            "statusCode": "code",
+            "payload": "content",
+            "statusDescription": "code_message"
+        }
+
     def execute(self):
         pass
 
+    def _add_headers(self, obj, headers):
+        for header in headers:
+            if obj.responseHeaders:
+                obj.responseHeaders.addRawHeader(
+                    header['key'], header['value']
+                )
+            if obj.requestHeaders:
+                obj.requestHeaders.addRawHeader(
+                    header['key'], header['value']
+                )
+
+    def _delete_headers(self, obj, headers):
+        for header in headers:
+            if obj.responseHeaders:
+                obj.responseHeaders.removeHeader(header['key'])
+            if obj.requestHeaders:
+                obj.requestHeaders.removeHeader(header['key'])
+
+    def _modify(self, obj):
+        action = self.action_dict['action']
+        for element in self.element_map:
+            if element in action:
+                setattr(obj, self.element_map[element], action[element])
+
+        if 'headers' in action:
+            self._delete_headers(obj, obj.getAllRawHeaders())
+            self._add_headers(obj, action['header'])
+
+        if 'setHeaders' in action:
+            self._add_headers(obj, action['setHeaders'])
+
+        if 'deleteHeaders' in action:
+            self._delete_headers(obj, action['deleteHeaders'])
+
 
 class ModifyAction(InjectionAction):
+
     def execute(self):
         if self.request:
+            self._modify(self.request)
+            log.msg("request after modify: " + str(self.request))
             return self.request
         else:
+            self._modify(self.response)
+            log.msg("response after modify: " + str(self.response))
             return self.response
 
 
 class NewResponseAction(InjectionAction):
     def execute(self):
+        self._modify(self.response)
         return self.response
 
 
 class NewRequestAction(InjectionAction):
     def execute(self):
+        self._modify(self.request)
         return self.request
 
 
@@ -154,11 +218,10 @@ class Injection(AbstractModule):
         log.msg("calling traffic evaluator with:\n" +
                 "http_metadata: " + str(http_metadata) + "\n"
                 "      session: " + str(session))
-        self.injection_engine.get_action(http_metadata, session)
+#        self.injection_engine.get_action(http_metadata, session)
         action = null_test
 
         return action
-
 
     # Dummy function used to test until engine exists
     def _process_response(self, http_metadata, session):
@@ -166,9 +229,9 @@ class Injection(AbstractModule):
         log.msg("calling traffic evaluator with:\n" +
                 "http_metadata: " + str(http_metadata) + "\n"
                 "      session: " + str(session))
-        self.injection_engine.get_action(http_metadata, session)
+#        self.injection_engine.get_action(http_metadata, session)
 
-        action = drop_test
+        action = modify_test
 
         return action
 
