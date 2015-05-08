@@ -121,7 +121,10 @@ class TrafficEvaluator(object):
         If a match occurs, the `action` for that rule is returned.
         If no match occurs, `None` is returned.
         """
-        rules = self._get_rules(session_id)
+        try:
+            rules = self._get_rules(session_id)
+        except TypeError:
+            return None
         if rules is None:
             return None
         else:
