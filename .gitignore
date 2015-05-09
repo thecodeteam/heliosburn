@@ -79,4 +79,4 @@ _trial_temp
 # SQLite database
 *.sqlite3
 
-*dropin.cache
+dropin.cache
