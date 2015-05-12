@@ -56,7 +56,8 @@ class RedisOperationResponse(OperationResponse):
     def _send(self, result):
         self.redis_client.publish(self.response_channel,
                                   json.dumps(self.response))
-        self.redis_client.set(self.response['key'], self.response)
+        self.redis_client.set(self.response['key'],
+                              json.dumps(self.response))
         log.msg("Response posted to redis key: " + self.response['key'])
 
     def send(self):
