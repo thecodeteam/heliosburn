@@ -203,10 +203,18 @@ def start(request, session_id):
     for i in range(0, 50):
         response = r.get(response_key)
         if response is not None:
-            return JsonResponse({"proxyResponse": response})
+            try:
+                response = json.loads(response)
+            except ValueError:
+                return HttpResponse(status=500)
+            if ('code' in response) and (response['code'] == 200):
+                return JsonResponse({"proxyResponse": response}, status=200)
+            else:
+                return HttpResponse(status=500)
         else:
             time.sleep(.1)  # sleep 100ms
-    return JsonResponse({"proxyResponse": None}, status=503)
+    return HttpResponse(status=408)
+
 
 @csrf_exempt
 @RequireLogin()
@@ -226,7 +234,14 @@ def stop(request, session_id):
     for i in range(0, 50):
         response = r.get(response_key)
         if response is not None:
-            return JsonResponse({"proxyResponse": response})
+            try:
+                response = json.loads(response)
+            except ValueError:
+                return HttpResponse(status=500)
+            if ('code' in response) and (response['code'] == 200):
+                return JsonResponse({"proxyResponse": response}, status=200)
+            else:
+                return HttpResponse(status=500)
         else:
             time.sleep(.1)  # sleep 100ms
-    return JsonResponse({"proxyResponse": None}, status=503)
+    return HttpResponse(status=408)
