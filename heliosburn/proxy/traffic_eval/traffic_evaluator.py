@@ -34,13 +34,13 @@ class TrafficEvaluator(object):
 
         # Test rule components against subject
         for rule in relevant_rules:
-            # Test rule.enabled
-            if self._eval_rule_enabled(rule) is False:
-                return None
+            if self._eval_rule_enabled(rule) is not False:  # If rule is enabled, continue evaluation
 
-            # Test rule.filter components
-            if self._eval_rule_filter(rule['filter'], subject) is True:
-                return rule['action']
+                # Test rule.filter components
+                if self._eval_rule_filter(rule['filter'], subject) is True:
+                    return rule['action']
+
+        return None  # No rule is matched if this point is reached
 
     def _eval_rule_enabled(self, rule):
         """
