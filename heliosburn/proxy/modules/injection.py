@@ -218,20 +218,16 @@ class Injection(AbstractModule):
         log.msg("calling traffic evaluator with:\n" +
                 "http_metadata: " + str(http_metadata) + "\n"
                 "      session: " + str(session))
-#        self.injection_engine.get_action(http_metadata, session)
-        action = null_test
+        action = self.injection_engine.get_action(http_metadata, session)
 
         return action
 
-    # Dummy function used to test until engine exists
     def _process_response(self, http_metadata, session):
         injection_engine = TrafficEvaluator(config)
         log.msg("calling traffic evaluator with:\n" +
                 "http_metadata: " + str(http_metadata) + "\n"
                 "      session: " + str(session))
-#        self.injection_engine.get_action(http_metadata, session)
-
-        action = modify_test
+        action = self.injection_engine.get_action(http_metadata, session)
 
         return action
 
