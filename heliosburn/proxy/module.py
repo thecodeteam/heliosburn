@@ -328,7 +328,6 @@ class Registry(object):
         for module in self.pipeline_modules:
             module_name = module['name']
             if self.plugins[module_name].isStarted():
-                log.msg(module_name + " is started")
                 pipeline.addCallback(self.plugins[module_name].handle_request)
 
         return pipeline
@@ -338,7 +337,8 @@ class Registry(object):
         pipeline = defer.Deferred()
         for module in self.pipeline_modules:
             module_name = module['name']
-            pipeline.addCallback(self.plugins[module_name].handle_response)
+            if self.plugins[module_name].isStarted():
+                pipeline.addCallback(self.plugins[module_name].handle_response)
 
         return pipeline
 

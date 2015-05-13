@@ -126,7 +126,7 @@ class OperationFactory(object):
                                        recording_id=op_string['param'])
 
         if "stop_injection" == op_string['operation']:
-            operation = StopInejction(self.controller,
+            operation = StopInjection(self.controller,
                                       self.response_factory,
                                       op_string['key'],
                                       recording_id=op_string['param'])
