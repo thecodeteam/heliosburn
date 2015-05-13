@@ -125,6 +125,18 @@ class OperationFactory(object):
                                        op_string['key'],
                                        recording_id=op_string['param'])
 
+        if "stop_injection" == op_string['operation']:
+            operation = StopInejction(self.controller,
+                                      self.response_factory,
+                                      op_string['key'],
+                                      recording_id=op_string['param'])
+
+        if "start_injection" == op_string['operation']:
+            operation = StartInjection(self.controller,
+                                       self.response_factory,
+                                       op_string['key'],
+                                       session_id=op_string['param'])
+
         if "reload" == op_string['operation']:
             operation = ReloadPlugins(self.controller,
                                       self.response_factory,
@@ -364,6 +376,49 @@ class StartRecording(ServerOperation):
         else:
             self.response.set_code(501)
             self.response.set_message({'Busy': status})
+
+
+class StartInjection(ServerOperation):
+
+    def __init__(self, controller, response_factory, key, **params):
+        ServerOperation.__init__(self, controller, response_factory, key)
+
+        self.params = params
+
+        d = self.addCallback(self.start_injection)
+        d.addCallback(self.respond)
+
+    def start_injection(self, result):
+        status = self.controller.module_registry.status(
+            module_name='Injection',
+            **self.params)
+        if status['state'] != "running":
+            self.controller.module_registry.start(
+                module_name='Injection',
+                **self.params)
+            self.response.set_message({'Started Injection Session':
+                                      [self.response.get_message()]})
+        else:
+            self.response.set_code(501)
+            self.response.set_message({'Busy': status})
+
+
+class StopInjection(ServerOperation):
+
+    def __init__(self, controller, response_factory, key, **params):
+        ServerOperation.__init__(self, controller, response_factory, key)
+
+        self.params = params
+
+        d = self.addCallback(self.stop_injection)
+        d.addCallback(self.respond)
+
+    def stop_injection(self, result):
+        self.controller.module_registry.stop(module_name='Injection',
+                                             **self.params)
+        self.response.set_message("Stopped Injection Session: { "
+                                  + self.response.get_message() + ", "
+                                  + "}")
 
 
 class ResetPlugins(ServerOperation):

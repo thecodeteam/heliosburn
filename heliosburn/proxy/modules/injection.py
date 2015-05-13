@@ -1,3 +1,4 @@
+import datetime
 from module import AbstractModule
 from twisted.python import log
 from traffic_eval.traffic_evaluator import TrafficEvaluator
@@ -83,7 +84,7 @@ config = {
             "host": "localhost",
             "db": {
                 "production": "heliosburn",
-                "test": "heliosburng_test"
+                "test": "heliosburn_test"
             },
             "port": 27017
         }
@@ -243,7 +244,7 @@ class Injection(AbstractModule):
             }
         }
 
-        action_dict = self._process_request(http_metadata, 1)
+        action_dict = self._process_request(http_metadata, self.session_id)
         if action_dict:
             action_type = action_dict['action']['type']
         else:
@@ -278,7 +279,7 @@ class Injection(AbstractModule):
             }
         }
 
-        action_dict = self._process_response(http_metadata, 1)
+        action_dict = self._process_response(http_metadata, self.session_id)
         if action_dict:
             action_type = action_dict['action']['type']
         else:
@@ -290,16 +291,15 @@ class Injection(AbstractModule):
         if result:
             return response
 
-    def reset(self):
-        pass
+    def start(self, **params):
+        self.session_id = params['session_id']
+        self.state = "running"
+        self.status = str(datetime.datetime.now())
+        log.msg("Injection module started at: " + self.status)
 
-    def reload(self):
-        pass
-
-    def start(self):
-        pass
-
-    def stop(self):
-        pass
+    def stop(self, **params):
+        self.state = "stopped"
+        self.status = str(datetime.datetime.now())
+        log.msg("Injection module stopped at: " + self.status)
 
 injection = Injection()
