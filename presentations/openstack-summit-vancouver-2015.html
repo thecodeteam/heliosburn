@@ -46,7 +46,13 @@
 				    <script type="text/template">
 # HeliosBurn
 
-A REST Fault-Injection Platform
+## A REST Fault-Injection Platform
+
+EMC {code}
+
+OpenStack Summit Vancouver - May 2015
+
+
 				    </script>
 				</section>
 
@@ -63,8 +69,68 @@ A REST Fault-Injection Platform
 					</script>
 				</section>
 
+				<section>
+					<h1>Components</h1>
+				</section>
+
+				<section>
+					<h2>Proxy</h2>
+					<ul>
+						<li>Plugin architecture - Module pipeline</li>
+						<li>Twisted</li>
+					</ul>
+				</section>
+
+				<section>
+					<h2>API</h2>
+					<ul>
+						<li>Django app</li>
+						<li>Interacts with the Proxy via Redis</li>
+						<li>Manages the Proxy and modules</li>
+					</ul>
+				</section>
+
+				<section>
+					<h2>Web UI</h2>
+					<ul>
+						<li>Calls the API</li>
+						<li></li>
+					</ul>
+				</section>
+
+				<section>
+					<h2>Current Proxy modules</h2>
+				</section>
+
+				<section>
+					<h2>Traffic recoder</h2>
+					<ul>
+						<li>Records HTTP traffic</li>
+						<li>Traffic can be exported to a Test Plan</li>
+					</ul>
+				</section>
+
+				<section>
+					<h2>Fault Injection</h2>
+					<ul>
+						<li>Standalone</li>
+						<li>VM</li>
+						<li>Docker container</li>
+						<li>Co-located with client or server</li>
+					</ul>
+
+					Rule json
+				</section>
+
+
+				<section data-markdown>
+					![EMC](img/EMC.png)
+				</section>
+
 			</div>
 		</div>
+
+		<img style="position: fixed; bottom: 0; left: 15%; width:10%;" src="img/EMC-Logo.png" alt="EMC">
 
 		<script src="lib/js/head.min.js"></script>
 		<script src="js/reveal.js"></script>
