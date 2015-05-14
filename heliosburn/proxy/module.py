@@ -117,7 +117,7 @@ class AbstractModule(object):
         self.name = self.__class__.__name__
         self.log = log
         self.state = "loaded"
-        self.status = datetime.datetime.now()
+        self.status = str(datetime.datetime.now())
 
     def get_name(self):
         """
@@ -165,14 +165,14 @@ class AbstractModule(object):
         this method is called to start the module execution
         """
         self.state = "running"
-        self.status = datetime.datetime.now()
+        self.status = str(datetime.datetime.now())
 
     def stop(self, **params):
         """
         this method is called to stop the module execution
         """
         self.state = "stopped"
-        self.status = datetime.datetime.now()
+        self.status = str(datetime.datetime.now())
 
     def test(self, module_name=None):
         """
@@ -190,6 +190,12 @@ class AbstractModule(object):
         this method is called to  get the module(s) current status
         """
         return self.status
+
+    def isStarted(self):
+        if self.state == "running":
+            return True
+        else:
+            return False
 
 
 class AbstractAPITestModule(AbstractModule, unittest.TestCase):
@@ -321,7 +327,8 @@ class Registry(object):
 
         for module in self.pipeline_modules:
             module_name = module['name']
-            pipeline.addCallback(self.plugins[module_name].handle_request)
+            if self.plugins[module_name].isStarted():
+                pipeline.addCallback(self.plugins[module_name].handle_request)
 
         return pipeline
 
@@ -330,7 +337,8 @@ class Registry(object):
         pipeline = defer.Deferred()
         for module in self.pipeline_modules:
             module_name = module['name']
-            pipeline.addCallback(self.plugins[module_name].handle_response)
+            if self.plugins[module_name].isStarted():
+                pipeline.addCallback(self.plugins[module_name].handle_response)
 
         return pipeline
 
