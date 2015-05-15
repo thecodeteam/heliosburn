@@ -16,7 +16,7 @@ git clone git@github.com:emccode/HeliosBurn.git --recursive
 ```
 __WARNING__: Make sure you include the `--recursive` option above! Otherwise Vagrant will fail to provision our environment.
 
-### Starting the Helios Burn environment with Vagrant
+### Setting up your Helios Burn system with Vagrant
 
 After cloning Helios Burn, enter the directory by typing the following in a terminal:
 
@@ -29,6 +29,17 @@ Now launch the Vagrant environment by typing the following in your terminal:
 ```
 vagrant up
 ```
+__NOTE__: Depending on the speed of your computer, this step may take several minutes. This will download, build, and setup the guest operating system to contain Helios Burn.
 
-Depending on the speed of your computer, this may take several minutes. This will download, build, and setup the guest operating system to contain Helios Burn.
+After your Vagrant is complete, run the following commands in your terminal to install Helios Burn within your Vagrant.
 
+```
+vagrant ssh
+cd HeliosBurn
+sudo ./install_in_vagrant.sh
+```
+
+After this, your Vagrant will reboot, and Helios Burn will be started. Time to log in!
+
+
+### Using Helios Burn
