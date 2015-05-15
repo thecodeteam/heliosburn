@@ -41,5 +41,4 @@ sudo ./install_in_vagrant.sh
 
 After this, your Vagrant will reboot, and Helios Burn will be started. Time to log in!
 
-
 ### Using Helios Burn
