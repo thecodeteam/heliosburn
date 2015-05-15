@@ -6,6 +6,7 @@ or received from the server. The purpose of Helios Burn is to provide developers
 instabilities so that they can verify the stability and resilience of their applications and identify and prevent
 failures before deploying them into a production environment.
 
+Want to try it out? See our [Getting started](docs/getting_started/) guide.
 
 Helios Burn can be deployed in a standalone server, in a Virtual Machine, or co-located with the Web server or Client
 application.

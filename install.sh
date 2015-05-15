@@ -19,3 +19,9 @@ else
     exit 1
 fi
 
+#TODO: cause .env generation during install
+#echo ">>>>> Creating .env file"
+#cp heliosburn/django/hbproject/example.env heliosburn/django/hbproject/.env
+#SECRET_KEY=$(openssl rand -hex 16)
+#sed -i "s/DJANGO_SECRET_KEY.*/DJANGO_SECRET_KEY='$SECRET_KEY'/" heliosburn/django/hbproject/.env
+
