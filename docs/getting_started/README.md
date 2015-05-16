@@ -43,6 +43,26 @@ After this, your Vagrant will reboot, and Helios Burn will be started. You can l
 
 ### Using Helios Burn
 
-On your local host, browse to [http://localhost:8100](http://localhost:8100), you should see the following login screen.
+##### Login screen
+On your local host, browse to [http://localhost:8100](http://localhost:8100), you should see the following login screen. Login with username *admin*, and password *admin*.
+
 ![Helios Burn login screen](img/01_login.png "Helios Burn login screen")
+
+##### Dashboard
+After logging in, you will see the dashboard.
+
+![Helios Burn dashboard](img/02_dashboard.png "Helios Burn dashboard")
+
+##### Session manager
+From the dashboard, click *Sessions* on the left. This will take you to the session manager.
+
+![Helios Burn session manager](img/03_session_manager.png "Helios Burn session manager")
+
+##### New session
+From the session manager, click *Create new session*.
+
+![Helios Burn new session](img/04_new_session.png "Helios Burn new session")
+
+Enter *"test session"* for the name, and a description of your choice, then click *Save and next*.
+
 
