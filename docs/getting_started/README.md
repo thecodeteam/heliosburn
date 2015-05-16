@@ -2,6 +2,13 @@
 
 To deploy Helios Burn, you have several options: [Docker](https://www.docker.com), [Vagrant](https://www.vagrantup.com/), or a virtual machine on a platform of your choice. This guide will focus on Vagrant. The purpose of this guide is to get you up and running as quickly as possible, and does not cover all the of the options for deployment and configuration. Please refer to the [Helios Burn documentation](../) to learn more.
 
+## Steps of this guide
+
+1. [Getting Vagrant](#getting-vagrant)
+*  [Getting Helios Burn](#getting-helios-burn)
+*  [Setting up Helios Burn](#setting-up-your-helios-burn-system-with-vagrant)
+*  [Using Helios Burn](#using-helios-burn)
+
 ### Getting Vagrant
 
 1. [Download and install Virtualbox](https://www.virtualbox.org/wiki/Downloads)
@@ -43,10 +50,10 @@ After this, your Vagrant will reboot, and Helios Burn will be started. You can l
 
 ### Using Helios Burn
 
-* [Logging in](#logging-in)
-* [The dashboard](#the-dashboard)
-* [The session manager](#the-session-manager)
-* [Creating a new session](#creating-a-new-session)
+1. [Logging in](#logging-in)
+*  [The dashboard](#the-dashboard)
+*  [The session manager](#the-session-manager)
+*  [Creating a new session](#creating-a-new-session)
 
 ##### Logging in
 On your local host, browse to [http://localhost:8100](http://localhost:8100), you should see the following login screen. Login with username *admin*, and password *admin*.
