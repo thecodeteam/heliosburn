@@ -61,20 +61,23 @@ On your local host, browse to [http://localhost:8100](http://localhost:8100), yo
 ![Helios Burn login screen](img/01_login.png "Helios Burn login screen")
 
 ##### The dashboard
-After logging in, you will see the dashboard.
+After logging in, you will see the dashboard. From the dashboard, click 'Sessions' on the left. This will take you to the session manager.
 
 ![Helios Burn dashboard](img/02_dashboard.png "Helios Burn dashboard")
 
+
 ##### The session manager
-From the dashboard, click *Sessions* on the left. This will take you to the session manager.
+
+The session manager allows you to create and manage testing sessions. From the session manager, click 'Create new session'.
 
 ![Helios Burn session manager](img/03_session_manager.png "Helios Burn session manager")
 
+
 ##### Creating a new session
-From the session manager, click *Create new session*.
+
+Get started with a new session by entering some details.
+Enter 'test session' for the name, and a description of your choice, then click 'Save and next'.
 
 ![Helios Burn new session](img/04_new_session.png "Helios Burn new session")
-
-Enter *"test session"* for the name, and a description of your choice, then click *Save and next*.
 
 
