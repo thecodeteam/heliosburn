@@ -1,12 +1,5 @@
 #!/bin/bash
 
-
-if [ "$EUID" != "0" ]
-then
-    echo "You must be the root user to run this installer."
-    exit 1
-fi
-
 echo ">> Creating Django .env file"
 cp heliosburn/django/hbproject/example.env heliosburn/django/hbproject/.env
 SECRET_KEY=$(openssl rand -hex 16)
