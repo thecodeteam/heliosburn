@@ -45,8 +45,10 @@ vagrant ssh
 cd HeliosBurn
 sudo ./install_in_vagrant.sh
 ```
+*NOTE: This step is only done once. After Helios Burn is installed, it will start automatically when you type `vagrant up`.*
 
-After this, your Vagrant will reboot, and Helios Burn will be started. You can login on your _host_ OS at [http://localhost:8100](http://localhost:8100).
+Helios Burn is now started and ready to use. You can login on your _host_ OS at [http://localhost:8100](http://localhost:8100).
+
 
 ### Using Helios Burn
 
