@@ -80,12 +80,18 @@ Vagrant.configure(2) do |config|
 
   config.vm.provision "file", source: "requirements.txt", destination: "/tmp/requirements.txt"
 
-  config.vm.provision :puppet do |puppet|
-    # puppet.hiera_config_path = "puppet/hiera.yaml"
-    puppet.manifests_path = "puppet/manifests"
-    puppet.module_path = 'puppet/modules'
-    #puppet.options = "--verbose --debug"
-  end
+#  config.vm.provision :puppet do |puppet|
+#    # puppet.hiera_config_path = "puppet/hiera.yaml"
+#    puppet.manifests_path = "puppet/manifests"
+#    puppet.module_path = 'puppet/modules'
+#    #puppet.options = "--verbose --debug"
+#  end
+
+  config.vm.provision "shell", inline: <<-SHELL
+    sudo apt-get update
+    sudo apt-get install git curl supervisor mongodb-server redis-server python-pip python-dev libpython-dev -y
+    sudo pip install -r /tmp/requirements.txt
+  SHELL
 
   config.vm.provision "shell", path: "puppet/python-mode.sh"
 end
