@@ -12,6 +12,7 @@ RUN apt-get -y install ipython-notebook
 RUN apt-get -y install npm
 RUN apt-get -y install supervisor
 RUN apt-get -y install python
+RUN apt-get -y install pip
 RUN apt-get -y install default-jre
 RUN pip install -f /tmp/requirements.txt
 ADD install/etc/supervisor/conf.d/*.conf /etc/supervisor/conf.d/
