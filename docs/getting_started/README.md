@@ -2,6 +2,13 @@
 
 To deploy Helios Burn, you have several options: [Docker](https://www.docker.com), [Vagrant](https://www.vagrantup.com/), or a virtual machine on a platform of your choice. This guide will focus on Vagrant. The purpose of this guide is to get you up and running as quickly as possible, and does not cover all the of the options for deployment and configuration. Please refer to the [Helios Burn documentation](../) to learn more.
 
+## Steps of this guide
+
+1. [Getting Vagrant](#getting-vagrant)
+*  [Getting Helios Burn](#getting-helios-burn)
+*  [Setting up Helios Burn](#setting-up-your-helios-burn-system-with-vagrant)
+*  [Using Helios Burn](#using-helios-burn)
+
 ### Getting Vagrant
 
 1. [Download and install Virtualbox](https://www.virtualbox.org/wiki/Downloads)
@@ -38,7 +45,41 @@ vagrant ssh
 cd HeliosBurn
 sudo ./install_in_vagrant.sh
 ```
+*NOTE: This step is only done once. After Helios Burn is installed, it will start automatically when you type `vagrant up`.*
 
-After this, your Vagrant will reboot, and Helios Burn will be started. Time to log in!
+Helios Burn is now started and ready to use. You can login on your _host_ OS at [http://localhost:8100](http://localhost:8100).
+
 
 ### Using Helios Burn
+
+1. [Logging in](#logging-in)
+*  [The dashboard](#the-dashboard)
+*  [The session manager](#the-session-manager)
+*  [Creating a new session](#creating-a-new-session)
+
+##### Logging in
+On your local host, browse to [http://localhost:8100](http://localhost:8100), you should see the following login screen. Login with username *admin*, and password *admin*.
+
+![Helios Burn login screen](img/01_login.png "Helios Burn login screen")
+
+##### The dashboard
+After logging in, you will see the dashboard. From the dashboard, click 'Sessions' on the left. This will take you to the session manager.
+
+![Helios Burn dashboard](img/02_dashboard.png "Helios Burn dashboard")
+
+
+##### The session manager
+
+The session manager allows you to create and manage testing sessions. From the session manager, click 'Create new session'.
+
+![Helios Burn session manager](img/03_session_manager.png "Helios Burn session manager")
+
+
+##### Creating a new session
+
+Get started with a new session by entering some details.
+Enter 'test session' for the name, and a description of your choice, then click 'Save and next'.
+
+![Helios Burn new session](img/04_new_session.png "Helios Burn new session")
+
+

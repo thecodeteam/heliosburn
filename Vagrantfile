@@ -32,7 +32,7 @@ Vagrant.configure(2) do |config|
   config.vm.network "forwarded_port", guest: 9000, host: 9100
 
   # IPython notebook
-  config.vm.network "forwarded_port", guest: 8888, host: 9888
+  #config.vm.network "forwarded_port", guest: 8888, host: 9888
 
   # Create a private network, which allows host-only access to the machine
   # using a specific IP.
