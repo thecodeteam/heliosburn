@@ -18,4 +18,4 @@ RUN pip install -r /tmp/requirements.txt
 ADD install/etc/supervisor/conf.d/*.conf /etc/supervisor/conf.d/
 #RUN python /opt/heliosburn/django/hbproject/create_db_model.py
 EXPOSE 80
-CMD ["/usr/bin/supervisord"]
+CMD ["/usr/bin/supervisord -n"]
