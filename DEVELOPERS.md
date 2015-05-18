@@ -1,6 +1,6 @@
 ## Development environment
 
-You can get an all-in-one development environment containing all necessary dependencies to start working on Helios Burn coding.
+You can get an all-in-one development environment containing all necessary dependencies to start working on Helios Burn coding. Below is the description of the environment and a guide on how to get started as a developer. You can also watch the [YouTube video](https://www.youtube.com/watch?v=PSXemMqiqIU) which explains the same information.
 
 The development environment is provided as a Vagrant box.
 
