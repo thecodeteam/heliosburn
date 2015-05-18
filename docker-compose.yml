@@ -1,8 +1,8 @@
 hb:
   build: .
   ports:
-   - "80:80"
-   - "22:22"
+   - "8000:80"
+   - "2200:22"
   links:
    - redis
    - mongo
