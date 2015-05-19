@@ -2,6 +2,9 @@ FROM ubuntu:latest
 
 ADD requirements.txt /tmp/requirements.txt
 ADD heliosburn /opt/HeliosBurn/heliosburn
+# Clone the conf files into the docker container
+# Will have to do once HB is public, currently need a key and a release
+# RUN git clone git@github.com:emccode/HeliosBurn.git
 ADD heliosburn/django/hbproject/example.env /opt/HeliosBurn/heliosburn/django/hbproject/.env
 ADD install/docker/modules.yaml /opt/HeliosBurn/heliosburn/proxy/modules.yaml
 ADD install/docker/config.yaml /opt/HeliosBurn/heliosburn/proxy/config.yaml
@@ -18,7 +21,6 @@ RUN apt-get -y install python-pip
 RUN apt-get -y install default-jre
 RUN apt-get -y install openssl
 RUN apt-get -y install build-essential python-dev
-# SECRET_KEY=$(openssl rand -hex 16)
 RUN sed -i "s/DJANGO_SECRET_KEY.*/DJANGO_SECRET_KEY="'$(openssl rand -hex 16)'"/" heliosburn/django/hbproject/.env
 RUN pip install -r /tmp/requirements.txt
 ADD install/etc/supervisor/conf.d/*.conf /etc/supervisor/conf.d/
