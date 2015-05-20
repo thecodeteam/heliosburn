@@ -193,7 +193,6 @@ class Injection(AbstractModule):
 
     def __init__(self):
         AbstractModule.__init__(self)
-        self.injection_engine = TrafficEvaluator(self._get_config())
 
     def configure(self, **configs):
         self.redis_host = configs['redis_host']
@@ -300,12 +299,14 @@ class Injection(AbstractModule):
             return response
 
     def start(self, **params):
+        self.injection_engine = TrafficEvaluator(self._get_config())
         self.session_id = params['session_id']
         self.state = "running"
         self.status = str(datetime.datetime.now())
         log.msg("Injection module started at: " + self.status)
 
     def stop(self, **params):
+        self.injection_engine = None
         self.state = "stopped"
         self.status = str(datetime.datetime.now())
         log.msg("Injection module stopped at: " + self.status)
