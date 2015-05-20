@@ -20,11 +20,14 @@ RUN apt-get -y install python
 RUN apt-get -y install python-pip
 RUN apt-get -y install default-jre
 RUN apt-get -y install openssl
-RUN apt-get -y install build-essential python-dev
-RUN sed -i "s/DJANGO_SECRET_KEY.*/DJANGO_SECRET_KEY="'$(openssl rand -hex 16)'"/" heliosburn/django/hbproject/.env
+RUN apt-get -y install build-essential
+RUN apt-get -y install python-dev
+RUN apt-get -y install libyaml-dev
+RUN apt-get -y install libpython2.7-dev
+RUN sed -i "s/DJANGO_SECRET_KEY.*/DJANGO_SECRET_KEY="'$(openssl rand -hex 16)'"/" /opt/HeliosBurn/heliosburn/django/hbproject/.env
 RUN pip install -r /tmp/requirements.txt
 ADD install/etc/supervisor/conf.d/*.conf /etc/supervisor/conf.d/
-ADD install/docker/settings.yaml /opt/HeliosBurn/heliosburn/django/hbproject/hbproject/settings.yaml
-RUN python /opt/HeliosBurn/heliosburn/django/hbproject/create_db_model.py
+ADD install/docker/settings.py /opt/HeliosBurn/heliosburn/django/hbproject/hbproject/settings.py
+#RUN python /opt/HeliosBurn/heliosburn/django/hbproject/create_db_model.py
 EXPOSE 80
 CMD ["/usr/bin/supervisord", "-n"]
