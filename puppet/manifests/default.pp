@@ -15,28 +15,17 @@ package { ['python-software-properties']:
   require => Exec['apt-get update'],
 }
 
-$sysPackages = ['git', 'curl', 'ipython-notebook', 'npm', 'supervisor']
+$sysPackages = ['git', 'curl', 'supervisor', 'mongodb-server', 'redis-server', 'python-pip', 'python-dev', 'libpython-dev']
 package { $sysPackages:
   ensure => "installed",
   require => Exec['apt-get update'],
 }
 
-class { 'python' :
-    version    => 'system',
-    pip        => true,
-    dev        => true,
-    gunicorn   => true,
-  }
+#class { 'python' :
+#    version    => 'system',
+#    pip        => true,
+#    dev        => true,
+#    gunicorn   => true,
+#  }
 
 python::requirements { '/tmp/requirements.txt': }
-
-class { 'java':
-  distribution => 'jre',
-}
-
-class {'::mongodb::server':
-  port    => 27017,
-  verbose => true,
-}
-
-include redis
