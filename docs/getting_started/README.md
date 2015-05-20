@@ -47,39 +47,101 @@ sudo ./install_in_vagrant.sh
 ```
 *NOTE: This step is only done once. After Helios Burn is installed, it will start automatically when you type `vagrant up`.*
 
-Helios Burn is now started and ready to use. You can login on your _host_ OS at [http://localhost:8100](http://localhost:8100).
-
+Helios Burn is now started and ready to use.
 
 ### Using Helios Burn
 
 1. [Logging in](#logging-in)
-*  [The dashboard](#the-dashboard)
 *  [The session manager](#the-session-manager)
 *  [Creating a new session](#creating-a-new-session)
 
 ##### Logging in
-On your local host, browse to [http://localhost:8100](http://localhost:8100), you should see the following login screen. Login with username *admin*, and password *admin*.
+The first thing to do is to log in. Once you have logged in, you will receive a header called `X-Auth-Token`. Using this token associates requests with your user. Tokens expire (by default) after 1 hour of inactivity. To obtain your token, run the following from a terminal on your host.
 
-![Helios Burn login screen](img/01_login.png "Helios Burn login screen")
+    curl -v -XPOST 'http://localhost:8100/api/auth/login' -d \
+        '{"username":"admin", "password":"admin"}'
 
-##### The dashboard
-After logging in, you will see the dashboard. From the dashboard, click 'Sessions' on the left. This will take you to the session manager.
+The output should resemble the following, but your `X-Auth-Token` will be unique. You should copy your token for future use in this guide. This guide will use the token presented below, but remember to replace it with your unique token, or you will receive `HTTP 401 UNAUTHORIZED` for your requests.
 
-![Helios Burn dashboard](img/02_dashboard.png "Helios Burn dashboard")
+    smallpaw:~ hgrubbs$ curl -v -XPOST 'http://localhost:8100/api/auth/login' -d \
+    >     '{"username":"admin", "password":"admin"}'
+    *   Trying 127.0.0.1...
+    * Connected to localhost (127.0.0.1) port 8100 (#0)
+    > POST /api/auth/login HTTP/1.1
+    > Host: localhost:8100
+    > User-Agent: curl/7.42.1
+    > Accept: */*
+    > Content-Length: 40
+    > Content-Type: application/x-www-form-urlencoded
+    > 
+    * upload completely sent off: 40 out of 40 bytes
+    < HTTP/1.1 200 OK
+    < Vary: Cookie
+    < X-Frame-Options: SAMEORIGIN
+    < Content-Type: text/html; charset=utf-8
+    < X-Auth-Token: 910480523f565b1fbfbf67cfaf7445763aad744834caf4cf8c75715ad476b402e57fed4f6ea350d4fc72502aa550393aa4430d0908a75e0f7efb2772dca8dfe9
+    < Transfer-Encoding: chunked
+    < Date: Wed, 20 May 2015 18:58:22 GMT
+    < Server: heliosburn-vm
+    < 
+    * Connection #0 to host localhost left intact
 
 
-##### The session manager
+##### Create a new session
 
-The session manager allows you to create and manage testing sessions. From the session manager, click 'Create new session'.
+Now let's create a session. A session will serve to associate our HTTP traffic, testplan, and rules together. Run the following in a terminal your host, and remember to replace the `X-Auth-Token` with your own.
 
-![Helios Burn session manager](img/03_session_manager.png "Helios Burn session manager")
+    curl -XPOST 'http://localhost:8100/api/session/' -d \
+        '{"name": "test session #1", "description": "my first helios burn session"'} \
+        -H 'X-Auth-Token: 910480523f565b1fbfbf67cfaf7445763aad744834caf4cf8c75715ad476b402e57fed4f6ea350d4fc72502aa550393aa4430d0908a75e0f7efb2772dca8dfe9'
+
+The output will be a JSON, containing a unique session id. Copy this id, so you can use it during this guide.
+
+##### Create a new testplan
+
+Now let's create a testplan. A testplan contains the rules and actions that the proxy will attempt to apply to HTTP traffic. Let's include a simple rule in our testplan, that changes HTTP GET requests into HTTP POST, if a certain header is present. Run the following in a terminal on your host, and remember to replace the `X-Auth-Token` with your own.
+
+    curl -XPOST 'http://localhost:8100/api/testplan/' -g -d \
+        '
+                {
+                  "name": "my first testplan",
+                  "rules": [
+                    {
+                      "name": "GET to POST",
+                      "ruleType": "request",
+                      "filter": {
+                        "method": "GET"
+                      },
+                      "action": {
+                        "type": "modify",
+                        "method": "POST"
+                      }
+                    }
+                  ]
+                }' \
+        -H 'X-Auth-Token: 38ed1a7265be4ddf7f7f038c19eaa908ea2c0f4d511830760c86cb759df71993844f6288a60469ff838a024992da3cd205b407bb7c4f47b4e4a27c765e299a2b'
+
+The output will be a JSON, containing a unique testplan id. Copy this id, so you can use it during this guide.
+
+#### Associate your testplan with your session
+
+Now we need to link the session and the testplan you created to each other. Run the following in your host, and remember to replace the token, session id, and testplan id with your own.
+
+    curl -XPUT 'http://localhost:8100/api/session/555ce14ceb908907d690a2ad/' \
+        -d '
+            {
+              "testplan": "555ce114eb908907d690a2ac"
+            }' \
+        -H 'X-Auth-Token: 38ed1a7265be4ddf7f7f038c19eaa908ea2c0f4d511830760c86cb759df71993844f6288a60469ff838a024992da3cd205b407bb7c4f47b4e4a27c765e299a2b' 
+
+This command should not produce any output if successful. For more details, you could add the `-v` parameter to curl, which would show the resulting status code(`HTTP 200 OK`).
 
 
-##### Creating a new session
+#### Start your session
 
-Get started with a new session by entering some details.
-Enter 'test session' for the name, and a description of your choice, then click 'Save and next'.
+Lastly, we need to instruct the proxy to begin your session. This causes your testplan and rules to become effective, and Helios Burn will keep track of the traffic they generate. Run the following command in a terminal on your host, and remember to replace the token and session id with your own.
 
-![Helios Burn new session](img/04_new_session.png "Helios Burn new session")
+    curl -XPOST 'http://localhost:8100/api/session/555ce14ceb908907d690a2ad/' \
+        -H 'X-Auth-Token: 38ed1a7265be4ddf7f7f038c19eaa908ea2c0f4d511830760c86cb759df71993844f6288a60469ff838a024992da3cd205b407bb7c4f47b4e4a27c765e299a2b' 
 
-
+This command should not produce any output if successful. For more details, you could add the `-v` parameter to curl, which would show the resulting status code(`HTTP 200 OK`).
