@@ -9,7 +9,7 @@ ADD heliosburn/django/hbproject/example.env /opt/HeliosBurn/heliosburn/django/hb
 ADD install/docker/modules.yaml /opt/HeliosBurn/heliosburn/proxy/modules.yaml
 ADD install/docker/config.yaml /opt/HeliosBurn/heliosburn/proxy/config.yaml
 ADD install/docker/settings.py /opt/HeliosBurn/heliosburn/django/hbproject/hbproject/settings.py
-ADD install/docker/settings.py /opt/HeliosBurn/heliosburn/proxy/settings.py
+ADD install/docker/proxy_settings.py /opt/HeliosBurn/heliosburn/proxy/proxy_settings.py
 
 RUN apt-get -y update
 RUN apt-get -y install python-software-properties
