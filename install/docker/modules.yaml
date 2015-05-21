@@ -4,7 +4,7 @@ pipeline:
       name: 'TrafficReader',
       kwargs:
       {
-        redis_host: '127.0.0.1',
+        redis_host: 'redis',
         redis_port: 6379,
         redis_db: 0,
         redis_pub_queue: 'heliosburn.traffic',
@@ -22,10 +22,10 @@ pipeline:
       name: 'Injection',
       kwargs:
       {
-        redis_host: '127.0.0.1',
+        redis_host: 'redis',
         redis_port: 6379,
         redis_db: 0,
-        mongo_host: '127.0.0.1',
+        mongo_host: 'redis',
         mongo_port: '27017',
         mongo_db: 'heliosburn',
       }
@@ -38,10 +38,10 @@ support:
       name: 'TrafficRecorder',
       kwargs:
       {
-        redis_host: '127.0.0.1',
+        redis_host: 'redis',
         redis_port: 6379,
         redis_sub_queue: 'heliosburn.traffic',
-        mongo_host: '127.0.0.1',
+        mongo_host: 'mongo',
         mongo_port: '27017',
         mongo_db: 'proxy',
         mongo_collection: 'traffic',
@@ -51,7 +51,7 @@ support:
       name: 'TrafficStream',
       kwargs:
       {
-        redis_host: '127.0.0.1',
+        redis_host: 'redis',
         redis_port: 6379,
         redis_db: 0,
         redis_key: 'heliosburn.traffic',
@@ -65,7 +65,7 @@ test:
       name: 'TestStartRecordingAPI',
       kwargs:
       {
-        redis_host: '127.0.0.1',
+        redis_host: 'redis',
         redis_port: 6379,
         redis_db: 0,
         redis_pub_queue: 'proxy_mgmt_request',
@@ -76,7 +76,7 @@ test:
       name: 'TestStopRecordingAPI',
       kwargs:
       {
-        redis_host: '127.0.0.1',
+        redis_host: 'redis',
         redis_port: 6379,
         redis_db: 0,
         redis_pub_queue: 'proxy_mgmt_request',
@@ -87,7 +87,7 @@ test:
       name: 'TestStopProxyAPI',
       kwargs:
       {
-        redis_host: '127.0.0.1',
+        redis_host: 'redis',
         redis_port: 6379,
         redis_db: 0,
         redis_pub_queue: 'proxy_mgmt_request',
@@ -98,7 +98,7 @@ test:
       name: 'TestStartProxyAPI',
       kwargs:
       {
-        redis_host: '127.0.0.1',
+        redis_host: 'redis',
         redis_port: 6379,
         redis_db: 0,
         redis_pub_queue: 'proxy_mgmt_request',
@@ -109,7 +109,7 @@ test:
       name: 'TestChangeUpstreamHostAPI',
       kwargs:
       {
-        redis_host: '127.0.0.1',
+        redis_host: 'redis',
         redis_port: 6379,
         redis_db: 0,
         redis_pub_queue: 'proxy_mgmt_request',
@@ -120,7 +120,7 @@ test:
       name: 'TestChangeUpstreamPortAPI',
       kwargs:
       {
-        redis_host: '127.0.0.1',
+        redis_host: 'redis',
         redis_port: 6379,
         redis_db: 0,
         redis_pub_queue: 'proxy_mgmt_request',
@@ -131,7 +131,7 @@ test:
       name: 'TestChangeBindAddressAPI',
       kwargs:
       {
-        redis_host: '127.0.0.1',
+        redis_host: 'redis',
         redis_port: 6379,
         redis_db: 0,
         redis_pub_queue: 'proxy_mgmt_request',
@@ -142,7 +142,7 @@ test:
       name: 'TestChangeBindPortAPI',
       kwargs:
       {
-        redis_host: '127.0.0.1',
+        redis_host: 'redis',
         redis_port: 6379,
         redis_db: 0,
         redis_pub_queue: 'proxy_mgmt_request',
@@ -153,7 +153,7 @@ test:
       name: 'TestResetPluginsAPI',
       kwargs:
       {
-        redis_host: '127.0.0.1',
+        redis_host: 'redis',
         redis_port: 6379,
         redis_db: 0,
         redis_pub_queue: 'proxy_mgmt_request',
@@ -164,7 +164,7 @@ test:
       name: 'TestReloadPluginsAPI',
       kwargs:
       {
-        redis_host: '127.0.0.1',
+        redis_host: 'redis',
         redis_port: 6379,
         redis_db: 0,
         redis_pub_queue: 'proxy_mgmt_request',
@@ -175,7 +175,7 @@ test:
       name: 'TestStatusAPI',
       kwargs:
       {
-        redis_host: '127.0.0.1',
+        redis_host: 'redis',
         redis_port: 6379,
         redis_db: 0,
         redis_pub_queue: 'proxy_mgmt_request',
@@ -186,7 +186,7 @@ test:
       name: 'TestBusyRecordingAPI',
       kwargs:
       {
-        redis_host: '127.0.0.1',
+        redis_host: 'redis',
         redis_port: 6379,
         redis_db: 0,
         redis_pub_queue: 'proxy_mgmt_request',
