@@ -20,7 +20,7 @@ class Common(Configuration):
 
     from mongoengine import connect
     connect(db='heliosburn',
-            host=mongo)
+            host='mongo')
 
     BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
