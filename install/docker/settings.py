@@ -19,7 +19,8 @@ import redis
 class Common(Configuration):
 
     from mongoengine import connect
-    connect('heliosburn')
+    connect(db='heliosburn',
+            host=mongo)
 
     BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
