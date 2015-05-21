@@ -29,7 +29,7 @@ RUN apt-get -y install libpython2.7-dev
 RUN sed -i "s/DJANGO_SECRET_KEY.*/DJANGO_SECRET_KEY="'$(openssl rand -hex 16)'"/" /opt/HeliosBurn/heliosburn/django/hbproject/.env
 #Temporary, should pull out of hblog.py
 RUN sed -i "s/redis_host = 'loc.*/redis_host="\'redis\'"/" /opt/HeliosBurn/heliosburn/hblog/hblog.py
-RUN sed -i "s/mongodb_host ='loc.*/mongodb_host="\'mongo\'"/" /opt/HeliosBurn/heliosburn/hblog/hblog.py
+RUN sed -i "s/mongodb_host = 'loc.*/mongodb_host="\'mongo\'"/" /opt/HeliosBurn/heliosburn/hblog/hblog.py
 RUN pip install -r /tmp/requirements.txt
 ADD install/etc/supervisor/conf.d/*.conf /etc/supervisor/conf.d/
 #RUN python /opt/HeliosBurn/heliosburn/django/hbproject/create_db_model.py
