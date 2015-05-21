@@ -139,9 +139,13 @@ This command should not produce any output if successful. For more details, you 
 
 #### Start your session
 
-Lastly, we need to instruct the proxy to begin your session. This causes your testplan and rules to become effective, and Helios Burn will keep track of the traffic they generate. Run the following command in a terminal on your host, and remember to replace the token and session id with your own.
+Now we need to instruct the proxy to begin your session. This causes your testplan and rules to become effective, and Helios Burn will keep track of the traffic they generate. Run the following command in a terminal on your host, and remember to replace the token and session id with your own.
 
     curl -XPOST 'http://localhost:8100/api/session/555ce14ceb908907d690a2ad/' \
         -H 'X-Auth-Token: 38ed1a7265be4ddf7f7f038c19eaa908ea2c0f4d511830760c86cb759df71993844f6288a60469ff838a024992da3cd205b407bb7c4f47b4e4a27c765e299a2b' 
 
 This command should not produce any output if successful. For more details, you could add the `-v` parameter to curl, which would show the resulting status code(`HTTP 200 OK`).
+
+#### Send traffic to Helios Burn
+
+**TODO**
