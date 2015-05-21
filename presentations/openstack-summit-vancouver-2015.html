@@ -51,9 +51,46 @@
 EMC {code}
 
 OpenStack Summit Vancouver - May 2015
-
-
 				    </script>
+				</section>
+
+				<section>
+					<h3>Motivation</h3>
+					<ul>
+						<li>Not an open source solution available</li>
+						<li>Devs can built fault-tolerant apps</li>
+					</ul>
+				</section>
+
+				<section>
+					<h3>Devs don't consider...</h3>
+					<ul>
+						<li>Unexpected messages - not as in documentation</li>
+						<li>Server overloading - backoff responses</li>
+						<li>Link latency - different geolocation</li>
+						<li>Timeout</li>
+						<li>Connection drop</li>
+					</ul>
+				</section>
+				<section>
+					<h3>Defensive programming</h3>
+					<ul>
+						<li>Exception handling</li>
+						<li>Retry policies</li>
+						<li>Exponential backoff</li>
+						<li>Circuit breaker patterns</li>
+						<li>...</li>
+					</ul>
+				</section>
+
+				<section>
+					<h3>HeliosBurn helps:</h3>
+					<ul>
+						<li>Monitor and record API traffic</li>
+						<li>Create the faults</li>
+						<li>test the resiliency against faults</li>
+						<li>validate the implementation</li>
+					</ul>
 				</section>
 
 				<section data-markdown>
@@ -70,48 +107,110 @@ OpenStack Summit Vancouver - May 2015
 				</section>
 
 				<section>
-					<h1>Components</h1>
+					<section>
+						<h2>Key components</h2>
+					</section>
+
+					<section>
+						<h2>Proxy</h2>
+						<ul>
+							<li>Made in Twisted</li>
+							<li>Plugin architecture - Module pipeline</li>
+							<li>Modules must inherit from an abstract class</li>
+							<ul>
+								<li><code>process_request</code>, <code>process_response</code>
+							</ul>
+							<li>Filters requests and responses</li>
+						</ul>
+					</section>
+
+					<section>
+						<h2>API</h2>
+						<ul>
+							<li>Made in Django</li>
+							<li>Interacts with the Proxy via Redis</li>
+							<li>Manages the Proxy and modules</li>
+						</ul>
+					</section>
+
+					<section data-markdown>
+	## Web UI
+	![EMC](img/hb_dashboard.png)
+					</section>
 				</section>
 
 				<section>
-					<h2>Proxy</h2>
-					<ul>
-						<li>Plugin architecture - Module pipeline</li>
-						<li>Twisted</li>
-					</ul>
+					<section>
+						<h2>Current proxy modules</h2>
+					</section>
+					<section>
+						<h2>Traffic recoder</h2>
+						<ul>
+							<li>Records HTTP traffic</li>
+							<li>Export traffic to a Test Plan</li>
+						</ul>
+					</section>
+
+					<section>
+						<h2>Fault Injection</h2>
+						<ul>
+							<li>Alters traffic based on a set of rules</li>
+							<li>Rules define a filter and an action</li>
+							<ul>
+								<li>Filter: condition to be met</li>
+								<li>Action: operation to be applied to the traffic</li>
+							</ul>
+						</ul>
+					</section>
+
+
+
+					<section>
+
+<p>E.g.: Drop all traffic that contains "Firefox" in the <code>User-Agent</code> header</p>
+
+<pre><code class="javascript">{
+  "name": "firefox traffic drop",
+  "description": "drops requests sent from firefox",
+  "ruleType": "request",
+  "filter": {
+    "method": "GET",
+    "headers": [{"key": "User-Agent", "values": ".*Firefox.*"}]
+  },
+  "action": {
+    "type": "drop"
+  }
+}
+</code></pre>
+					</section>
+
+
+					<section>
+						<h2>QoS module</h2>
+
+						<ul>
+							<li>Reflect a real-world situation</li>
+							<li>Link latency</li>
+							<li>Add jitter</li>
+							<li>Packet loss</li>
+						</ul>
+					</section>
+
+					<section>
+						<h2>Server overloading module</h2>
+
+						<ul>
+							<li><code>503 Service Unavailable</code></li>
+							<li><code>429 Too Many Requests</code></li>
+							<li><code>Retry-After</code> header</li>
+							<li>Connection Refused</li>
+							<li>Backoff responses</li>
+						</ul>
+					</section>
 				</section>
 
 				<section>
-					<h2>API</h2>
-					<ul>
-						<li>Django app</li>
-						<li>Interacts with the Proxy via Redis</li>
-						<li>Manages the Proxy and modules</li>
-					</ul>
-				</section>
-
-				<section>
-					<h2>Web UI</h2>
-					<ul>
-						<li>Calls the API</li>
-						<li></li>
-					</ul>
-				</section>
-
-				<section>
-					<h2>Current Proxy modules</h2>
-				</section>
-
-				<section>
-					<h2>Traffic recoder</h2>
-					<ul>
-						<li>Records HTTP traffic</li>
-						<li>Traffic can be exported to a Test Plan</li>
-					</ul>
-				</section>
-
-				<section>
-					<h2>Fault Injection</h2>
+					<h2>Deployment models</h2>
 					<ul>
 						<li>Standalone</li>
 						<li>VM</li>
@@ -119,9 +218,25 @@ OpenStack Summit Vancouver - May 2015
 						<li>Co-located with client or server</li>
 					</ul>
 
-					Rule json
 				</section>
 
+				<section>
+					<img src="img/badge.png" style="width:40%">
+					<h2>EMC {code}</h2>
+					<center>
+						<a href="http://twitter.com/emccode"><img src="img/twitter_460.png" style="width:6%;border-radius: 50%;"></a>
+						<a href="http://github.com/emccode"><img src="img/GitHub-Logo.png" style="width:6%;border-radius: 50%;"></a>
+						<a href="http://blog.emccode.com"><img src="img/wordpress.png" style="width:6%;border-radius: 50%;"></a>
+						<a href="http://bit.ly/EMCCODEYouTube"><img src="img/youtube_150.png" style="width:6%;border-radius: 50%;"></a>
+					</center>
+				</section>
+
+				<section>
+					<h2>Thanks for your attention!</h2>
+					<br />
+					<img src="img/GitHub-Logo.png" style="width:10%;border-radius: 50%; margin-bottom:0;">
+					<p>github.com/emccode/HeliosBurn</p>
+				</section>
 
 				<section data-markdown>
 					![EMC](img/EMC.png)
@@ -130,7 +245,7 @@ OpenStack Summit Vancouver - May 2015
 			</div>
 		</div>
 
-		<img style="position: fixed; bottom: 0; left: 15%; width:10%;" src="img/EMC-Logo.png" alt="EMC">
+		<img style="position: fixed; bottom: 0; left: 15%; width:10%; z-index:5;" src="img/EMC-Logo.png" alt="EMC">
 
 		<script src="lib/js/head.min.js"></script>
 		<script src="js/reveal.js"></script>
