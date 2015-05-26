@@ -96,7 +96,7 @@ Now let's create a session. A session will serve to associate our HTTP traffic, 
            "name": "test session #1", 
            "description": "my first helios burn session",
            "upstreamHost": "localhost",
-           "upstreamPort", 9999
+           "upstreamPort": 8080 
           }' \
         -H 'X-Auth-Token: 910480523f565b1fbfbf67cfaf7445763aad744834caf4cf8c75715ad476b402e57fed4f6ea350d4fc72502aa550393aa4430d0908a75e0f7efb2772dca8dfe9'
 
@@ -153,4 +153,8 @@ This command should not produce any output if successful. For more details, you 
 
 #### Send traffic to Helios Burn
 
-**TODO**
+Let's send some traffic in, and watch our rule take effect. 
+
+    curl -v -XGET 'http://localhost:9000/method_test/' 
+
+Your original request was a GET, however, the server seems to think you sent it a POST. That's due to the rule we created previously, causing the method to be modified.
