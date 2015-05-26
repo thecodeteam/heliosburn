@@ -1,9 +1,7 @@
 from module import AbstractModule
 from twisted.python import log
-import time
 import json
 import redis
-import datetime
 
 
 class TrafficReader(AbstractModule):

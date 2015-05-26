@@ -1,15 +1,12 @@
-- [Injection](#injection)
-  - [Injection Engine](#injection-engine)
+- [QOS](#qos)
+  - [](#injection-engine)
   - [Injection Interface](#injection-interface)
   - [Injection Module](#injection-module)
 
 
-# Injection
+# Quality of Service Module
 
   ![alt text](../figures/HB_Injection.png "Injecting HTTP Metadata")
-
-
-# Injection Engine
 
 
 # Injection Interface
@@ -74,9 +71,9 @@ Returns the `action` component of a `rule` in database.
 Returns `None`.
 
 
-# Injection Module
+# QOS Module
 
-The injection module is situated inside the proxy processing pipline as the last module to process a request or a response. When the module receives a response or request, the corresponding metadata is passed to the injection engine for analysis. The injection engine then provides to the module the `action` component of the `rule` database or `None` if no rule matches.
+The QOS module is situated inside the proxy processing pipline as the last module to process a request or a response. When the module receives a response or request, the corresponding metadata is passed to the injection engine for analysis. The injection engine then provides to the module the `action` component of the `rule` database or `None` if no rule matches.
 
 The following possible actions are implemented as command objects and executed if the corresponding action type is returned by the injection engine:
 
@@ -89,7 +86,7 @@ The following possible actions are implemented as command objects and executed i
 | reset       | both    | Resets the HTTP connection.                                                                                                                                                                                              |
 
 
-## ModifyAction
+## JitterAction
 
 An action type `modify` contains the following elements depending on the traffic context.
 
@@ -123,7 +120,7 @@ An action type `modify` contains the following elements depending on the traffic
 }
 ```
 
-## NewResponseAction
+## Action
 
 An action type `newResponse` contains the following elements.
 

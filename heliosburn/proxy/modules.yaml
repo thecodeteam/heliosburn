@@ -11,7 +11,7 @@ pipeline:
       }
     },
     {
-      name: 'Latency',
+      name: 'QOS',
       kwargs:
       {
         minimum: 1,
