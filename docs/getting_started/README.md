@@ -92,7 +92,12 @@ The output should resemble the following, but your `X-Auth-Token` will be unique
 Now let's create a session. A session will serve to associate our HTTP traffic, testplan, and rules together. Run the following in a terminal your host, and remember to replace the `X-Auth-Token` with your own.
 
     curl -XPOST 'http://localhost:8100/api/session/' -d \
-        '{"name": "test session #1", "description": "my first helios burn session"'} \
+        '{
+           "name": "test session #1", 
+           "description": "my first helios burn session",
+           "upstreamHost": "localhost",
+           "upstreamPort", 9999
+          }' \
         -H 'X-Auth-Token: 910480523f565b1fbfbf67cfaf7445763aad744834caf4cf8c75715ad476b402e57fed4f6ea350d4fc72502aa550393aa4430d0908a75e0f7efb2772dca8dfe9'
 
 The output will be a JSON, containing a unique session id. Copy this id, so you can use it during this guide.
