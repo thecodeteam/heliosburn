@@ -157,4 +157,4 @@ Let's send some traffic in, and watch our rule take effect.
 
     curl -v -XGET 'http://localhost:9000/method_test/' 
 
-Your original request was a GET, however, the server seems to think you sent it a POST. That's due to the rule we created previously, causing the method to be modified.
+Your original request was a GET, but if you inspect the output in the `original_request` key, you can see the `REQUEST_METHOD` is POST. That's due to the rule we created previously, causing the method to be modified.
