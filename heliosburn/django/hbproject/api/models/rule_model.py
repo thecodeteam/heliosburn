@@ -29,6 +29,7 @@ def validate(rule):
         c_type = "type"
         c_enabled = "enabled"
         c_weight = "weight"
+        c_percentage = "percentage"
 
         assert c_name in rule
         new_rule[c_name] = rule[c_name]
@@ -40,6 +41,14 @@ def validate(rule):
                 new_rule[c_weight] = 0
         else:
             new_rule[c_weight] = 0
+
+        if c_percentage in rule:
+            try:
+                new_rule[c_percentage] = int(rule[c_percentage])
+            except TypeError:
+                new_rule[c_percentage] = 100
+        else:
+            new_rule[c_percentage] = 100
 
         if c_enabled in rule:
             try:

@@ -22,9 +22,10 @@ A rule is made up of the following top-level components:
 1. `name`
 2. `description`
 3. `weight`
-4. `ruleType`
-5. `filter`
-6. `action`
+4. `percentage`
+5. `ruleType`
+6. `filter`
+7. `action`
 
 ### The 'name' and 'description' components
 
@@ -33,6 +34,10 @@ The `name` and `description` components are self-explanatory. Giving appropriate
 ### The 'weight' components
 
 The `weight` component is an integer that specifies the weighted-priority of a rule. Higher weights are evaluated before lower weights. If no weight is speicified, it will be set to `0`. For example, if two rules both match a particular request, the rule with the higher weight will be applied.
+
+### The 'percentage' components
+
+The `percentage` component is an integer that specifies the likelihood a rule is to be evaluated, as a percentage of 100. A percentage of 100 means a rule will be evaluated every time. When the percentage is omitted, it defaults to 100, which is *usually* appropriate for most types of rules.
 
 ### The 'ruleType' component
 
