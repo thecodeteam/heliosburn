@@ -73,24 +73,6 @@ new_response_test = {
         "payload": "Intercepted by HeliosBurn"
     }}
 
-config = {
-    "config": {
-        "redis": {
-            "db": 0,
-            "port": 6379,
-            "host": "localhost"
-        },
-        "mongodb": {
-            "host": "localhost",
-            "db": {
-                "production": "heliosburn",
-                "test": "heliosburn_test"
-            },
-            "port": 27017
-        }
-    }
-}
-
 
 class InjectionAction(object):
 
@@ -98,7 +80,6 @@ class InjectionAction(object):
         self.action_dict = action_dict
         self.request = request
         self.response = response
-        self.injection_engine = TrafficEvaluator(config)
 
         self.element_map = {
             "httpProtocol": "clientproto",
@@ -212,10 +193,37 @@ class Injection(AbstractModule):
 
     def __init__(self):
         AbstractModule.__init__(self)
-        self.injection_engine = TrafficEvaluator(config)
+
+    def configure(self, **configs):
+        self.redis_host = configs['redis_host']
+        self.redis_port = configs['redis_port']
+        self.redis_db = configs['redis_db']
+        self.mongo_host = configs['mongo_host']
+        self.mongo_port = configs['mongo_port']
+        self.mongo_db = configs['mongo_db']
+
+    def _get_config(self):
+        config = {
+            "config": {
+                "redis": {
+                    "db": self.redis_db,
+                    "port": self.redis_port,
+                    "host": self.redis_host
+                },
+                "mongodb": {
+                    "host": self.mongo_host,
+                    "db": {
+                        "production": self.mongo_db,
+                        "test": "heliosburn_test"
+                    },
+                    "port": self.mongo_port
+                }
+            }
+        }
+
+        return config
 
     def _process_request(self, http_metadata, session):
-        injection_engine = TrafficEvaluator(config)
         log.msg("calling traffic evaluator with:\n" +
                 "http_metadata: " + str(http_metadata) + "\n"
                 "      session: " + str(session))
@@ -224,7 +232,6 @@ class Injection(AbstractModule):
         return action
 
     def _process_response(self, http_metadata, session):
-        injection_engine = TrafficEvaluator(config)
         log.msg("calling traffic evaluator with:\n" +
                 "http_metadata: " + str(http_metadata) + "\n"
                 "      session: " + str(session))
@@ -292,12 +299,14 @@ class Injection(AbstractModule):
             return response
 
     def start(self, **params):
+        self.injection_engine = TrafficEvaluator(self._get_config())
         self.session_id = params['session_id']
         self.state = "running"
         self.status = str(datetime.datetime.now())
         log.msg("Injection module started at: " + self.status)
 
     def stop(self, **params):
+        self.injection_engine = None
         self.state = "stopped"
         self.status = str(datetime.datetime.now())
         log.msg("Injection module stopped at: " + self.status)

@@ -39,6 +39,8 @@ The response body contains a list containing the following elements in JSON form
 | id | An integer value that uniquely identifies the session. |
 | name | Name of the session. |
 | description | Description of the session. |
+| upstreamHost | The upstream host or IP of the HTTP server to test. |
+| upstreamPort | The upstream port number of the HTTP server to test. |
 | createdAt | A dateTime value that specifies the date and time the session was created. |
 | updatedAt | A dateTime value that specifies the date and time the session was last modified. |
 | testPlan | Test Plan JSON representation. Refer to the Test Plan resource documentation. |
@@ -61,6 +63,8 @@ The response body contains a list containing the following elements in JSON form
         "id": 1,
         "name": "Session A",
         "description": "This is a description for a Session",
+        "upstreamHost": "github.com",
+        "upstreamPort": 80,
         "createdAt": "2014-02-12 03:34:51",
         "updatedAt": "2014-02-12 03:34:51",
         "testPlan":
@@ -79,6 +83,8 @@ The response body contains a list containing the following elements in JSON form
     {
         "id": 2,
         "name": "ViPR Session 1",
+        "upstreamHost": "github.com",
+        "upstreamPort": 80,
         "description": "This is a description for a Session",
         "createdAt": "2014-02-12 03:34:51",
         "updatedAt": "2014-02-12 03:34:51",
@@ -152,6 +158,8 @@ The response body contains the following elements in JSON format:
         "id": 1,
         "name": "Session A",
         "description": "This is a description for a Session",
+        "upstreamHost": "github.com",
+        "upstreamPort": 80,
         "createdAt": "2014-02-12 03:34:51",
         "updatedAt": "2014-02-12 03:34:51",
         "testPlan":
@@ -197,6 +205,8 @@ JSON input that contains a Test Plan representation with the following elements:
 | name | Name of the session. |
 | description | Description of the session. |
 | testPlan | Optional. Test Plan JSON representation containing only the ID. |
+| upstreamHost | The upstream host or IP of the HTTP server to test. |
+| upstreamPort | The upstream port number of the HTTP server to test. |
 
 #### Request example
 
@@ -210,6 +220,8 @@ Content-Type: application/json; charset=UTF-8
 {
     "name": "Amazon S3 Test Plan",
     "description": "My test plan for Amazon S3...",
+    "upstreamHost": "github.com",
+    "upstreamPort": 80,
     "testPlan":
         {
             "id": 12,

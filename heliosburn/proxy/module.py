@@ -1,6 +1,3 @@
-import io
-import sys
-import collections
 import redis
 import modules
 import json
@@ -10,17 +7,14 @@ from zope.interface import Interface
 from twisted.internet import defer
 from twisted.plugin import IPlugin
 from twisted.plugin import getPlugins
-from twisted.plugin import pluginPackagePaths
 from twisted.python import log
 from twisted.trial import unittest
 from twisted.internet.endpoints import TCP4ClientEndpoint
-from twisted.internet import defer
 from twisted.internet import reactor
 from twisted.web import server
 from twisted.web import resource
 from protocols.redis import HBRedisSubscriberFactory
 from protocols.redis import HBRedisTestMessageHandlerFactory
-from protocols.redis import HBRedisTestMessageHandler
 
 
 class HBProxyEchoServer(resource.Resource):
@@ -477,4 +471,3 @@ class Registry(object):
 
         log.msg("Status retrieved: " + str(status))
         return status
-
