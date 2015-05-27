@@ -86,6 +86,8 @@ def post(request):
         new = json.loads(request.body)
         assert "name" in new
         assert "description" in new
+        assert "upstreamHost" in new
+        assert "upstreamPort" in new
     except AssertionError:
         return HttpResponseBadRequest("argument mismatch")
     except ValueError:
@@ -97,6 +99,8 @@ def post(request):
         'name': new['name'],
         'description': new['description'],
         'username': request.user['username'],
+        'upstreamHost': new['upstreamHost'],
+        'upstreamPort': new['upstreamPort'],
         'createdAt': datetime.isoformat(datetime.now()),
         'updatedAt': datetime.isoformat(datetime.now()),
     }
@@ -146,6 +150,10 @@ def put(request, session_id):
             session['name'] = new['name']
         if "description" in new:
             session['description'] = new['description']
+        if "upstreamHost" in new:
+            session['upstreamHost'] = new ['upstreamHost']
+        if "upstreamPort" in new:
+            session['upstreamPort'] = new ['upstreamPort']
         if "username" in new:
             session['username'] = new['username']
         if "testplan" in new:
@@ -195,6 +203,27 @@ def start(request, session_id):
         return HttpResponse(status=405)
     r = redis_wrapper.init_redis()
     response_key = str(ObjectId())
+
+    dbc = db_model.connect()
+    try:
+        session = dbc.session.find_one({"_id": ObjectId(session_id)})
+    except InvalidId:
+        return HttpResponseNotFound()
+    if session is None:
+        return HttpResponseNotFound()
+
+    #set upstream host/port before starting
+    redis_wrapper.publish_to_proxy(json.dumps({
+        "operation": "upstream_host",
+        "param": session['upstreamHost'],
+        "key": "0xdeadbeef"
+    }))
+    redis_wrapper.publish_to_proxy(json.dumps({
+        "operation": "upstream_port",
+        "param": session['upstreamPort'],
+        "key": "0xdeadbeef"
+    }))
+
     redis_wrapper.publish_to_proxy(json.dumps({
         "operation": "start_injection",
         "param": {"session": session_id},

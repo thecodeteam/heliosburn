@@ -21,13 +21,18 @@ A rule is made up of the following top-level components:
 
 1. `name`
 2. `description`
-3. `ruleType`
-4. `filter`
-5. `action`
+3. `weight`
+4. `ruleType`
+5. `filter`
+6. `action`
 
 ### The 'name' and 'description' components
 
 The `name` and `description` components are self-explanatory. Giving appropriate names and descriptions to your rules will make them more readable. Consider a Test Plan with hundreds of rules - without proper names and descriptions the end user is lost trying to infer all their meanings.
+
+### The 'weight' components
+
+The `weight` component is an integer that specifies the weighted-priority of a rule. Higher weights are evaluated before lower weights. If no weight is speicified, it will be set to `0`. For example, if two rules both match a particular request, the rule with the higher weight will be applied.
 
 ### The 'ruleType' component
 
@@ -106,6 +111,7 @@ The following example will modify all requests that use an HTTP protocol `HTTP/1
     "id": "32j45kbk3245b3245kbn",
     "name": "Auth token match",
     "description": "Matches X-Auth-Token request headers",
+    "weight": 100,
     "createdAt": "2014-02-12 03:34:51",
     "updatedAt": "2014-02-12 03:34:52",
     "ruleType": "request",
@@ -149,6 +155,7 @@ The next example will intercept all requests to the URL "http://example.com/foo/
     "id": "32j45kbk3245b3245kbn",
     "name": "example.com/foo/bas request HTTP 400",
     "description": "matches requests to example.com/foo/bas",
+    "weight": 50,
     "createdAt": "2014-02-12 03:34:51",
     "updatedAt": "2014-02-12 03:34:52",
     "ruleType": "request",
@@ -184,6 +191,7 @@ The rule below is applied at the "response" context (i.e. after receiving the re
     "id": "32j45kbk3245b3245kbn",
     "name": "example.com/foo/bar PUT error inject",
     "description": "match PUT to example.com/foo/bar",
+    "weight": 50,
     "createdAt": "2014-02-12 03:34:51",
     "updatedAt": "2014-02-12 03:34:52",
     "ruleType": "response",
@@ -255,6 +263,7 @@ The response body contains a `rules` key containing a list of available rules.
             "id": "32j45kbk3245b3245kbn",
             "name": "auth token header match",
             "description": "matches headers container x-auth-token",
+            "weight": 0,
             "createdAt": "2014-02-12 03:34:51",
             "updatedAt": "2014-02-12 03:34:52",
             "ruleType": "request",
@@ -288,6 +297,7 @@ The response body contains a `rules` key containing a list of available rules.
        },
        {
             "id": "j34k2b5l3425bl3425l03",
+            "weight": 0,
             "createdAt": "2014-02-12 03:34:51",
             "updatedAt": "2014-02-12 03:34:52",
             "ruleType": "response",
@@ -345,6 +355,7 @@ The response body contains a Rule represented in JSON format.
   "id": "j34k2b5l3425bl3425l03",
   "name": "header mods on X-Auth-Token",
   "description": "injects new X-Auth-Token values on GET",
+  "weight": 100,
 	"createdAt": "2014-02-12 03:34:51",
 	"updatedAt": "2014-02-12 03:34:52",
 	"ruleType": "request",
@@ -637,6 +648,7 @@ Rules have a very detailed specification(as seen in [Rule](#rule)). Creating the
 {
   'name': 'identify firefox requests',
   'description': 'matches user-agent requests from firefox',
+  'weight': 50,
   'ruleType': 'request',
   'filter': {
     'method': 'GET',
@@ -653,6 +665,7 @@ The above rule matches requests that use the method `GET`, and specifically look
 {
   'name': 'firefox traffic drop',
   'description': 'drops requests sent from firefox',
+  'weight': 50,
   'ruleType': 'request',
   'filter': {
     'method': 'GET',

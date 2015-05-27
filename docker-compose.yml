@@ -1,0 +1,12 @@
+hb:
+  build: .
+  ports:
+   - "8000:80"
+   - "2200:22"
+  links:
+   - redis
+   - mongo
+redis:
+   image: redis:latest
+mongo:
+   image: mongo:latest

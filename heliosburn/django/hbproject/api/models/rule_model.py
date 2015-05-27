@@ -28,9 +28,18 @@ def validate(rule):
         c_action = "action"
         c_type = "type"
         c_enabled = "enabled"
+        c_weight = "weight"
 
         assert c_name in rule
         new_rule[c_name] = rule[c_name]
+
+        if c_weight in rule:
+            try:
+                new_rule[c_weight] = int(rule[c_weight])
+            except TypeError:
+                new_rule[c_weight] = 0
+        else:
+            new_rule[c_weight] = 0
 
         if c_enabled in rule:
             try:
@@ -123,6 +132,8 @@ def validate(rule):
         return None
 
 test_rule = {
+    "name": "testrule",
+    "weight": 0,
     "ruleType": 'request',
     "filter": {
         'httpProtocol': 'HTTP/1.1',
