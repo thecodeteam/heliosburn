@@ -1,6 +1,8 @@
 - [Rule](#rule)
   - [Components of a Rule](#components-of-a-rule)
     - ['name' and 'description'](#name-and-description)
+    - ['weight'](#weight)
+    - ['percentage'](#percentage)
     - ['ruleType'](#ruletype)
     - ['filter'](#filter)
     - ['action'](#action)
