@@ -1,188 +1,55 @@
-- [QOS](#qos)
-  - [](#injection-engine)
-  - [Injection Interface](#injection-interface)
-  - [Injection Module](#injection-module)
-
+- [Quality of Service Module](#quality-of-service-odule)
+  - [QoS Profile](#qos-profile)
+  - [Latency](#latency)
+  - [Jitter](#jitter)
+  - [Packet Loss](#packet-loss)
 
 # Quality of Service Module
 
-  ![alt text](../figures/HB_Injection.png "Injecting HTTP Metadata")
+  ![alt text](../figures/QOS_Module.png "Altering QoS")
 
-
-# Injection Interface
-
-## Engine mockup for fault injection
-
-Explaining arguments to `process_request(http_metadata, session)`
-
-## http_metadata
-
-`http_metadata` Request example:
-```json
-  "request": {
-    "url": "http://foo.com",
-    "httpProtocol": "HTTP/1.1",
-    "method": "POST",
-    "headers": [
-      ["Content-Length", "way too long"],
-      ["....", "...."]
-    ]
-  }
-```
-
-`http_metadata` Response example:
-```json
-  "request": {
-    "url": "http://foo.com",
-    "httpProtocol": "HTTP/1.1",
-    "method": "POST",
-    "headers": [
-      ["Content-Length", "way too long"],
-      ["....", "...."]
-    ]
-  },
-  "response": {
-    "httpProtocol": "HTTP/1.1",
-    "statusCode": 200,
-    "statusDescription": "OK",
-    "headers": [
-      ["Content-Length", "way too long"],
-      ["....", "...."]
-    ]
-  }
-```
-
-## session
-
-`session` example:
-
-```json
-  "id": 123,
-```
-
-# Return values to process_request(...)
-
-## If a rule matches
-
-Returns the `action` component of a `rule` in database.
-
-## If a rule does not match
-
-Returns `None`.
 
 
 # QOS Module
 
-The QOS module is situated inside the proxy processing pipline as the last module to process a request or a response. When the module receives a response or request, the corresponding metadata is passed to the injection engine for analysis. The injection engine then provides to the module the `action` component of the `rule` database or `None` if no rule matches.
+The QOS module is situated inside the proxy processing pipline so as to apply a given QoS profile to proxy traffic. When the QoS module is started the given `profile_id` is used to retrieve the QoS profile from `mongo`. When the module receives a response or request, each QoS action is applied to the traffic as defined by the retrieved QoS profile.
 
-The following possible actions are implemented as command objects and executed if the corresponding action type is returned by the injection engine:
+## QoS Profile
 
-| Action      | Context | Description                                                                                                                                                                                                              |
-|:------------|:--------|:-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| modify      | both    | Modifies different aspects of a given request or response.                                                                                                                                                               |
-| newResponse | both    | Generates a completely new response independently of the given request or response. Note that if used in the `request` context it will directly respond to the client without even forwarding the request to the server. |
-| newRequest  | request | Generates a completely new request independently of the given request.                                                                                                                                                   |
-| drop        | both    | Drops the HTTP connection.                                                                                                                                                                                               |
-| reset       | both    | Resets the HTTP connection.                                                                                                                                                                                              |
+ The profile will then be used by the QoS module to determine the specific quality of service applied to proxy traffic.
 
+The following possible actions are implemented as command objects and executed with the parameters given by the QoS_profile:
 
-## JitterAction
+| Action      | Context | Description |
+|:------------|:--------|:------------|
+| Latency     | request | Injectes a constant wait time into the the traffic stream so as to increase the round-trip time of each request |
+| Jitter      | request | Injects random wait time into the traffic stream so as to increase the round-trip time of each request inconsistently |
+| Packet Loss | both    | Drops requests/responses randomly |
+|
 
-An action type `modify` contains the following elements depending on the traffic context.
+## Latency
 
-| Element           | Context  | Description                                                 |
-|:------------------|:---------|:------------------------------------------------------------|
-| httpProtocol      | both     | HTTP protocol.                                              |
-| method            | request  | Request method.                                             |
-| url               | request  | Request URL.                                                |
-| statusCode        | response | Status Code.                                                |
-| statusDescription | response | Status description.                                         |
-| setHeaders        | both     | List of headers to be set to the request or response.       |
-| deleteHeaders     | both     | List of headers to be deleted from the request or response. |
+An action type of `latency` has the following parameters.
 
-### Example injection engine response
+| Element           | Context  | Description |
+|:------------------|:---------|:-----------------------------------------------|
+| maximum           | request  | The maximum amount of time, in seconds, the module will inject. |
+| minimum           | request  | The minimum amount of time, in seconds, the module will inject. |
 
-```json
-"action": {
-    "type": "modify",
-    "method": "PUT",
-    "setHeaders": [
-        {
-            "key": "X-Auth-Token",
-            "value": "k54l3b6k6b43l56b346"
-        }
-    ],
-    "deleteHeaders": [
-        {
-            "key": "User-Agent"
-        }
-    ]
-}
-```
+## Jitter
 
-## Action
+An action type of `Jitter` has the following parameters.
 
-An action type `newResponse` contains the following elements.
+| Element           | Context  | Description |
+|:------------------|:---------|:-----------------------------------------------|
+| maximum           | request  | The maximum amount of time, in seconds, the module will inject. |
+| minimum           | request  | The minimum amount of time, in seconds, the module will inject. |
 
-| Element           | Description         |
-|:------------------|:--------------------|
-| httpProtocol      | HTTP protocol.      |
-| statusCode        | Status Code.        |
-| statusDescription | Status description. |
-| headers           | List of headers.    |
-| payload           | Response payload.   |
+## Packet Loss
 
-### Example `injection engine` `newResponse` response
+An action type of `Packet Loss` has the following parameters.
 
-```json
-"action": {
-    "type": "newResponse",
-    "httpProtocol": "HTTP/1.1",
-    "statusCode": 400,
-    "statusDescription": "Bad Request"
-    "headers": [
-        {
-            "key": "E-Tag",
-            "value": "9384253245"
-        },
-        {
-            "key": "Server",
-            "value": "HeliosBurn"
-        }
-    ],
-    "payload": "Intercepted by HeliosBurn"
-}
-```
+| Element           | Context  | Description |
+|:------------------|:---------|:-----------------------------------------------|
+| chance            | both     | The percentage chance that any given request/response will be lost. |
 
-## NewRequestAction
-
-An action type `newRequest` contains the following elements.
-
-| Element      | Description      |
-|:-------------|:-----------------|
-| httpProtocol | HTTP protocol.   |
-| method       | Request method.  |
-| url          | Request URL.     |
-| headers      | List of headers. |
-| payload      | Request payload. |
-
-## dropAction
-
-The action type `drop` has no elements
-
-### Example `injection engine` response
-```json
-"action": {
-    "type": "drop",
-}
-```
-
-## resetAction
-
-The action type `reset` has no elements
-
-### Example `injection engine` response
-```json
-"action": {
-    "type": "reset",
-}
