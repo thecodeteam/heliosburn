@@ -1,5 +1,6 @@
 from pymongo import MongoClient
 from bson import ObjectId
+import random
 
 
 class TrafficEvaluator(object):
@@ -32,13 +33,18 @@ class TrafficEvaluator(object):
             if type == rule['ruleType']:
                 relevant_rules.append(rule)
 
+        # Sort rules by weight
+        relevant_rules.sort(key=lambda x: x['weight'])
+
         # Test rule components against subject
         for rule in relevant_rules:
             if self._eval_rule_enabled(rule) is not False:  # If rule is enabled, continue evaluation
 
+
                 # Test rule.filter components
-                if self._eval_rule_filter(rule['filter'], subject) is True:
-                    return rule['action']
+                if rule['percentage'] <= int(random.random() * 100):
+                    if self._eval_rule_filter(rule['filter'], subject) is True:
+                        return rule['action']
 
         return None  # No rule is matched if this point is reached
 
