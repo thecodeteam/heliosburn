@@ -15,7 +15,7 @@ package { ['python-software-properties']:
   require => Exec['apt-get update'],
 }
 
-$sysPackages = ['git', 'curl', 'supervisor', 'mongodb-server', 'redis-server', 'python-pip', 'python-dev', 'libpython-dev']
+$sysPackages = ['git', 'curl', 'supervisor', 'mongodb-server', 'redis-server', 'python-pip', 'python-dev', 'libpython-dev', 'npm', 'nodejs-legacy']
 package { $sysPackages:
   ensure => "installed",
   require => Exec['apt-get update'],

@@ -78,3 +78,6 @@ _trial_temp
 *.sqlite3
 
 dropin.cache
+
+# Bower
+bower_components/
