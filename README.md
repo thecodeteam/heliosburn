@@ -91,7 +91,7 @@ This code is provided under the Developer Certificate of Origin- [Insert Name], 
 
 **For example:**
 
-A contribution from **Joe Developer**, an **independent developer**, submitted in** May 15th of 2015** should have an associated license (as file or/and code comments) like this:
+A contribution from **Joe Developer**, an **independent developer**, submitted in **May 15th of 2015** should have an associated license (as file or/and code comments) like this:
  
 “The MIT License (MIT)
 
