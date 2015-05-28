@@ -5,7 +5,7 @@
 
 # Server Overload Module
 
-  ![alt text](../figures/SO_Module.png "Altering QoS")
+  ![alt text](../figures/HB_Server_Overload_Module.png "Altering QoS")
 
 
 
@@ -65,25 +65,25 @@ The `serverOverload.id` is then used to make a secod query to retrieve the serve
 
 The following possible actions are implemented as command objects and executed with the parameters given by the server overload profile:
 
-| Action      | Context | Description |
-|:------------|:--------|:------------|
-| exponetial  | request | An exponential increase in server load |
-| DoS         | request | An increse in server load comensurate with a DoS attack|
-|
+| Action     | Context | Description                                             |
+|:-----------|:--------|:--------------------------------------------------------|
+| exponetial | request | An exponential increase in server load                  |
+| DoS        | request | An increse in server load comensurate with a DoS attack |
+|            |         |                                                         |
 
 ## Exponential
 
 An action type of `exponential` has the following parameters.
 
-| Element           | Context  | Description |
-|:------------------|:---------|:-----------------------------------------------|
-| exponent          | request  | The exponent used in the increase in load.     |
-| initial_requests  | request  | The initial number of requests to grow from.   |
+| Element          | Context | Description                                  |
+|:-----------------|:--------|:---------------------------------------------|
+| exponent         | request | The exponent used in the increase in load.   |
+| initial_requests | request | The initial number of requests to grow from. |
 
 ## DoS
 
 An action type of `DoS` has the following parameters.
 
-| Element           | Context  | Description |
-|:------------------|:---------|:-----------------------------------------------|
-| initial_requests  | request  | The initial number of requests to grow from.   |
+| Element          | Context | Description                                  |
+|:-----------------|:--------|:---------------------------------------------|
+| initial_requests | request | The initial number of requests to grow from. |
