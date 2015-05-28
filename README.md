@@ -66,7 +66,7 @@ The core of HeliosBurn is a Twisted reactor that listens for TCP connections. Th
 
 ##Contributing to HeliosBurn
 
-The Helios Burn project has been licensed under the  [MIT](http://opensource.org/licenses/MIT "The MIT License (MIT)") License. In order to contribute to the HeliosBurn project you will do do two things:
+The Helios Burn project has been licensed under the  [MIT](http://opensource.org/licenses/MIT "The MIT License (MIT)") License. In order to contribute to the HeliosBurn project you will to do two things:
 
 
 1. License your contribution under the [DCO](http://elinux.org/Developer_Certificate_Of_Origin "Developer Certificate of Origin") + [MIT](http://opensource.org/licenses/MIT "The MIT License (MIT)")
