@@ -1,0 +1,21 @@
+<div class="box box-primary">
+    <div class="box-header">
+        <h3 class="box-title">Select a Quality of Service profile</h3>
+    </div><!-- /.box-header -->
+    <div class="box-body">
+        <div class="form-group">
+            <select ng-model="formData.qos" class="form-control">
+              <option>QoS 1</option>
+              <option>QoS 2</option>
+              <option>QoS 3</option>
+              <option>QoS 4</option>
+            </select>
+        </div>
+
+        <p>Don't you find the QoS profile you are looking for? <a href="/webui/qos/new/">Create a new one</a></p>
+    </div><!-- /.box-body -->
+    <div class="box-footer">
+        <a ui-sref="form.step2" class="btn btn-default">← Back</a>
+        <a ui-sref="form.step4" class="btn btn-primary pull-right bold">Next →</a>
+    </div>
+</div><!-- /.box -->

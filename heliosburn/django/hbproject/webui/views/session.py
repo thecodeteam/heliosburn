@@ -9,34 +9,9 @@ import requests
 from webui.views import signout, get_mock_url
 
 
-WIZARD_SESSION_KEY = 'session_id'
-WIZARD_STEPS = ['1', '2', '3', '4']
-
 @login_required
-def session_new(request, step):
-    if step == '1' and request.POST:
-        session_name = request.POST.get('name')
-        session_description = request.POST.get('description')
-        url = '%s/session/' % (settings.API_BASE_URL,)
-        headers = {'X-Auth-Token': request.user.password}
-        payload = {'name': session_name, 'description': session_description}
-        r = requests.post(url, headers=headers, data=json.dumps(payload))
-        if 200 >= r.status_code < 300:
-            session_id = get_resource_id_from_header('session', r)
-            if session_id:
-                request.session[WIZARD_SESSION_KEY] = session_id
-                return HttpResponseRedirect(reverse('session_new', args=(str(session_id),)))
-            messages.error(request, 'Could not get Session ID.')
-        else:
-            messages.error(request, 'Could not save the Session. Server returned: %d %s' % (r.status_code, r.text))
-
-    progress = int(step) * 100 / len(WIZARD_STEPS)
-
-    args = {}
-    args['progress'] = progress
-    args['step'] = step
-
-    return render(request, 'sessions/session_new.html', args)
+def session_new(request):
+    return render(request, 'sessions/session_new.html')
 
 
 @login_required

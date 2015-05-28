@@ -7,7 +7,7 @@
 {% endblock %}
 
 <!DOCTYPE html>
-<html>
+<html ng-app="hbApp">
     <head>
         <meta charset="UTF-8">
         <title>{% block title %}{% endblock %} - HeliosBurn</title>
@@ -155,9 +155,10 @@
         <!-- AdminLTE App -->
         <script src="{% static 'webui/js/AdminLTE/app.js' %}" type="text/javascript"></script>
 
+        <script type="text/javascript" src='{% static 'angular/angular.js' %}'></script>
+
         {% block scripts %}
         {% endblock scripts %}
-
 
     </body>
 </html>

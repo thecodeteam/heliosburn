@@ -13,7 +13,7 @@ urlpatterns = patterns(
     url(r'^sessions/$', 'session.session_list', name='session_list'),
     url(r'^sessions/(?P<id>[\w-]+)$', 'session.session_details', name='session_details'),
     url(r'^sessions/update/$', 'session.session_update', name='session_update'),
-    url(r'^sessions/new/step-(?P<step>[\w-]+)$', 'session.session_new', name='session_new'),
+    url(r'^sessions/new/$', 'session.session_new', name='session_new'),
     url(r'^sessions/(?P<id>[\w-]+)/execute$', 'session.session_execution', name='session_execution'),
 
     url(r'^executions/(?P<id>[\w-]+)$', 'execution_details', name='execution_details'),

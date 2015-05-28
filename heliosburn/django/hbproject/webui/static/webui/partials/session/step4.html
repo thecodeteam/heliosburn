@@ -1,0 +1,21 @@
+<div class="box box-primary">
+    <div class="box-header">
+        <h3 class="box-title">Select a Server Overload profile</h3>
+    </div><!-- /.box-header -->
+    <div class="box-body">
+        <div class="form-group">
+            <select ng-model="formData.serveroverload" class="form-control">
+              <option>Server Overload 1</option>
+              <option>Server Overload 2</option>
+              <option>Server Overload 3</option>
+              <option>Server Overload 4</option>
+            </select>
+        </div>
+
+        <p>Don't you find the Server Overload profile you are looking for? <a href="/webui/serveroverload/new/">Create a new one</a></p>
+    </div><!-- /.box-body -->
+    <div class="box-footer">
+        <a ui-sref="form.step3" class="btn btn-default">← Back</a>
+        <a ui-sref="form.step5" class="btn btn-primary pull-right bold">Next →</a>
+    </div>
+</div><!-- /.box -->

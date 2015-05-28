@@ -1,0 +1,49 @@
+<div class="row">
+    <div class="col-xs-12">
+
+        <nav class="navbar navbar-inverse navbar-wizard">
+            <div class="container-fluid">
+                <div id="navbar" class="navbar-collapse collapse">
+                    <ul class="nav navbar-nav">
+                        <li ui-sref-active="active" ui-sref=".step1"><a ui-sref=".step1">Step 1: Session details</a>
+                        </li>
+                        <li ui-sref-active="active" ui-sref=".step2"><a ui-sref=".step2">Step 2: Select a Test Plan</a>
+                        </li>
+                        <li ui-sref-active="active" ui-sref=".step3"><a ui-sref=".step3">Step 3: Select a QoS profile</a>
+                        </li>
+                        <li ui-sref-active="active" ui-sref=".step4"><a ui-sref=".step4">Step 4: Select a Server Overload profile</a>
+                        </li>
+                        <li ui-sref-active="active" ui-sref=".step5"><a ui-sref=".step5">Step 5: Review Session</a>
+                        </li>
+                    </ul>
+                </div>
+                <!--/.nav-collapse -->
+            </div>
+            <!--/.container-fluid -->
+        </nav>
+
+        <div class="progress xs progress-striped active">
+            <div class="progress-bar progress-bar-warning" role="progressbar" aria-valuenow="50"
+                 aria-valuemin="0" aria-valuemax="100" style="width: 50%">
+                <span class="sr-only">50% Complete (warning)</span>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+
+<div class="row">
+    <div class="col-xs-12">
+
+        <form id="signup-form" ng-submit="processForm()">
+            <!-- our nested state views will be injected here -->
+            <div id="form-views" ui-view></div>
+        </form>
+
+        <pre>
+            {{ formData }}
+        </pre>
+
+    </div><!--/.col -->
+</div>
