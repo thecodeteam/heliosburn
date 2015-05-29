@@ -14,6 +14,41 @@
 
 The QOS module is situated inside the proxy processing pipline so as to apply a given QoS profile to proxy traffic.
 When the QoS module is started the given `session_id` is used to retrieve the QoS profile from `mongo`.
+The QoS profile is retrieved from information contained within the session document, specficlially the `serverOverload.id`
+
+### Example session document
+```json
+{
+  "id": 1,
+  "name": "Session A",
+  "description": "This is a description for a Session",
+  "upstreamHost": "github.com",
+  "upstreamPort": 80,
+  "createdAt": "2014-02-12 03:34:51",
+  "updatedAt": "2014-02-12 03:34:51",
+  "testPlan":
+  {
+    "id": 12,
+    "name": "ViPR Test plan"
+  },
+  "qos":
+  {
+    "id": 45
+  },
+  "serverOverload":
+  {
+    "id": 951
+  },
+  "user":
+  {
+    "id": 1,
+    "username": "John Doe"
+  },
+  "executions": 42,
+}
+```
+
+The `serverOverload.id` is then used to make a secod query to retrieve the server overload profile.
 When the module receives a response or request, each QoS quality is applied to the traffic as defined by the retrieved QoS profile.
 
 ## QoS Profile
