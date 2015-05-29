@@ -92,7 +92,12 @@ The output should resemble the following, but your `X-Auth-Token` will be unique
 Now let's create a session. A session will serve to associate our HTTP traffic, testplan, and rules together. Run the following in a terminal your host, and remember to replace the `X-Auth-Token` with your own.
 
     curl -XPOST 'http://localhost:8100/api/session/' -d \
-        '{"name": "test session #1", "description": "my first helios burn session"'} \
+        '{
+           "name": "test session #1", 
+           "description": "my first helios burn session",
+           "upstreamHost": "localhost",
+           "upstreamPort": 8080 
+          }' \
         -H 'X-Auth-Token: 910480523f565b1fbfbf67cfaf7445763aad744834caf4cf8c75715ad476b402e57fed4f6ea350d4fc72502aa550393aa4430d0908a75e0f7efb2772dca8dfe9'
 
 The output will be a JSON, containing a unique session id. Copy this id, so you can use it during this guide.
@@ -139,9 +144,17 @@ This command should not produce any output if successful. For more details, you 
 
 #### Start your session
 
-Lastly, we need to instruct the proxy to begin your session. This causes your testplan and rules to become effective, and Helios Burn will keep track of the traffic they generate. Run the following command in a terminal on your host, and remember to replace the token and session id with your own.
+Now we need to instruct the proxy to begin your session. This causes your testplan and rules to become effective, and Helios Burn will keep track of the traffic they generate. Run the following command in a terminal on your host, and remember to replace the token and session id with your own.
 
     curl -XPOST 'http://localhost:8100/api/session/555ce14ceb908907d690a2ad/' \
         -H 'X-Auth-Token: 38ed1a7265be4ddf7f7f038c19eaa908ea2c0f4d511830760c86cb759df71993844f6288a60469ff838a024992da3cd205b407bb7c4f47b4e4a27c765e299a2b' 
 
 This command should not produce any output if successful. For more details, you could add the `-v` parameter to curl, which would show the resulting status code(`HTTP 200 OK`).
+
+#### Send traffic to Helios Burn
+
+Let's send some traffic in, and watch our rule take effect. 
+
+    curl -v -XGET 'http://localhost:9000/method_test/' 
+
+Your original request was a GET, but if you inspect the output in the `original_request` key, you can see the `REQUEST_METHOD` is POST. That's due to the rule we created previously, causing the method to be modified.
