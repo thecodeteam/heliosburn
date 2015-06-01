@@ -716,6 +716,73 @@ class RecordingViewTestCase(APITestCase):
         print("Testing DELETE in %s" % self.__class__)
         delete()
 
+class QOSViewTestCase(APITestCase):
+    """
+    Test views/qos.py CRUD
+    """
+
+    def test_crud(self):
+        """
+        Tests CRUD for qos model.
+        """
+        import json
+
+        def create():
+            body = json.dumps({
+                "latency": 100,
+                "jitter": {
+                    "min": 10,
+                    "max": 50
+                },
+                "trafficLoss": 0.1
+            })
+            self.login(admin_username, admin_password)
+            response = self.client.post(path=api_url + "/qos/",
+                                        data=body,
+                                        content_type="application/json",
+                                        HTTP_X_AUTH_TOKEN=self.x_auth_token)
+
+            self.assertEqual(response.status_code, 200)
+            self.assertIn("location", response._headers)
+            in_json = json.loads(response.content)
+            self.assertIn("id", in_json)
+            self.qos_id = in_json['id']
+
+        def read():
+            self.login(admin_username, admin_password)
+            response = self.client.get(path=api_url + "/qos/" + self.qos_id,
+                                       HTTP_X_AUTH_TOKEN=self.x_auth_token)
+            self.assertEqual(response.status_code, 200)
+
+        def update():
+            body = json.dumps({
+                "latency": 500
+            })
+            self.login(admin_username, admin_password)
+            response = self.client.put(path=api_url + "/qos/" + self.qos_id,
+                                       data=body,
+                                       content_type="application/json",
+                                       HTTP_X_AUTH_TOKEN=self.x_auth_token)
+            self.assertEqual(response.status_code, 200)
+
+        def delete():
+            self.login(admin_username, admin_password)
+            response = self.client.delete(path=api_url + "/qos/" + self.qos_id,
+                                          HTTP_X_AUTH_TOKEN=self.x_auth_token)
+            self.assertEqual(response.status_code, 200)
+
+        print("Testing CREATE in %s" % self.__class__)
+        create()
+
+        print("Testing READ in %s" % self.__class__)
+        read()
+
+        print("Testing UPDATE in %s" % self.__class__)
+        update()
+
+        print("Testing DELETE in %s" % self.__class__)
+        delete()
+
 
 class LogTestCase(APITestCase):
     """
