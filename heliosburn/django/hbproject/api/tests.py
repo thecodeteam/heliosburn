@@ -58,6 +58,8 @@ class SessionViewTestCase(APITestCase):
             body = json.dumps({
                 'name': 'CRUD test',
                 'description': 'CRUD test',
+                'upstreamHost': '127.0.0.1',
+                'upstreamPort': 8080,
                 })
 
             response = self.client.post(path=api_url + "/session/",
@@ -122,6 +124,8 @@ class SessionViewTestCase(APITestCase):
                 'name': 'crud session',
                 'description': 'crud session description',
                 'testplan': testplan_id,
+                "upstreamHost": "127.0.0.1",
+                "upstreamPort": 8080
             })
             response = self.client.post(path=api_url + "/session",
                                         data=body,
