@@ -287,7 +287,7 @@ An application can delete a QoS profile by issuing an HTTP DELETE request to the
 `/qos/:id`, for example, `/qos/0xdeadbeef` to delete the QoS profile with ID 0xdeadbeef.
 
 #### Method
-PUT
+DELETE
 
 #### Request Header
 The request header includes the following information:
