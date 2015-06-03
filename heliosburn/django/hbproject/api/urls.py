@@ -1,11 +1,13 @@
 from django.conf.urls import patterns, url
-from api.views import default, user, session, testplan, auth, traffic, rule, testplan_rule, recording, log, proxy, config
+from api.views import default, user, session, testplan, auth, traffic, rule, testplan_rule, recording, log, proxy, config, qos
 
 urlpatterns = patterns('',
     url(r'^$', default.index),
     url(r'^version/{0,1}$', default.version),
     url(r'^user/{0,1}$', user.rest),
     url(r'^user/(\w+?)/{0,1}$', user.rest),
+    url(r'^qos/{0,1}$', qos.rest),
+    url(r'^qos/(\w+?)/{0,1}$', qos.rest),
     url(r'^session/{0,1}$', session.rest),
     url(r'^session/(\w+?)/{0,1}$', session.rest),
     url(r'^session/(\w+?)/start/{0,1}$', session.start),

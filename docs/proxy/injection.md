@@ -1,58 +1,15 @@
-- [Injection](#proxy-recording)
+- [Injection](#injection)
   - [Injection Engine](#injection-engine)
   - [Injection Interface](#injection-interface)
   - [Injection Module](#injection-module)
 
 
-# Injection
+# Injection Module
 
   ![alt text](../figures/HB_Injection.png "Injecting HTTP Metadata")
 
 
-# Injection Engine
 
-
-# Injection Interface
-
-## Engine mockup for fault injection
-
-Explaining arguments to `process_request(http_metadata, session)`
-
-## http_metadata
-
-`http_metadata` Request example:
-```json
-  "request": {
-    "url": "http://foo.com",
-    "httpProtocol": "HTTP/1.1",
-    "method": "POST",
-    "headers": [
-      ["Content-Length", "way too long"],
-      ["....", "...."]
-    ]
-  }
-```
-
-`http_metadata` Response example:
-```json
-  "request": {
-    "url": "http://foo.com",
-    "httpProtocol": "HTTP/1.1",
-    "method": "POST",
-    "headers": [
-      ["Content-Length", "way too long"],
-      ["....", "...."]
-    ]
-  },
-  "response": {
-    "httpProtocol": "HTTP/1.1",
-    "statusCode": 200,
-    "statusDescription": "OK",
-    "headers": [
-      ["Content-Length", "way too long"],
-      ["....", "...."]
-    ]
-  }
 ```
 
 ## session
@@ -76,7 +33,7 @@ Returns `None`.
 
 # Injection Module
 
-The injection module is situated inside the proxy processing pipline as the last module to process a request or a response. When the module receives a response or request, the corresponding metadata is passed to the injection engine for analysis. The injection engine then provides to the module the `action` component of the `rule` database or `None` if no rule matches.
+The injection module is situated inside the proxy processing pipeline as the last module to process a request or a response. When the module receives a response or request, the corresponding metadata is passed to the injection engine for analysis. The injection engine then provides to the module the `action` component of the `rule` database or `None` if no rule matches.
 
 The following possible actions are implemented as command objects and executed if the corresponding action type is returned by the injection engine:
 
@@ -88,6 +45,42 @@ The following possible actions are implemented as command objects and executed i
 | drop        | both    | Drops the HTTP connection.                                                                                                                                                                                               |
 | reset       | both    | Resets the HTTP connection.                                                                                                                                                                                              |
 
+
+### http request metadata example
+
+```json
+  "request": {
+    "url": "http://foo.com",
+    "httpProtocol": "HTTP/1.1",
+    "method": "POST",
+    "headers": [
+      ["Content-Length", "way too long"],
+      ["....", "...."]
+    ]
+  }
+```
+
+### http response metadata example
+```json
+  "request": {
+    "url": "http://foo.com",
+    "httpProtocol": "HTTP/1.1",
+    "method": "POST",
+    "headers": [
+      ["Content-Length", "way too long"],
+      ["....", "...."]
+    ]
+  },
+  "response": {
+    "httpProtocol": "HTTP/1.1",
+    "statusCode": 200,
+    "statusDescription": "OK",
+    "headers": [
+      ["Content-Length", "way too long"],
+      ["....", "...."]
+    ]
+  }
+```
 
 ## ModifyAction
 
@@ -189,3 +182,4 @@ The action type `reset` has no elements
 "action": {
     "type": "reset",
 }
+```

@@ -9,6 +9,8 @@ The Helios Burn Proxy Interface API is used to control the state of the proxy. T
 - [Set Bind Port](#bind_port)
 - [Set Start Recording](#start_recording)
 - [Set Stop Recording](#stop_recording)
+- [Set Start Injection](#start_injection)
+- [Set Stop Injection](#stop_injection)
 - [Get Status](#stop_recording)
 - [Run Tests](#test)
 
@@ -298,6 +300,72 @@ The proxy service will start recording proxy traffic when a `start_recording` in
   | Status Code | Description                                                                        |
   |:------------|:-----------------------------------------------------------------------------------|
   | 200-299     | The request was successful. The bind port was successfully changed.                |
+  | 400         | Bad request. Typically returned if required information was not provided as input. |
+  | 500-599     | Server error.                                                                      |
+
+
+# Start_Injection
+
+The proxy service will start injection processing when a `start_injection` interface operation message is published to the `proxy_mgmt_request` REDIS pubs channel. This will cause the proxy service to start injection into traffic using the given session_id in `param`. If the the proxy is already injection into the traffic, an error will be returned.
+
+  ## Message
+
+  ```json
+  {
+      "operation": "start_injection",
+      "param": "<session_id>",
+      "key": string
+  }
+  ```
+  ## Example Response
+
+  ## Message
+
+  ```json
+  {
+      "code": 200,
+      "message": "The request was successful",
+      "key": string
+  }
+  ```
+  ### Response Codes
+
+  | Status Code | Description                                                                        |
+  |:------------|:-----------------------------------------------------------------------------------|
+  | 200-299     | The request was successful. The injection module was started.                      |
+  | 400         | Bad request. Typically returned if required information was not provided as input. |
+  | 500-599     | Server error.                                                                      |
+
+
+# Stop_Injection
+
+  The proxy service will stop injection into proxy traffic when a `stop_injection` interface operation message is published to the `proxy_mgmt_request` REDIS pubs channel. This will cause the proxy service to stop injecting into the traffic.
+
+  ## Message
+
+  ```json
+  {
+      "operation": "stop_injection",
+      "param": "n/a",
+      "key": string
+  }
+  ```
+  ## Example Response
+
+  ## Message
+
+  ```json
+  {
+      "code": 200,
+      "message": "The request was successful",
+      "key": string
+  }
+  ```
+  ### Response Codes
+
+  | Status Code | Description                                                                        |
+  |:------------|:-----------------------------------------------------------------------------------|
+  | 200-299     | The request was successful. The injection module was started.                      |
   | 400         | Bad request. Typically returned if required information was not provided as input. |
   | 500-599     | Server error.                                                                      |
 
