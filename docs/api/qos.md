@@ -237,6 +237,8 @@ JSON input that contains a QoS profile representation with the elements to be mo
 
 | Element | Description |
 |---|---|
+| name | A string value that identifies the QoS profile. |
+| description | A string value describing the QoS profile. |
 | latency | A integer value that specifies latency in milliseconds. |
 | jitter | A JSON containing "min" and "max" keys that specify jitter min/max integers in milliseconds. |
 | trafficLoss | A decimal value that specifies traffic loss as a percentage(eg 0.01 == 1%) |
