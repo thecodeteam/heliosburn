@@ -5,7 +5,7 @@ from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect, HttpResponseBadRequest, HttpResponse, HttpResponseNotFound, JsonResponse
 from django.shortcuts import render
 from webui.exceptions import UnauthorizedException, NotFoundException
-from webui.forms import TestPlanForm
+from webui.forms import TestPlanForm, QoSForm
 from webui.models import QoS
 from webui.views import signout
 
@@ -52,7 +52,7 @@ def qos_details(request, qos_id):
 
 @login_required
 def qos_new(request):
-    form = TestPlanForm(request.POST or None)
+    form = QoSForm(request.POST or None)
     if form.is_valid():
         try:
             qos_id = QoS(auth_token=request.user.password).create(form.cleaned_data)

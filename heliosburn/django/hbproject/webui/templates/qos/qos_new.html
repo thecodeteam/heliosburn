@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+
+{% load staticfiles %}
+{% load django_bootstrap_breadcrumbs %}
+{% load bootstrap3 %}
+{% load tags %}
+
+{% block title %}QoS Manager{% endblock %}
+{% block content_header %}
+    Create a new QoS profile
+{% endblock %}
+{% block content_subheader %}{% endblock %}
+
+{% block breadcrumbs %}
+    {{ block.super }}
+    {% breadcrumb "QoS profiles" "qos_list" %}
+    {% breadcrumb "Create a new QoS profile" "qos_list" %}
+{% endblock %}
+
+{% block styles %}
+{% endblock %}
+
+{% block scripts %}
+    <script type="text/javascript">
+        $(document).ready(function() {
+
+        });
+    </script>
+{% endblock %}
+
+{% block content %}
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="box box-primary">
+                <form method="post" action="{% url "qos_new" %}" class="form-horizontal">
+                    <div class="box-header">
+                        <h3 class="box-title">QoS profile</h3>
+                    </div><!-- /.box-header -->
+                    <div class="box-body table-responsive">
+                        {% csrf_token %}
+                        {% bootstrap_form form layout='horizontal' %}
+                    </div><!-- /.box-body -->
+                    <div class="box-footer">
+                        {% buttons %}
+                            <span class="col-md-2 col-md-offset-1">
+                                <button type="submit" class="btn btn-primary bold">Create</button>
+                                <a class="btn btn-default bold lmargin10" href="{% url "qos_list" %}" role="button">Cancel</a>
+                            </span>
+                        {% endbuttons %}
+                    </div>
+                </form>
+            </div><!-- /.box -->
+        </div>
+    </div>
+
+
+{% endblock %}
