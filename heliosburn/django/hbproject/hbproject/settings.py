@@ -57,7 +57,8 @@ class Common(Configuration):
     BOWER_INSTALLED_APPS = (
         'angular',
         'angular-ui-router',
-        'angular-animate'
+        'angular-animate',
+        'components-font-awesome',
     )
 
     MIDDLEWARE_CLASSES = (
