@@ -730,6 +730,8 @@ class QOSViewTestCase(APITestCase):
         def create():
             body = json.dumps({
                 "latency": 100,
+                "name": "test QOS profile",
+                "description": "unit test QOS profile",
                 "jitter": {
                     "min": 10,
                     "max": 50
@@ -756,6 +758,7 @@ class QOSViewTestCase(APITestCase):
 
         def update():
             body = json.dumps({
+                "name": "renamed unit test QOS profile",
                 "latency": 500
             })
             self.login(admin_username, admin_password)
