@@ -6,8 +6,7 @@ angular.module('hbApp').config(function($stateProvider, $urlRouterProvider) {
             // route to show our basic form (/form)
             .state('form', {
                 url: '/form',
-                templateUrl: '/static/webui/partials/session/form.html',
-                controller: 'SessionCtrl'
+                templateUrl: '/static/webui/partials/session/form.html'
             })
 
             .state('form.step1', {
@@ -41,14 +40,27 @@ angular.module('hbApp').config(function($stateProvider, $urlRouterProvider) {
 
     });
 
-angular.module('hbApp.controllers').controller('SessionCtrl', ['$scope', function($scope){
+angular.module('hbApp.controllers').controller('SessionCtrl', ['$scope', '$http', '$log', '$window', function($scope, $http, $log, $window){
 
     // we will store all of our form data in this object
     $scope.formData = {};
+    $scope.testplans = [];
 
-    // function to process the form
+    $http.get('/webui/testplans/', $scope.formData)
+        .success(function(data) {
+            $log.info(data);
+            $scope.testplans = data.testplans;
+            $scope.testplans.splice(0, 0, {name: "<No Test Plan selected>"});
+            $scope.formData.testplan = $scope.testplans[0];
+
+        });
+
     $scope.processForm = function() {
-        alert('awesome!');
+
+        $http.post('/webui/sessions/create/', $scope.formData)
+            .success(function(url) {
+                $window.location.href = url;
+            });
     };
 
 }]);

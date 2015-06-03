@@ -5,6 +5,7 @@ from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect, HttpResponseBadRequest, HttpResponse
 from django.shortcuts import render, redirect
+from django.views.decorators.csrf import csrf_exempt
 import requests
 from webui.views import signout, get_mock_url
 
@@ -12,6 +13,15 @@ from webui.views import signout, get_mock_url
 @login_required
 def session_new(request):
     return render(request, 'sessions/session_new.html')
+
+
+@login_required
+def session_create(request):
+    data = json.loads(request.body)
+
+    url = reverse('session_details', args=(str('1'),))
+
+    return HttpResponse(url)
 
 
 @login_required

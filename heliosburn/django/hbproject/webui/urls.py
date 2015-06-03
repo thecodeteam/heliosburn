@@ -14,6 +14,7 @@ urlpatterns = patterns(
     url(r'^sessions/(?P<id>[\w-]+)$', 'session.session_details', name='session_details'),
     url(r'^sessions/update/$', 'session.session_update', name='session_update'),
     url(r'^sessions/new/$', 'session.session_new', name='session_new'),
+    url(r'^sessions/create/$', 'session.session_create', name='session_create'),
     url(r'^sessions/(?P<id>[\w-]+)/execute$', 'session.session_execution', name='session_execution'),
 
     url(r'^executions/(?P<id>[\w-]+)$', 'execution_details', name='execution_details'),

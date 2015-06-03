@@ -25,6 +25,15 @@
 
 {% block content %}
 
-    <div ui-view></div>
+    <div ng-controller="SessionCtrl">
+
+        <form id="signup-form" ng-submit="processForm()">
+            <div ui-view></div>
+        </form>
+
+        <pre>
+            {% verbatim %}{{ formData }}{% endverbatim %}
+        </pre>
+    </div>
 
 {% endblock %}

@@ -2,7 +2,7 @@ import logging
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse
-from django.http import HttpResponseRedirect, HttpResponseBadRequest, HttpResponse, HttpResponseNotFound
+from django.http import HttpResponseRedirect, HttpResponseBadRequest, HttpResponse, HttpResponseNotFound, JsonResponse
 from django.shortcuts import render
 from webui.exceptions import UnauthorizedException, NotFoundException
 from webui.forms import TestPlanForm
@@ -14,6 +14,7 @@ logger = logging.getLogger(__name__)
 
 @login_required
 def testplan_list(request):
+
     try:
         testplans = TestPlan(auth_token=request.user.password).get_all()
     except UnauthorizedException:
@@ -22,6 +23,9 @@ def testplan_list(request):
     except Exception as inst:
         logger.error('Unexpected exception', exc_info=True)
         return render(request, '500.html', {'message': inst.message})
+
+    if request.is_ajax():
+        return JsonResponse(testplans)
 
     return render(request, 'testplan/testplan_list.html', testplans)
 

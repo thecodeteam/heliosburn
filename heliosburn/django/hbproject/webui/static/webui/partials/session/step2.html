@@ -5,18 +5,36 @@
     </div><!-- /.box-header -->
     <div class="box-body">
         <div class="form-group">
-            <select ng-model="formData.testPlan" class="form-control">
-              <option>Test Plan for Swift</option>
-              <option>Test Plan for Amazon S3</option>
-              <option>Test Plan 1</option>
-              <option>Test Plan 3</option>
-            </select>
-        </div>
-        <div class="form-group">
-            <textarea class="form-control" rows="3">Test plan description</textarea>
+            <select ng-model="formData.testplan" ng-options="testplan as testplan.name for testplan in testplans" class="form-control"></select>
+
+
         </div>
 
-        <p>Don't you find the Test Plan you are looking for? <a href="/webui/testplans/new/">Create a new one</a></p>
+        <div ng-show="formData.testplan.id">
+            <div class="form-group">
+                <label>Description:</label>
+                <textarea class="form-control" rows="3" ng-model="formData.testplan.description" readonly></textarea>
+            </div>
+
+            <div class="form-group">
+                <label>Created at:</label>
+                <p>{{ formData.testplan.createdAt }}</p>
+
+            </div>
+
+            <div class="form-group">
+                <label>Updated at:</label>
+                <p>{{ formData.testplan.updatedAt }}</p>
+            </div>
+
+            <div class="form-group">
+                <label>Rules:</label>
+                <p>{{ formData.testplan.rules.length }}</p>
+            </div>
+        </div>
+
+
+        <p class="top30">Don't you find the Test Plan you are looking for? <a href="/webui/testplans/new/">Create a new one</a></p>
     </div><!-- /.box-body -->
     <div class="box-footer">
         <a ui-sref="form.step1" class="btn btn-default">← Back</a>
