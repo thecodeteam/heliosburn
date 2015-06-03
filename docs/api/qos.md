@@ -55,6 +55,8 @@ The response body contains a list containing the following elements in JSON form
 {   "qos_profiles": [
         {
             "_id": "0xdeadbeef",
+            "name": "qos profile name",
+            "description": "qos profile description",
             "latency": 100,
             "jitter": {
                 "min": 30,
@@ -64,6 +66,8 @@ The response body contains a list containing the following elements in JSON form
         },
         {
             "_id": "0xbeefbeef",
+            "name": "qos profile name",
+            "description": "qos profile description",
             "latency": 150,
             "jitter": {
                 "min": 15,
@@ -124,6 +128,8 @@ The response body contains the following elements in JSON format:
 ```json
 {
     "_id": "0xdeadbeef",
+    "name": "qos profile name",
+    "description": "qos profile description",
     "latency": 100,
     "jitter": {
         "min": 30,
@@ -169,6 +175,8 @@ JSON input that contains a QoS profile representation with the following element
 
 ```json
 {
+    "name": "qos profile name",
+    "description": "qos profile description",
     "latency": 100,
     "jitter": {
         "min": 30,
@@ -247,6 +255,8 @@ JSON input that contains a QoS profile representation with the elements to be mo
 
 ```json
 {
+    "name": "qos profile name",
+    "description": "qos profile description",
     "latency": 100,
     "jitter": {
         "min": 30,
