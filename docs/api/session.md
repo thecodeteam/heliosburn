@@ -135,6 +135,8 @@ The response body contains the following elements in JSON format:
 | id | An integer value that uniquely identifies the session. |
 | name | Name of the session. |
 | description | Description of the session. |
+| upstreamHost | The upstream host or IP of the HTTP server to test. |
+| upstreamPort | The upstream port number of the HTTP server to test. |
 | createdAt | A dateTime value that specifies the date and time the session was created. |
 | updatedAt | A dateTime value that specifies the date and time the session was last modified. |
 | testPlan | Test Plan JSON representation. Refer to the Test Plan resource documentation. |
@@ -198,7 +200,7 @@ The request header includes the following information:
 
 #### Request Body
 
-JSON input that contains a Test Plan representation with the following elements:
+JSON input that contains a Session representation with the following elements:
 
 | Element | Description |
 |---|---|
@@ -218,8 +220,8 @@ Content-Length: 294
 Content-Type: application/json; charset=UTF-8
 
 {
-    "name": "Amazon S3 Test Plan",
-    "description": "My test plan for Amazon S3...",
+    "name": "Amazon S3 Session",
+    "description": "My session for Amazon S3...",
     "upstreamHost": "github.com",
     "upstreamPort": 80,
     "testPlan":
@@ -237,7 +239,7 @@ The response header includes the following information:
 |---|---|
 | Content-Type | The content type and character encoding of the response. |
 | Content-Length | The length of the content. |
-| Location | The location of the newly created Test Plan. |
+| Location | The location of the newly created Session. |
 
 #### Status Codes
 
@@ -284,7 +286,7 @@ The request header includes the following information:
 
 #### Request Body
 
-JSON input that contains a Test Plan representation with the elements to be modified:
+JSON input that contains a Session representation with the elements to be modified:
 
 | Element | Description |
 |---|---|
@@ -302,8 +304,8 @@ Content-Length: 294
 Content-Type: application/json; charset=UTF-8
 
 {
-    "name": "Amazon S3 Test Plan",
-    "description": "My test plan for Amazon S3...",
+    "name": "Amazon S3 Session",
+    "description": "My session for Amazon S3...",
     "testPlan":
     {
         "id": 12
