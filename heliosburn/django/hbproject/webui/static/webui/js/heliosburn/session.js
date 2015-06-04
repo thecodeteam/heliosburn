@@ -55,6 +55,15 @@ angular.module('hbApp.controllers').controller('SessionCtrl', ['$scope', '$http'
 
         });
 
+    $http.get('/webui/qos/', $scope.formData)
+        .success(function(data) {
+            $log.info(data);
+            $scope.qoss = data.profiles;
+            $scope.qoss.splice(0, 0, {name: "<No QoS selected>"});
+            $scope.formData.qos = $scope.qoss[0];
+
+        });
+
     $scope.processForm = function() {
 
         $http.post('/webui/sessions/create/', $scope.formData)
