@@ -34,7 +34,6 @@ def qos_list(request):
 def qos_details(request, qos_id):
     try:
         qos = QoS(auth_token=request.user.password).get(qos_id)
-        # rules = Rule(qos_id, auth_token=request.user.password).get_all()
     except UnauthorizedException:
         logger.warning('User unauthorized. Signing out...')
         return signout(request)
@@ -81,10 +80,12 @@ def qos_update(request):
         response = 'field cannot be empty!'
         return HttpResponseBadRequest(response)
 
-    if name == 'latencyEnabled':
-        value = True if value == '1' else False
-    elif name == 'clientLatency' or name == 'serverLatency':
-        value = int(value)
+    if name == 'jitter-min':
+        name = 'jitter'
+        value = {'min': value}
+    elif name == 'jitter-max':
+        name = 'jitter'
+        value = {'max': value}
 
     try:
         QoS(auth_token=request.user.password).update(pk, {name: value})
@@ -99,10 +100,10 @@ def qos_delete(request):
     if not request.POST:
         return HttpResponseRedirect(reverse('qos_list'))
 
-    qoss = request.POST.getlist('qoss[]')
+    qoss = request.POST.getlist('qos[]')
     # Workaround to support different kinds of form submission
     if qoss is None or len(qoss) == 0:
-        qoss = request.POST.getlist('qoss')
+        qoss = request.POST.getlist('qos')
 
     t = QoS(auth_token=request.user.password)
     for qos_id in qoss:

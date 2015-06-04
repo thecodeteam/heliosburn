@@ -1,0 +1,128 @@
+{% extends 'base.html' %}
+
+{% load staticfiles %}
+{% load django_bootstrap_breadcrumbs %}
+{% load tags %}
+
+{% block title %}QoS Manager{% endblock %}
+{% block content_header %}
+    <a href="#" id="qos-name">{{ qos.name }}</a>
+{% endblock %}
+{% block content_subheader %}{% endblock %}
+
+{% block breadcrumbs %}
+    {{ block.super }}
+    {% breadcrumb "QoS profiles" "qos_list" %}
+    {% breadcrumb qos.name "qos_details" qos.id %}
+{% endblock %}
+
+{% block styles %}
+    <!-- DATA TABLES -->
+    <link href="{% static 'webui/css/datatables/dataTables.bootstrap.css' %}" rel="stylesheet" type="text/css" />
+    <!-- X-editable -->
+    <link href="//cdnjs.cloudflare.com/ajax/libs/x-editable/1.5.0/bootstrap3-editable/css/bootstrap-editable.css" rel="stylesheet"/>
+{% endblock %}
+
+{% block scripts %}
+    <!-- X-Editable -->
+    <script src="//cdnjs.cloudflare.com/ajax/libs/x-editable/1.5.0/bootstrap3-editable/js/bootstrap-editable.min.js"></script>
+    <script type="text/javascript">
+        $.fn.editable.defaults.mode = 'inline';
+
+        //editables
+        $('#qos-name').editable({
+            url: '{% url 'qos_update' %}',
+            type: 'text',
+            pk: '{{ qos.id }}',
+            name: 'name',
+            title: 'QoS profile name',
+            inputclass: 'title-input',
+            params: '{csrfmiddlewaretoken:"{{csrf_token}}"}'
+        });
+
+        $('#qos-description').editable({
+            url: '{% url 'qos_update' %}',
+            type: 'textarea',
+            pk: '{{ qos.id }}',
+            name: 'description',
+            title: 'QoS description',
+            inputclass: 'description-input',
+            params: '{csrfmiddlewaretoken:"{{csrf_token}}"}'
+        });
+
+        $('#qos-latency').editable({
+            url: '{% url 'qos_update' %}',
+            type: 'text',
+            pk: '{{ qos.id }}',
+            name: 'latency',
+            title: 'Latency',
+            inputclass: 'title-input',
+            params: '{csrfmiddlewaretoken:"{{csrf_token}}"}'
+        });
+
+        $('#qos-jitter-min').editable({
+            url: '{% url 'qos_update' %}',
+            type: 'text',
+            pk: '{{ qos.id }}',
+            name: 'jitter-min',
+            title: 'Min Jitter',
+            inputclass: 'title-input',
+            params: '{csrfmiddlewaretoken:"{{csrf_token}}"}'
+        });
+
+        $('#qos-jitter-max').editable({
+            url: '{% url 'qos_update' %}',
+            type: 'text',
+            pk: '{{ qos.id }}',
+            name: 'jitter-max',
+            title: 'Max Jitter',
+            inputclass: 'title-input',
+            params: '{csrfmiddlewaretoken:"{{csrf_token}}"}'
+        });
+
+        $('#qos-trafficloss').editable({
+            url: '{% url 'qos_update' %}',
+            type: 'text',
+            pk: '{{ qos.id }}',
+            name: 'trafficLoss',
+            title: 'Traffic Loss ratio',
+            inputclass: 'title-input',
+            params: '{csrfmiddlewaretoken:"{{csrf_token}}"}'
+        });
+
+    </script>
+{% endblock %}
+
+{% block content %}
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="nav-tabs-custom">
+                <ul class="nav nav-tabs">
+                    <li class="header"><i class="fa fa-info-circle"></i>QoS profile</li>
+                </ul>
+                <div class="tab-content">
+                    <dl class="dl-horizontal">
+                        <dt>Description</dt>
+                        <dd><a href="#" id="qos-description">{{ qos.description }}</a></dd>
+                        <dt>Latency</dt>
+                        <dd><a href="#" id="qos-latency">{{ qos.latency }}</a></dd>
+                        <dt>Minimum Jitter</dt>
+                        <dd><a href="#" id="qos-jitter-min">{{ qos.jitter.min }}</a></dd>
+                        <dt>Maximum Jitter</dt>
+                        <dd><a href="#" id="qos-jitter-max">{{ qos.jitter.max }}</a></dd>
+                        <dt>Traffic loss</dt>
+                        <dd><a href="#" id="qos-trafficloss">{{ qos.trafficLoss }}</a></dd>
+                        <dt>Created at</dt>
+                        <dd>{{ qos.createdAt }}</dd>
+                        <dt>Last updated</dt>
+                        <dd>{{ qos.updatedAt }}</dd>
+                    </dl>
+                </div><!-- /.tab-content -->
+            </div>
+        </div>
+    </div>
+
+
+
+{% endblock %}

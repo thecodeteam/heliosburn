@@ -120,6 +120,9 @@
                                         <th>Plain name</th>
                                         <th>Name</th>
                                         <th>Description</th>
+                                        <th>Latency</th>
+                                        <th>Jitter</th>
+                                        <th>Traffic loss</th>
                                     </tr>
                                 </thead>
                                 <tfoot>
@@ -128,6 +131,9 @@
                                         <th>Plain name</th>
                                         <th>Name</th>
                                         <th>Description</th>
+                                        <th>Latency</th>
+                                        <th>Jitter</th>
+                                        <th>Traffic loss</th>
                                     </tr>
                                 </tfoot>
                                 <tbody>
@@ -137,6 +143,9 @@
                                             <td>{{ qos.name }}</td>
                                             <td><a href="{% url 'qos_details' qos.id %}">{{ qos.name }}</a></td>
                                             <td>{{ qos.description }}</td>
+                                            <td>{{ qos.latency }}</td>
+                                            <td>{{ qos.jitter.min }} - {{ qos.jitter.max }}</td>
+                                            <td>{{ qos.trafficLoss}}</td>
                                         </tr>
                                     {% endfor %}
                                 </tbody>
