@@ -3,7 +3,91 @@
         <h3 class="box-title">Review your session</h3>
     </div><!-- /.box-header -->
     <div class="box-body">
-        <p>{{ formData }}</p>
+        <dt>Session name:</dt>
+        <dd>{{ formData.name }}<em ng-hide="formData.name">None</em></dd>
+        <dt>Session description:</dt>
+        <dd>{{ formData.description }}<em ng-hide="formData.name">None</em></dd>
+        <dt>Upstream server:</dt>
+        <dd>
+            {{ formData.upstream_server.host}}<span ng-show="formData.upstream_server.port">:{{ formData.upstream_server.port }}</span>
+            <em ng-hide="formData.upstream_server.host">None</em>
+        </dd>
+
+        <div class="row top30">
+            <div class="col-md-4">
+                <div class="box box-info box-solid" xmlns="http://www.w3.org/1999/html">
+                    <div class="box-header">
+                        <h3 class="box-title">Test Plan</h3>
+                    </div><!-- /.box-header -->
+                    <div class="box-body">
+                        <p ng-hide="formData.testplan.id">None selected</p>
+
+                        <div ng-show="formData.testplan.id">
+                            <dt>Test Plan name:</dt>
+                            <dd>{{ formData.testplan.name }}</dd>
+
+                            <dt>Description:</dt>
+                            <dd>{{ formData.testplan.description }}</dd>
+
+                            <dt>Created at:</dt>
+                            <dd>{{ formData.testplan.createdAt }}</dd>
+
+                            <dt>Updated at:</dt>
+                            <dd>{{ formData.testplan.updatedAt }}</dd>
+
+                            <dt>Rules:</dt>
+                            <dd>{{ formData.testplan.rules.length }}</dd>
+                        </div>
+                    </div><!-- /.box-body -->
+                </div><!-- /.box -->
+            </div>
+
+            <div class="col-md-4">
+                <div class="box box-warning box-solid" xmlns="http://www.w3.org/1999/html">
+                    <div class="box-header">
+                        <h3 class="box-title">QoS profile</h3>
+                    </div><!-- /.box-header -->
+                    <div class="box-body">
+                        <em ng-hide="formData.qos.id">None selected</em>
+
+                        <div ng-show="formData.qos.id">
+                            <dt>QoS profile name:</dt>
+                            <dd>{{ formData.qos.name }}</dd>
+
+                            <dt>Description:</dt>
+                            <dd>{{ formData.qos.description }}</dd>
+
+                            <dt>Created at:</dt>
+                            <dd>{{ formData.qos.createdAt }}</dd>
+
+                            <dt>Updated at:</dt>
+                            <dd>{{ formData.qos.updatedAt }}</dd>
+
+                            <dt>Latency:</dt>
+                            <dd>{{ formData.qos.latency }} ms</dd>
+
+                            <dt>Jitter:</dt>
+                            <dd>{{ formData.qos.jitter.min }} - {{ formData.qos.jitter.max }}</dd>
+
+                            <dt>Traffic loss ratio:</dt>
+                            <dd>{{ formData.qos.trafficLoss }}</dd>
+                        </div>
+                    </div><!-- /.box-body -->
+                </div><!-- /.box -->
+            </div>
+
+            <div class="col-md-4">
+                <div class="box box-danger box-solid" xmlns="http://www.w3.org/1999/html">
+                    <div class="box-header">
+                        <h3 class="box-title">Server Overload profile</h3>
+                    </div><!-- /.box-header -->
+                    <div class="box-body">
+                        <p ng-hide="formData.serveroverload.id">None selected</p>
+                    </div><!-- /.box-body -->
+                </div><!-- /.box -->
+            </div>
+        </div>
+
     </div><!-- /.box-body -->
     <div class="box-footer">
         <a ui-sref="form.step4" class="btn btn-default">← Back</a>
