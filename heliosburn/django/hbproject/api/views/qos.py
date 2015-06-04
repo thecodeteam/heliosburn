@@ -74,6 +74,7 @@ def post(request):
     try:
         new = json.loads(request.body)
         assert "latency" in new
+        assert "name" in new
         assert "jitter" in new
         assert "min" in new["jitter"]
         assert "max" in new["jitter"]
@@ -87,9 +88,13 @@ def post(request):
 
     qos_profile = {
         "latency": new['latency'],
+        "name": new['name'],
         "jitter": {"min": new['jitter']['min'], "max": new['jitter']['max']},
         "trafficLoss": new['trafficLoss']
     }
+
+    if "description" in new:
+        qos_profile['description'] = new['description']
 
     qos_id = str(dbc.qos.save(qos_profile))
     r = JsonResponse({"id": qos_id})
@@ -118,6 +123,10 @@ def put(request, qos_id):
 
     if "latency" in new:
         qos_profile['latency'] = new['latency']
+    if 'name' in new:
+        qos_profile['name'] = new['name']
+    if 'description' in new:
+        qos_profile['description'] = new['description']
     if ("jitter" in new) and ("min" in new['jitter']):
         qos_profile['jitter']['min'] = new['jitter']['min']
     if ("jitter" in new) and ("max" in new['jitter']):

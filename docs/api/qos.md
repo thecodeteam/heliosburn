@@ -35,6 +35,8 @@ The response body contains a list containing the following elements in JSON form
 
 | Element | Description |
 |---|---|
+| name | A string value that identifies the QoS profile. |
+| description | A string value describing the QoS profile. |
 | latency | A integer value that specifies latency in milliseconds. |
 | jitter | A JSON containing "min" and "max" keys that specify jitter min/max integers in milliseconds. |
 | trafficLoss | A decimal value that specifies traffic loss as a percentage(eg 0.01 == 1%) |
@@ -53,6 +55,8 @@ The response body contains a list containing the following elements in JSON form
 {   "qos_profiles": [
         {
             "_id": "0xdeadbeef",
+            "name": "qos profile name",
+            "description": "qos profile description",
             "latency": 100,
             "jitter": {
                 "min": 30,
@@ -62,6 +66,8 @@ The response body contains a list containing the following elements in JSON form
         },
         {
             "_id": "0xbeefbeef",
+            "name": "qos profile name",
+            "description": "qos profile description",
             "latency": 150,
             "jitter": {
                 "min": 15,
@@ -102,6 +108,8 @@ The response body contains the following elements in JSON format:
 
 | Element | Description |
 |---|---|
+| name | A string value that identifies the QoS profile. |
+| description | A string value describing the QoS profile. |
 | latency | A integer value that specifies latency in milliseconds. |
 | jitter | A JSON containing "min" and "max" keys that specify jitter min/max integers in milliseconds. |
 | trafficLoss | A decimal value that specifies traffic loss as a percentage(eg 0.01 == 1%) |
@@ -120,6 +128,8 @@ The response body contains the following elements in JSON format:
 ```json
 {
     "_id": "0xdeadbeef",
+    "name": "qos profile name",
+    "description": "qos profile description",
     "latency": 100,
     "jitter": {
         "min": 30,
@@ -155,6 +165,8 @@ JSON input that contains a QoS profile representation with the following element
 
 | Element | Description |
 |---|---|
+| name | A string value that identifies the QoS profile. |
+| description | (optional) A string value describing the QoS profile. |
 | latency | A integer value that specifies latency in milliseconds. |
 | jitter | A JSON containing "min" and "max" keys that specify jitter min/max integers in milliseconds. |
 | trafficLoss | A decimal value that specifies traffic loss as a percentage(eg 0.01 == 1%) |
@@ -163,6 +175,8 @@ JSON input that contains a QoS profile representation with the following element
 
 ```json
 {
+    "name": "qos profile name",
+    "description": "qos profile description",
     "latency": 100,
     "jitter": {
         "min": 30,
@@ -231,6 +245,8 @@ JSON input that contains a QoS profile representation with the elements to be mo
 
 | Element | Description |
 |---|---|
+| name | A string value that identifies the QoS profile. |
+| description | A string value describing the QoS profile. |
 | latency | A integer value that specifies latency in milliseconds. |
 | jitter | A JSON containing "min" and "max" keys that specify jitter min/max integers in milliseconds. |
 | trafficLoss | A decimal value that specifies traffic loss as a percentage(eg 0.01 == 1%) |
@@ -239,6 +255,8 @@ JSON input that contains a QoS profile representation with the elements to be mo
 
 ```json
 {
+    "name": "qos profile name",
+    "description": "qos profile description",
     "latency": 100,
     "jitter": {
         "min": 30,
