@@ -1,5 +1,5 @@
 from django import forms
-from django.core.validators import MinValueValidator
+from django.core.validators import MinValueValidator, MaxValueValidator
 
 
 class LoginForm(forms.Form):
@@ -163,6 +163,26 @@ class RuleRequestForm(forms.Form):
                         rule['action']['headers'].append({'key': key, 'value': value})
 
         return rule
+
+
+class QoSForm(forms.Form):
+    name = forms.CharField(label='Name', max_length=100)
+    description = forms.CharField(label='Description', widget=forms.Textarea)
+    latency = forms.IntegerField(label='Link latency', initial=0,
+                                 validators=[MinValueValidator(0)])
+    jitterMin = forms.IntegerField(label='Min jitter', initial=0,
+                                   validators=[MinValueValidator(0)])
+    jitterMax = forms.IntegerField(label='Max jitter', initial=0,
+                                   validators=[MinValueValidator(0)])
+    trafficLoss = forms.FloatField(label='Traffic loss ratio', initial=0,
+                                   validators=[MinValueValidator(0), MaxValueValidator(1)])
+
+    def clean(self):
+        cleaned_data = super(QoSForm, self).clean()
+        cleaned_data['jitter'] = {}
+        cleaned_data['jitter']['min'] = cleaned_data.pop('jitterMin')
+        cleaned_data['jitter']['max'] = cleaned_data.pop('jitterMax')
+        return cleaned_data
 
 
 class RecordingForm(forms.Form):

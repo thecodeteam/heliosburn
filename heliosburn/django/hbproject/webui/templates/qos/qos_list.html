@@ -3,13 +3,13 @@
 {% load staticfiles %}
 {% load django_bootstrap_breadcrumbs %}
 
-{% block title %}Session Manager{% endblock %}
-{% block content_header %}Session Manager{% endblock %}
+{% block title %}QoS Manager{% endblock %}
+{% block content_header %}QoS Manager{% endblock %}
 {% block content_subheader %}{% endblock %}
 
 {% block breadcrumbs %}
     {{ block.super }}
-    {% breadcrumb "Session Manager" "session_manager" %}
+    {% breadcrumb "QoS profiles" "qos_list" %}
 {% endblock %}
 
 {% block styles %}
@@ -45,24 +45,62 @@
                     return;
                 }
 
-                var message = 'You are about to delete the following entries:\n\n'
-                for(i = 0; i < entries.length; i++){
+                var qosIds = [];
+                var message = 'You are about to delete the following entries:\n\n';
+
+                for(var i = 0; i < entries.length; i++){
+                    qosIds.push(entries[i][0]);
                     message += '- ' + entries[i][1] + '\n';
                 }
-                message += '\nAre you sure?'
+                message += '\nAre you sure?';
 
                 if (confirm(message)){
                     //Delete entries
+                    var data = { 'qos' : qosIds, 'csrfmiddlewaretoken': '{{ csrf_token }}'};
+                    $.ajax({
+                      type: "POST",
+                      url: "{% url "qos_delete" %}",
+                      data: data,
+                      success: onDeleteSuccess,
+                      error: onDeleteError
+                    });
+
+{#                    table.row('.active').remove().draw( false );#}
                 }
             } );
+
+            function onDeleteSuccess() {
+                table.rows('.active').remove().draw()
+                $('#successMessage').removeClass('hidden');
+            };
+
+            function onDeleteError() {
+                $('#errorMessage').removeClass('hidden');
+            };
+
+            $( ".alert" ).click(function() {
+              $( this ).addClass('hidden');
+            });
+
         } );
     </script>
 {% endblock %}
 
 {% block content %}
+
+    <div id="successMessage" class="alert alert-success alert-dismissable hidden">
+        <button type="button" class="asdfg close">×</button>
+        The selected QoS profiles were successfully deleted
+    </div>
+
+    <div id="errorMessage" class="alert alert-danger alert-dismissable hidden">
+        <button type="button" class="asdfg close">×</button>
+        There was an error deleting the selected QoS profiles
+    </div>
+
     <div class="row">
         <div class="col-xs-12">
-            <a class="bold btn btn-primary pull-right" href="{% url "session_new" %}" role="button">Create a new Session</a>
+            <a class="btn btn-primary pull-right bold" href="{% url "qos_new" %}" role="button">Create a new QoS profile</a>
         </div>
     </div>
 
@@ -70,7 +108,7 @@
         <div class="col-xs-12">
             <div class="box">
                 <div class="box-header">
-                    <h3 class="box-title">Session list</h3>
+                    <h3 class="box-title">QoS profiles</h3>
                 </div><!-- /.box-header -->
                 <div class="box-body table-responsive">
                     <div class="row">
@@ -80,40 +118,34 @@
                                     <tr>
                                         <th>ID</th>
                                         <th>Plain name</th>
-                                        <th>Session name</th>
-                                        <th>Test Plan</th>
-                                        <th>Latest execution</th>
-                                        <th>Executions</th>
+                                        <th>Name</th>
+                                        <th>Description</th>
+                                        <th>Latency</th>
+                                        <th>Jitter</th>
+                                        <th>Traffic loss</th>
                                     </tr>
                                 </thead>
                                 <tfoot>
                                     <tr>
                                         <th>ID</th>
                                         <th>Plain name</th>
-                                        <th>Session name</th>
-                                        <th>Test Plan</th>
-                                        <th>Latest execution</th>
-                                        <th>Executions</th>
+                                        <th>Name</th>
+                                        <th>Description</th>
+                                        <th>Latency</th>
+                                        <th>Jitter</th>
+                                        <th>Traffic loss</th>
                                     </tr>
                                 </tfoot>
                                 <tbody>
-
-                                    {% for session in sessions %}
+                                    {% for qos in profiles %}
                                         <tr>
-                                            <td>{{ session.id }}</td>
-                                            <td>{{ session.name }}</td>
-                                            <td><a href="{% url "session_details" session.id %}">{{ session.name }}</a></td>
-                                            {% if session.testPlan %}
-                                                <td><a href="{% url "testplan_details" session.testPlan.id %}">{{ session.testPlan.name }}</a></td>
-                                            {% else %}
-                                                <td>None</td>
-                                            {% endif %}
-                                            {% if session.latest_execution_at %}
-                                                <td>{{ session.latest_execution_at }}</td>
-                                            {% else %}
-                                                <td>Never</td>
-                                            {% endif %}
-                                            <td>{{ session.executions }}</td>
+                                            <td>{{ qos.id }}</td>
+                                            <td>{{ qos.name }}</td>
+                                            <td><a href="{% url 'qos_details' qos.id %}">{{ qos.name }}</a></td>
+                                            <td>{{ qos.description }}</td>
+                                            <td>{{ qos.latency }}</td>
+                                            <td>{{ qos.jitter.min }} - {{ qos.jitter.max }}</td>
+                                            <td>{{ qos.trafficLoss}}</td>
                                         </tr>
                                     {% endfor %}
                                 </tbody>

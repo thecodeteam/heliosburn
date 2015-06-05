@@ -13,7 +13,8 @@ urlpatterns = patterns(
     url(r'^sessions/$', 'session.session_list', name='session_list'),
     url(r'^sessions/(?P<id>[\w-]+)$', 'session.session_details', name='session_details'),
     url(r'^sessions/update/$', 'session.session_update', name='session_update'),
-    url(r'^sessions/new/step-(?P<step>[\w-]+)$', 'session.session_new', name='session_new'),
+    url(r'^sessions/new/$', 'session.session_new', name='session_new'),
+    url(r'^sessions/create/$', 'session.session_create', name='session_create'),
     url(r'^sessions/(?P<id>[\w-]+)/execute$', 'session.session_execution', name='session_execution'),
 
     url(r'^executions/(?P<id>[\w-]+)$', 'execution_details', name='execution_details'),
@@ -27,6 +28,12 @@ urlpatterns = patterns(
     url(r'^testplans/(?P<testplan_id>[\w-]+)/rules/(?P<rule_id>[\w-]+)$', 'rule.rule_details', name='rule_details'),
     url(r'^testplans/(?P<testplan_id>[\w-]+)/rules/(?P<rule_id>[\w-]+)/update$', 'rule.rule_update', name='rule_update'),
     url(r'^testplans/(?P<testplan_id>[\w-]+)/rules/new/$', 'rule.rule_new', name='rule_new'),
+
+    url(r'^qos/$', 'qos.qos_list', name='qos_list'),
+    url(r'^qos/(?P<qos_id>[\w-]+)$', 'qos.qos_details', name='qos_details'),
+    url(r'^qos/update/$', 'qos.qos_update', name='qos_update'),
+    url(r'^qos/new/$', 'qos.qos_new', name='qos_new'),
+    url(r'^qos/delete/$', 'qos.qos_delete', name='qos_delete'),
 
     url(r'^recordings/$', 'recording.recording_list', name='recording_list'),
     url(r'^recordings/(?P<recording_id>[\w-]+)$', 'recording.recording_details', name='recording_details'),

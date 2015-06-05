@@ -49,8 +49,16 @@ class Common(Configuration):
 
         'django_bootstrap_breadcrumbs',
         'bootstrap3',
+        'djangobower',
 
         'webui',
+    )
+
+    BOWER_INSTALLED_APPS = (
+        'angular',
+        'angular-ui-router',
+        'angular-animate',
+        'components-font-awesome',
     )
 
     MIDDLEWARE_CLASSES = (
@@ -105,8 +113,18 @@ class Common(Configuration):
     # Static files (CSS, JavaScript, Images)
     # https://docs.djangoproject.com/en/1.7/howto/static-files/
 
+    STATICFILES_FINDERS = (
+        "django.contrib.staticfiles.finders.FileSystemFinder",
+        "django.contrib.staticfiles.finders.AppDirectoriesFinder",
+
+        'djangobower.finders.BowerFinder',
+    )
+
     STATIC_URL = '/static/'
     STATIC_ROOT = os.path.join(BASE_DIR, '../static')
+
+    BOWER_COMPONENTS_ROOT = os.path.join(BASE_DIR, 'components')
+
 
     LOGIN_URL = '/webui/signin'
 

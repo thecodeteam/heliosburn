@@ -1,0 +1,39 @@
+<div class="box box-primary">
+    <div class="box-header">
+        <h3 class="box-title">Select a Quality of Service profile</h3>
+    </div><!-- /.box-header -->
+    <div class="box-body">
+        <div class="form-group">
+            <select ng-model="formData.qos" ng-options="qos as qos.name for qos in qoss" class="form-control"></select>
+        </div>
+
+        <div ng-show="formData.qos.id">
+            <div class="form-group">
+                <label>Description:</label>
+                <textarea class="form-control" rows="3" ng-model="formData.qos.description" readonly></textarea>
+            </div>
+
+            <div class="form-group">
+                <label>Latency:</label>
+                <p>{{ formData.qos.latency }}</p>
+
+            </div>
+
+            <div class="form-group">
+                <label>Jitter:</label>
+                <p>{{ formData.qos.jitter.min }} - {{ formData.qos.jitter.max }}</p>
+            </div>
+
+            <div class="form-group">
+                <label>Traffic loss ratio:</label>
+                <p>{{ formData.qos.trafficLoss }}</p>
+            </div>
+        </div>
+
+        <p>Don't you find the QoS profile you are looking for? <a href="/webui/qos/new/">Create a new one</a></p>
+    </div><!-- /.box-body -->
+    <div class="box-footer">
+        <a ui-sref="form.step2" class="btn btn-default">← Back</a>
+        <a ui-sref="form.step4" class="btn btn-primary pull-right bold">Next →</a>
+    </div>
+</div><!-- /.box -->
