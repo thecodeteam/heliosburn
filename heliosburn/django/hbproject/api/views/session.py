@@ -14,10 +14,11 @@ from api.models import redis_wrapper
 
 logger = logging.getLogger(__name__)
 
+
 @csrf_exempt
 def rest(request, *pargs):
     """
-    Calls python function corresponding with HTTP METHOD name. 
+    Calls python function corresponding with HTTP METHOD name.
     Calls with incomplete arguments will return HTTP 400
     """
     if request.method == 'GET':
@@ -113,6 +114,20 @@ def post(request):
         else:
             return HttpResponseNotFound("testplan '%s' does not exist" % new['testplan'])
 
+    if "serverOverloadProfile" in new:
+        so_profile = dbc.serveroverload.find_one({"_id": ObjectId(new['serverOverloadProfile'])})
+        if so_profile is not None:
+            session['serverOverloadProfile'] = new['serverOverloadProfile']
+        else:
+            return HttpResponseNotFound("serverOverloadProfile '%s' does not exist" % new['serverOverloadProfile'])
+
+    if "qosProfile" in new:
+        qos_profile = dbc.qos.find_one({"_id": ObjectId(new['qosProfile'])})
+        if qos_profile is not None:
+            session['qosProfile'] = new['qosProfile']
+        else:
+            return HttpResponseNotFound("qosProfile'%s' does not exist" % new['qosProfile'])
+
     try:
         session_id = str(dbc.session.save(session))
     except DuplicateKeyError:
@@ -151,9 +166,9 @@ def put(request, session_id):
         if "description" in new:
             session['description'] = new['description']
         if "upstreamHost" in new:
-            session['upstreamHost'] = new ['upstreamHost']
+            session['upstreamHost'] = new['upstreamHost']
         if "upstreamPort" in new:
-            session['upstreamPort'] = new ['upstreamPort']
+            session['upstreamPort'] = new['upstreamPort']
         if "username" in new:
             session['username'] = new['username']
         if "testplan" in new:
@@ -193,6 +208,7 @@ def delete(request, session_id):
         logger.info("session '%s' deleted by '%s'" % (session_id, request.user['username']))
         return HttpResponse()
 
+
 @csrf_exempt
 @RequireLogin()
 def start(request, session_id):
@@ -212,7 +228,7 @@ def start(request, session_id):
     if session is None:
         return HttpResponseNotFound()
 
-    #set upstream host/port before starting
+    # set upstream host/port before starting
     redis_wrapper.publish_to_proxy(json.dumps({
         "operation": "upstream_host",
         "param": session['upstreamHost'],
