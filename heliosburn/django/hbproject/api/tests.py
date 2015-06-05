@@ -799,8 +799,29 @@ class ServerOverloadViewTestCase(APITestCase):
         import json
 
         def create():
-            body = json.dumps({
-            })
+            self.profile = {
+                'name': 'test profile',
+                'description': 'test description',
+                'function': {
+                    'type': 'test type',
+                    'expValue': 1,
+                    'growthRate': 1,
+                },
+                'response_triggers': [
+                    {
+                        'fromLoad': 1,
+                        'toLoad': 1,
+                        'actions': [
+                            {
+                                'type': 'response',
+                                'value': '503',
+                                'percentage': 0.3,
+                            },
+                        ],
+                    },
+                ],
+            }
+            body = json.dumps(self.profile)
             self.login(admin_username, admin_password)
             response = self.client.post(path=api_url + "/serveroverload/",
                                         data=body,
@@ -820,8 +841,8 @@ class ServerOverloadViewTestCase(APITestCase):
             self.assertEqual(response.status_code, 200)
 
         def update():
-            body = json.dumps({
-            })
+            self.profile['name'] = 'updated name'
+            body = json.dumps(self.profile)
             self.login(admin_username, admin_password)
             response = self.client.put(path=api_url + "/serveroverload/" + self.serveroverload_id,
                                        data=body,
