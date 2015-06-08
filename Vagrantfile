@@ -89,7 +89,8 @@ Vagrant.configure(2) do |config|
 
   config.vm.provision "shell", inline: <<-SHELL
     sudo apt-get update
-    sudo apt-get install git curl supervisor mongodb-server redis-server python-pip python-dev libpython-dev -y
+    sudo apt-get install git curl supervisor mongodb-server redis-server python-pip python-dev libpython-dev npm nodejs-legacy -y
+    sudo npm install -g bower --config.interactive=false
     sudo pip install -r /tmp/requirements.txt
   SHELL
 

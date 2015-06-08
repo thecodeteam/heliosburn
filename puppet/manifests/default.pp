@@ -21,6 +21,11 @@ package { $sysPackages:
   require => Exec['apt-get update'],
 }
 
+package { 'bower':
+  ensure => present,
+  provider => 'npm',
+}
+
 #class { 'python' :
 #    version    => 'system',
 #    pip        => true,
