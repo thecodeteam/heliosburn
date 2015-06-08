@@ -8,8 +8,11 @@ sed -i "s/DJANGO_SECRET_KEY.*/DJANGO_SECRET_KEY='$SECRET_KEY'/" heliosburn/djang
 echo ">> Setting up database - executing: 'python heliosburn/django/hbproject/create_db_model.py'"
 python heliosburn/django/hbproject/create_db_model.py
 
-echo ">> Collecting static Django assets"
+echo ">> Installing Bower components"
 cd heliosburn/django/hbproject
+python manage.py bower install
+
+echo ">> Collecting static Django assets"
 python manage.py collectstatic --noinput
 
 echo ">> Done!"
