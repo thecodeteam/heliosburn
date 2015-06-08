@@ -31,3 +31,6 @@
 [submodule "puppet/modules/mongodb"]
 	path = puppet/modules/mongodb
 	url = https://github.com/puppetlabs/puppetlabs-mongodb
+[submodule "puppet/modules/nodejs"]
+	path = puppet/modules/nodejs
+	url = https://github.com/puppet-community/puppet-nodejs

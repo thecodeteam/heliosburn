@@ -21,9 +21,12 @@ package { $sysPackages:
   require => Exec['apt-get update'],
 }
 
+class { 'nodejs': }
+
 package { 'bower':
   ensure => present,
   provider => 'npm',
+  require => Package['npm'],
 }
 
 #class { 'python' :
