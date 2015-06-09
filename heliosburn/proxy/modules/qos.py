@@ -3,7 +3,46 @@ import random
 import datetime
 from module import AbstractModule
 from twisted.python import log
-from traffic_eval.traffic_evaluator import TrafficEvaluator
+
+test_profile = {
+    "createdAt": "2014-02-12 03:34:51",
+    "updatedAt": "2014-02-12 03:34:51",
+    "latency": 100,
+    "jitter": {
+        "min": 30,
+        "max": 50
+    },
+    "trafficLoss": 0.1
+}
+
+test_session = {
+    "id": 1,
+    "name": "Session A",
+    "description": "This is a description for a Session",
+    "upstreamHost": "github.com",
+    "upstreamPort": 80,
+    "createdAt": "2014-02-12 03:34:51",
+    "updatedAt": "2014-02-12 03:34:51",
+    "testPlan":
+    {
+        "id": 12,
+        "name": "ViPR Test plan"
+    },
+    "qos":
+    {
+        "id": 45
+    },
+    "serverOverload":
+    {
+        "id": 951
+    },
+    "user":
+    {
+        "id": 1,
+        "username": "John Doe"
+    },
+    "executions": 42,
+}
 
 
 class QOSAction(object):
@@ -81,51 +120,15 @@ class QOS(AbstractModule):
 
     def __init__(self):
         AbstractModule.__init__(self)
+        self.redis_host = '127.0.0.1'
+        self.redis_port = 6379
+        self.redis_db = 0
+        self.mongo_host = 'heliosburn.traffic'
+        self.mongo_port = '127.0.0.1'
+        self.mongo_db = 'heliosburn'
 
     def configure(self, **configs):
-        self.redis_host = configs['redis_host']
-        self.redis_port = configs['redis_port']
-        self.redis_db = configs['redis_db']
-        self.mongo_host = configs['mongo_host']
-        self.mongo_port = configs['mongo_port']
-        self.mongo_db = configs['mongo_db']
-
-    def _get_config(self):
-        config = {
-            "config": {
-                "redis": {
-                    "db": self.redis_db,
-                    "port": self.redis_port,
-                    "host": self.redis_host
-                },
-                "mongodb": {
-                    "host": self.mongo_host,
-                    "db": {
-                        "production": self.mongo_db,
-                        "test": "heliosburn_test"
-                    },
-                    "port": self.mongo_port
-                }
-            }
-        }
-
-        return config
-
-    def _process_request(self, http_metadata, session):
-        log.msg("calling traffic evaluator with:\n" +
-                "http_metadata: " + str(http_metadata) + "\n"
-                "      session: " + str(session))
-        action = self.injection_engine.get_action(http_metadata, session)
-
-        return action
-
-    def _process_response(self, http_metadata, session):
-        log.msg("calling traffic evaluator with:\n" +
-                "http_metadata: " + str(http_metadata) + "\n"
-                "      session: " + str(session))
-        action = self.injection_engine.get_action(http_metadata, session)
-
-        return action
+        pass
 
     def handle_request(self, request, minimum=1, maximum=1):
 
@@ -135,7 +138,6 @@ class QOS(AbstractModule):
         pass
 
     def start(self, **params):
-        self.injection_engine = TrafficEvaluator(self._get_config())
         self.session_id = params['session_id']
         self.state = "running"
         self.status = str(datetime.datetime.now())
