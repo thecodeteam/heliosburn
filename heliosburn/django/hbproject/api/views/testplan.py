@@ -127,12 +127,6 @@ def put(request, testplan_id):
             testplan['name'] = in_json['name']
         if "description" in in_json:
             testplan['description'] = in_json['description']
-        if "latencyEnabled" in in_json:
-            testplan['latencyEnabled'] = in_json['latencyEnabled']
-        if "clientLatency" in in_json:
-            testplan['clientLatency'] = in_json['clientLatency']
-        if "serverLatency" in in_json:
-            testplan['serverLatency'] = in_json['serverLatency']
         if "rules" in in_json:
             testplan['rules'] = [rule_model.validate(rule) for rule in in_json['rules']]
             if None in in_json['rules']:

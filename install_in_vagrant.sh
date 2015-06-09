@@ -21,8 +21,10 @@ echo ">> Installing supervisord profiles under /etc/supervisor/conf.d/"
 install -b install/etc/supervisor/conf.d/*.conf /etc/supervisor/conf.d/
 echo ">> Setting up database - executing: 'python heliosburn/django/hbproject/create_db_model.py'"
 python heliosburn/django/hbproject/create_db_model.py
-echo ">> Collecting static Django assets"
+echo ">> Installing Bower components"
 cd heliosburn/django/hbproject
+python manage.py bower install
+echo ">> Collecting static Django assets"
 python manage.py collectstatic --noinput
 echo ">> Restarting supervisord"
 /etc/init.d/supervisor restart
@@ -30,4 +32,3 @@ echo ">> Installation complete!"
 echo ">> On your host OS, browse to http://127.0.0.1:8100 and login as 'admin' / 'admin'"
 exit 0
 cd $PWD
-
