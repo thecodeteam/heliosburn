@@ -41,9 +41,6 @@ The response body contains a list containing the following elements in JSON form
 | description | Description of the Test Plan. |
 | createdAt | A dateTime value that specifies the date and time the session was created. |
 | updatedAt | A dateTime value that specifies the date and time the session was last modified. |
-| latencyEnabled | A boolean value that indicates whether the latency is enabled or not. |
-| clientLatency | An integer value that specifies the client latency in milliseconds.  |
-| serverLatency | An integer value that specifies the client latency in milliseconds.  |
 | rules | An integer value that specifies the number of rules associated to the Test Plan. |
 
 #### Status Codes
@@ -64,10 +61,7 @@ The response body contains a list containing the following elements in JSON form
         "description": "My test plan for Amazon S3...",
         "rules": 42,
         "createdAt": "2014-02-12 03:34:51",
-        "updatedAt": "2014-02-12 03:34:51",
-        "latencyEnabled": true,
-        "clientLatency": 100,
-        "serverLatency": 0
+        "updatedAt": "2014-02-12 03:34:51"
     },
     {
         "id": "h34b5k3425kl45b2345b3245b",
@@ -75,10 +69,7 @@ The response body contains a list containing the following elements in JSON form
         "description": "bla bla bla bla bla blaaaa...",
         "rules": 654,
         "createdAt": "2014-02-12 03:34:51",
-        "updatedAt": "2014-02-12 03:34:51",
-        "latencyEnabled": true,
-        "clientLatency": 100,
-        "serverLatency": 0
+        "updatedAt": "2014-02-12 03:34:51"
     }
 ]
 ```
@@ -116,9 +107,6 @@ The response body contains the following elements in JSON format:
 | description | Description of the Test Plan. |
 | createdAt | A dateTime value that specifies the date and time the Test Plan was created. |
 | updatedAt | A dateTime value that specifies the date and time the Test Plan was last modified. |
-| latencyEnabled | A boolean value that indicates whether the latency is enabled or not. |
-| clientLatency | An integer value that specifies the client latency in milliseconds.  |
-| serverLatency | An integer value that specifies the client latency in milliseconds.  |
 | rules | An integer value that specifies the number of rules associated to the Test Plan. |
 
 #### Status Codes
@@ -139,11 +127,8 @@ The response body contains the following elements in JSON format:
         "description": "My test plan for Amazon S3...",
         "rules": 42,
         "createdAt": "2014-02-12 03:34:51",
-        "updatedAt": "2014-02-12 03:34:51",
-        "latencyEnabled": true,
-        "clientLatency": 100,
-        "serverLatency": 0
-    }
+        "updatedAt": "2014-02-12 03:34:51"
+     }
 ```
 
 
@@ -175,9 +160,6 @@ JSON input that contains a Test Plan representation with the following elements:
 |---|---|
 | name | Name of the Test Plan. |
 | description | Description of the Test Plan. |
-| latencyEnabled | A boolean value that indicates whether the latency is enabled or not. |
-| clientLatency | An integer value that specifies the client latency in milliseconds.  |
-| serverLatency | An integer value that specifies the client latency in milliseconds.  |
 
 #### Request example
 
@@ -190,10 +172,7 @@ Content-Type: application/json; charset=UTF-8
 
 {
     "name": "Amazon S3 Test Plan",
-    "description": "My test plan for Amazon S3...",
-    "latencyEnabled": true,
-    "clientLatency": 100,
-    "serverLatency": 0
+    "description": "My test plan for Amazon S3..."
 }
 ```
 
@@ -259,9 +238,6 @@ JSON input that contains a Test Plan representation with the elements to be modi
 |---|---|
 | name | Name of the Test Plan. |
 | description | Description of the Test Plan. |
-| latencyEnabled | A boolean value that indicates whether the latency is enabled or not. |
-| clientLatency | An integer value that specifies the client latency in milliseconds.  |
-| serverLatency | An integer value that specifies the client latency in milliseconds.  |
 
 #### Request example
 
@@ -274,10 +250,7 @@ Content-Type: application/json; charset=UTF-8
 
 {
     "name": "Amazon S3 Test Plan",
-    "description": "My test plan for Amazon S3...",
-    "latencyEnabled": true,
-    "clientLatency": 100,
-    "serverLatency": 0
+    "description": "My test plan for Amazon S3..."
 }
 ```
 ### Response
