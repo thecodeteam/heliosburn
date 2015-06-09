@@ -8,3 +8,5 @@
 - [Rule](rule.md)
 - [Recording](recording.md)
 - [Proxy](proxy.md)
+- [QoS Profile](qos.md)
+- [Server Overload Profile](server_overload.md)

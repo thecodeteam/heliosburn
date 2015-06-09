@@ -46,6 +46,8 @@ The response body contains a list containing the following elements in JSON form
 | testPlan | Test Plan JSON representation. Refer to the Test Plan resource documentation. |
 | user | User JSON representation. Refer to the User resource documentation. |
 | executions | An integer value that specifies the number of times the session has been executed. |
+| qosProfile | The ID of a QoS profile . |
+| serverOverloadProfile | The ID of a Server Overload profile. |
 
 #### Status Codes
 
@@ -65,6 +67,9 @@ The response body contains a list containing the following elements in JSON form
         "description": "This is a description for a Session",
         "upstreamHost": "github.com",
         "upstreamPort": 80,
+        "qosProfile": "0xdeadbeef",
+        "ServerOverloadProfile": "0xfedbeef",
+
         "createdAt": "2014-02-12 03:34:51",
         "updatedAt": "2014-02-12 03:34:51",
         "testPlan":
@@ -85,6 +90,9 @@ The response body contains a list containing the following elements in JSON form
         "name": "ViPR Session 1",
         "upstreamHost": "github.com",
         "upstreamPort": 80,
+        "qosProfile": "0xdeadbeef",
+        "ServerOverloadProfile": "0xfedbeef",
+
         "description": "This is a description for a Session",
         "createdAt": "2014-02-12 03:34:51",
         "updatedAt": "2014-02-12 03:34:51",
@@ -135,11 +143,15 @@ The response body contains the following elements in JSON format:
 | id | An integer value that uniquely identifies the session. |
 | name | Name of the session. |
 | description | Description of the session. |
+| upstreamHost | The upstream host or IP of the HTTP server to test. |
+| upstreamPort | The upstream port number of the HTTP server to test. |
 | createdAt | A dateTime value that specifies the date and time the session was created. |
 | updatedAt | A dateTime value that specifies the date and time the session was last modified. |
 | testPlan | Test Plan JSON representation. Refer to the Test Plan resource documentation. |
 | user | User JSON representation. Refer to the User resource documentation. |
 | executions | An integer value that specifies the number of times the session has been executed. |
+| qosProfile | The ID of a QoS profile . |
+| serverOverloadProfile | The ID of a Server Overload profile. |
 
 #### Status Codes
 
@@ -160,6 +172,8 @@ The response body contains the following elements in JSON format:
         "description": "This is a description for a Session",
         "upstreamHost": "github.com",
         "upstreamPort": 80,
+        "qosProfile": "0xdeadbeef",
+        "ServerOverloadProfile": "0xfedbeef",
         "createdAt": "2014-02-12 03:34:51",
         "updatedAt": "2014-02-12 03:34:51",
         "testPlan":
@@ -198,7 +212,7 @@ The request header includes the following information:
 
 #### Request Body
 
-JSON input that contains a Test Plan representation with the following elements:
+JSON input that contains a Session representation with the following elements:
 
 | Element | Description |
 |---|---|
@@ -207,6 +221,9 @@ JSON input that contains a Test Plan representation with the following elements:
 | testPlan | Optional. Test Plan JSON representation containing only the ID. |
 | upstreamHost | The upstream host or IP of the HTTP server to test. |
 | upstreamPort | The upstream port number of the HTTP server to test. |
+| qosProfile | The ID of a QoS profile . |
+| serverOverloadProfile | The ID of a Server Overload profile. |
+
 
 #### Request example
 
@@ -218,10 +235,12 @@ Content-Length: 294
 Content-Type: application/json; charset=UTF-8
 
 {
-    "name": "Amazon S3 Test Plan",
-    "description": "My test plan for Amazon S3...",
+    "name": "Amazon S3 Session",
+    "description": "My session for Amazon S3...",
     "upstreamHost": "github.com",
     "upstreamPort": 80,
+    "qosProfile": "0xdeadbeef",
+    "ServerOverloadProfile": "0xfedbeef",
     "testPlan":
         {
             "id": 12,
@@ -237,7 +256,7 @@ The response header includes the following information:
 |---|---|
 | Content-Type | The content type and character encoding of the response. |
 | Content-Length | The length of the content. |
-| Location | The location of the newly created Test Plan. |
+| Location | The location of the newly created Session. |
 
 #### Status Codes
 
@@ -284,13 +303,15 @@ The request header includes the following information:
 
 #### Request Body
 
-JSON input that contains a Test Plan representation with the elements to be modified:
+JSON input that contains a Session representation with the elements to be modified:
 
 | Element | Description |
 |---|---|
 | name | Name of the session. |
 | description | Description of the session. |
 | testPlan | Test Plan JSON representation containing only the ID. |
+| qosProfile | The ID of a QoS profile . |
+| serverOverloadProfile | The ID of a Server Overload profile. |
 
 #### Request example
 
@@ -302,8 +323,8 @@ Content-Length: 294
 Content-Type: application/json; charset=UTF-8
 
 {
-    "name": "Amazon S3 Test Plan",
-    "description": "My test plan for Amazon S3...",
+    "name": "Amazon S3 Session",
+    "description": "My session for Amazon S3...",
     "testPlan":
     {
         "id": 12

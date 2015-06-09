@@ -21,6 +21,16 @@ package { $sysPackages:
   require => Exec['apt-get update'],
 }
 
+class { 'nodejs':
+  version => 'stable',
+  make_install => false,
+}
+
+package { 'bower':
+  provider => 'npm',
+  require  => Class['nodejs']
+}
+
 #class { 'python' :
 #    version    => 'system',
 #    pip        => true,

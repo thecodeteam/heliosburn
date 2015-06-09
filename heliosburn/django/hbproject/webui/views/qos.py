@@ -5,18 +5,18 @@ from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect, HttpResponseBadRequest, HttpResponse, HttpResponseNotFound, JsonResponse
 from django.shortcuts import render
 from webui.exceptions import UnauthorizedException, NotFoundException
-from webui.forms import TestPlanForm
-from webui.models import TestPlan
+from webui.forms import TestPlanForm, QoSForm
+from webui.models import QoS
 from webui.views import signout
 
 logger = logging.getLogger(__name__)
 
 
 @login_required
-def testplan_list(request):
+def qos_list(request):
 
     try:
-        testplans = TestPlan(auth_token=request.user.password).get_all()
+        qoss = QoS(auth_token=request.user.password).get_all()
     except UnauthorizedException:
         logger.warning('User unauthorized. Signing out...')
         return signout(request)
@@ -25,53 +25,52 @@ def testplan_list(request):
         return render(request, '500.html', {'message': inst.message})
 
     if request.is_ajax():
-        return JsonResponse(testplans)
+        return JsonResponse(qoss)
 
-    return render(request, 'testplan/testplan_list.html', testplans)
+    return render(request, 'qos/qos_list.html', qoss)
 
 
 @login_required
-def testplan_details(request, testplan_id):
+def qos_details(request, qos_id):
     try:
-        testplan = TestPlan(auth_token=request.user.password).get(testplan_id)
-        # rules = Rule(testplan_id, auth_token=request.user.password).get_all()
+        qos = QoS(auth_token=request.user.password).get(qos_id)
     except UnauthorizedException:
         logger.warning('User unauthorized. Signing out...')
         return signout(request)
     except NotFoundException:
-        logger.warning('The requested Test Plan "%s" does not exist', testplan_id)
+        logger.warning('The requested Test Plan "%s" does not exist', qos_id)
         return render(request, '404.html')
     except Exception as inst:
         logger.error('Unexpected exception', exc_info=True)
         messages.error(request, inst.message if inst.message else 'Unexpected error')
-        return HttpResponseRedirect(reverse('testplan_list'))
+        return HttpResponseRedirect(reverse('qos_list'))
 
-    data = {'testplan': testplan}
-    return render(request, 'testplan/testplan_details.html', data)
+    data = {'qos': qos}
+    return render(request, 'qos/qos_details.html', data)
 
 
 @login_required
-def testplan_new(request):
-    form = TestPlanForm(request.POST or None)
+def qos_new(request):
+    form = QoSForm(request.POST or None)
     if form.is_valid():
         try:
-            testplan_id = TestPlan(auth_token=request.user.password).create(form.cleaned_data)
-            return HttpResponseRedirect(reverse('testplan_details', args=(str(testplan_id),)))
+            qos_id = QoS(auth_token=request.user.password).create(form.cleaned_data)
+            return HttpResponseRedirect(reverse('qos_details', args=(str(qos_id),)))
         except UnauthorizedException:
             logger.warning('User unauthorized. Signing out...')
             return signout(request)
         except Exception as inst:
             logger.error('Unexpected exception', exc_info=True)
             messages.error(request, inst.message if inst.message else 'Unexpected error')
-            return HttpResponseRedirect(reverse('testplan_list'))
+            return HttpResponseRedirect(reverse('qos_list'))
 
-    return render(request, 'testplan/testplan_new.html', {'form': form})
+    return render(request, 'qos/qos_new.html', {'form': form})
 
 
 @login_required
-def testplan_update(request):
+def qos_update(request):
     if not request.POST:
-        return HttpResponseRedirect(reverse('testplan_list'))
+        return HttpResponseRedirect(reverse('qos_list'))
 
     name = request.POST.get('name')
     pk = request.POST.get('pk')
@@ -81,13 +80,15 @@ def testplan_update(request):
         response = 'field cannot be empty!'
         return HttpResponseBadRequest(response)
 
-    if name == 'latencyEnabled':
-        value = True if value == '1' else False
-    elif name == 'clientLatency' or name == 'serverLatency':
-        value = int(value)
+    if name == 'jitter-min':
+        name = 'jitter'
+        value = {'min': value}
+    elif name == 'jitter-max':
+        name = 'jitter'
+        value = {'max': value}
 
     try:
-        TestPlan(auth_token=request.user.password).update(pk, {name: value})
+        QoS(auth_token=request.user.password).update(pk, {name: value})
     except Exception as inst:
         logger.error('Unexpected exception', exc_info=True)
         return HttpResponseBadRequest(content='Error updating the Test Plan. {}'.format(inst.message))
@@ -95,21 +96,21 @@ def testplan_update(request):
 
 
 @login_required
-def testplan_delete(request):
+def qos_delete(request):
     if not request.POST:
-        return HttpResponseRedirect(reverse('testplan_list'))
+        return HttpResponseRedirect(reverse('qos_list'))
 
-    testplans = request.POST.getlist('testplans[]')
+    qoss = request.POST.getlist('qos[]')
     # Workaround to support different kinds of form submission
-    if testplans is None or len(testplans) == 0:
-        testplans = request.POST.getlist('testplans')
+    if qoss is None or len(qoss) == 0:
+        qoss = request.POST.getlist('qos')
 
-    t = TestPlan(auth_token=request.user.password)
-    for testplan_id in testplans:
+    t = QoS(auth_token=request.user.password)
+    for qos_id in qoss:
         try:
-            t.delete(testplan_id)
+            t.delete(qos_id)
         except NotFoundException:
-            logger.warning('The requested Test Plan "%s" does not exist', testplan_id)
+            logger.warning('The requested Test Plan "%s" does not exist', qos_id)
             return HttpResponseNotFound()
         except Exception as inst:
             logger.error('Unexpected exception', exc_info=True)

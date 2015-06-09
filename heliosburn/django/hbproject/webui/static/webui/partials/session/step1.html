@@ -1,0 +1,18 @@
+<div class="box box-primary">
+    <div class="box-body">
+        <div class="form-group">
+            <label for="sessionName">Session name</label>
+            <input type="text" class="form-control" name="name" ng-model="formData.name" placeholder="Session name...">
+        </div>
+        <div class="form-group">
+            <label for="sessionDescription">Session description</label>
+            <textarea class="form-control" name="description" rows="3" ng-model="formData.description" placeholder="Session description..."></textarea>
+        </div>
+
+    </div><!-- /.box-body -->
+
+    <div class="box-footer">
+        <a class="btn btn-default" href="{% url "session_list" %}" role="button">Cancel</a>
+        <a ui-sref="form.step2" class="btn btn-primary pull-right bold">Next →</a>
+    </div>
+</div><!-- /.box -->
