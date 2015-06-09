@@ -35,7 +35,7 @@ The response body contains a list containing the following elements in JSON form
 
 | Element | Description |
 |---|---|
-| TODO | TODO |
+| profiles | An array containing server overload profiles. |
 
 #### Status Codes
 
@@ -48,8 +48,88 @@ The response body contains a list containing the following elements in JSON form
 #### Response example
 
 ```json
-{   
-   todo    
+{
+    "profiles": [
+        {
+            "_id": "0xdeadbeef",
+            "name": "Raspberry PI Overload profile",
+            "description": "bla bla...",
+            "function": {
+                "type": "exponential",
+                "expValue": "3",
+                "growthRate": "3"
+            },
+            "response_triggers": [
+                {
+                    "fromLoad": 70,
+                    "toLoad": 80,
+                    "actions": [
+                        {
+                            "type": "response",
+                            "value": "503",
+                            "percentage": 30
+                        },
+                        {
+                            "type": "delay",
+                            "value": "300",
+                            "percentage": 100
+                        }
+                    ]
+                },
+                {
+                    "fromLoad": 80,
+                    "toLoad": null,
+                    "actions": [
+                        {
+                            "type": "response",
+                            "value": "503",
+                            "percentage": 100
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "_id": "0xfedbeef",
+            "name": "Blueberry PI Overload profile",
+            "description": "bla bla...",
+            "function": {
+                "type": "exponential",
+                "expValue": "3",
+                "growthRate": "3"
+            },
+            "response_triggers": [
+                {
+                    "fromLoad": 70,
+                    "toLoad": 80,
+                    "actions": [
+                        {
+                            "type": "response",
+                            "value": "503",
+                            "percentage": 30
+                        },
+                        {
+                            "type": "delay",
+                            "value": "300",
+                            "percentage": 100
+                        }
+                    ]
+                },
+                {
+                    "fromLoad": 80,
+                    "toLoad": null,
+                    "actions": [
+                        {
+                            "type": "response",
+                            "value": "503",
+                            "percentage": 100
+                        }
+                    ]
+                }
+            ]
+        }
+
+    ]
 }
 ```
 
@@ -79,9 +159,19 @@ The response header includes the following information:
 
 The response body contains the following elements in JSON format:
 
-| Element | Description |
-|---|---|
-| TODO| TODO |
+- name: string to name profile
+- description: string to describe profile
+- function: JSON containing:
+    - type: string
+    - expValue: integer
+    - growthRate: integer
+- response_triggers: array containing JSON(s):
+    - fromLoad: integer
+    - toLoad: integer
+    - actions: array containing JSON(s):
+        - type: string
+        - value: string
+        - percentage: float
 
 #### Status Codes
 
@@ -96,6 +186,7 @@ The response body contains the following elements in JSON format:
 
 ```json
 {
+    "_id": "0xfedbed",
     "name": "Raspberry PI Overload profile",
     "description": "bla bla...",
     "function": {
@@ -251,7 +342,7 @@ Server: Noelios-Restlet-Engine/1.1.5
 ## Update profile
 
 An application can update a profile by issuing an HTTP PUT request to the URL of the containing profile resource.
-In addition, the app needs to provide as input, JSON that identifies the new attribute values for the profile. Upon receiving the PUT request, the HeliosBurn service examines the input and updates any of the attributes that have been modified.
+In addition, the app needs to provide as input, JSON that represents the resource's new state.
 
 ### Request
 
@@ -273,17 +364,63 @@ The request header includes the following information:
 
 JSON input that contains a profile representation with the elements to be modified:
 
-| Element | Description |
-|---|---|
-| TODO | TODO |
+- name: string to name profile
+- description: string to describe profile
+- function: JSON containing:
+    - type: string
+    - expValue: integer
+    - growthRate: integer
+- response_triggers: array containing JSON(s):
+    - fromLoad: integer
+    - toLoad: integer
+    - actions: array containing JSON(s):
+        - type: string
+        - value: string
+        - percentage: float
 
 #### Request example
 
 ```json
 {
-    TODO
+    "name": "Strawberry PI Overload profile",
+    "description": "foo bar...",
+    "function": {
+        "type": "exponential",
+        "expValue": "3",
+        "growthRate": "3"
+    },
+    "response_triggers": [
+        {
+            "fromLoad": 70,
+            "toLoad": 80,
+            "actions": [
+                {
+                    "type": "response",
+                    "value": "503",
+                    "percentage": 30
+                },
+                {
+                    "type": "delay",
+                    "value": "300",
+                    "percentage": 100
+                }
+            ]
+        },
+        {
+            "fromLoad": 80,
+            "toLoad": null,
+            "actions": [
+                {
+                    "type": "response",
+                    "value": "503",
+                    "percentage": 100
+                }
+            ]
+        }
+    ]
 }
 ```
+
 ### Response
 
 #### Response Header

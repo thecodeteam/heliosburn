@@ -114,19 +114,19 @@ def post(request):
         else:
             return HttpResponseNotFound("testplan '%s' does not exist" % new['testplan'])
 
-    if "serverOverloadProfile" in new:
-        so_profile = dbc.serveroverload.find_one({"_id": ObjectId(new['serverOverloadProfile'])})
+    if ("serverOverloadProfile" in new) and ("id" in new['serverOverloadProfile']):
+        so_profile = dbc.serveroverload.find_one({"_id": ObjectId(new['serverOverloadProfile']['id'])})
         if so_profile is not None:
-            session['serverOverloadProfile'] = new['serverOverloadProfile']
+            session['serverOverloadProfile'] = new['serverOverloadProfile']['id']
         else:
-            return HttpResponseNotFound("serverOverloadProfile '%s' does not exist" % new['serverOverloadProfile'])
+            return HttpResponseNotFound("serverOverloadProfile '%s' does not exist" % new['serverOverloadProfile']['id'])
 
-    if "qosProfile" in new:
-        qos_profile = dbc.qos.find_one({"_id": ObjectId(new['qosProfile'])})
+    if ("qosProfile" in new) and ("id" in new['qosProfile']):
+        qos_profile = dbc.qos.find_one({"_id": ObjectId(new['qosProfile']['id'])})
         if qos_profile is not None:
-            session['qosProfile'] = new['qosProfile']
+            session['qosProfile'] = new['qosProfile']['id']
         else:
-            return HttpResponseNotFound("qosProfile'%s' does not exist" % new['qosProfile'])
+            return HttpResponseNotFound("qosProfile'%s' does not exist" % new['qosProfile']['id'])
 
     try:
         session_id = str(dbc.session.save(session))
@@ -177,6 +177,21 @@ def put(request, session_id):
                 session['testplan'] = new['testplan']
             else:
                 return HttpResponseNotFound("testplan '%s' does not exist" % new['testplan'])
+
+        if ("serverOverloadProfile" in new) and ("id" in new['serverOverloadProfile']):
+            so_profile = dbc.serveroverload.find_one({"_id": ObjectId(new['serverOverloadProfile']['id'])})
+            if so_profile is not None:
+                session['serverOverloadProfile'] = new['serverOverloadProfile']['id']
+            else:
+                return HttpResponseNotFound("serverOverloadProfile '%s' does not exist" % new['serverOverloadProfile']['id'])
+
+        if ("qosProfile" in new) and ("id" in new['qosProfile']):
+            qos_profile = dbc.qos.find_one({"_id": ObjectId(new['qosProfile']['id'])})
+            if qos_profile is not None:
+                session['qosProfile'] = new['qosProfile']['id']
+            else:
+                return HttpResponseNotFound("qosProfile'%s' does not exist" % new['qosProfile']['id'])
+
         try:
             session['updatedAt'] = datetime.isoformat(datetime.now())
             dbc.session.save(session)
