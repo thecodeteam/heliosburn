@@ -68,7 +68,7 @@ The response body contains a list containing the following elements in JSON form
         "upstreamHost": "github.com",
         "upstreamPort": 80,
         "qosProfile": "0xdeadbeef",
-        "ServerOverloadProfile": "0xfedbeef",
+        "serverOverloadProfile": "0xfedbeef",
 
         "createdAt": "2014-02-12 03:34:51",
         "updatedAt": "2014-02-12 03:34:51",
@@ -91,7 +91,7 @@ The response body contains a list containing the following elements in JSON form
         "upstreamHost": "github.com",
         "upstreamPort": 80,
         "qosProfile": "0xdeadbeef",
-        "ServerOverloadProfile": "0xfedbeef",
+        "serverOverloadProfile": "0xfedbeef",
 
         "description": "This is a description for a Session",
         "createdAt": "2014-02-12 03:34:51",
@@ -173,7 +173,7 @@ The response body contains the following elements in JSON format:
         "upstreamHost": "github.com",
         "upstreamPort": 80,
         "qosProfile": "0xdeadbeef",
-        "ServerOverloadProfile": "0xfedbeef",
+        "serverOverloadProfile": "0xfedbeef",
         "createdAt": "2014-02-12 03:34:51",
         "updatedAt": "2014-02-12 03:34:51",
         "testPlan":
@@ -240,7 +240,7 @@ Content-Type: application/json; charset=UTF-8
     "upstreamHost": "github.com",
     "upstreamPort": 80,
     "qosProfile": "0xdeadbeef",
-    "ServerOverloadProfile": "0xfedbeef",
+    "serverOverloadProfile": "0xfedbeef",
     "testPlan":
         {
             "id": 12,
