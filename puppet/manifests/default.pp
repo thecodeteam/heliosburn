@@ -23,6 +23,7 @@ package { $sysPackages:
 
 class { 'nodejs':
   version => 'stable',
+  make_install => false,
 }
 
 package { 'bower':
