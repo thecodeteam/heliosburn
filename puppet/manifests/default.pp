@@ -15,10 +15,20 @@ package { ['python-software-properties']:
   require => Exec['apt-get update'],
 }
 
-$sysPackages = ['git', 'curl', 'supervisor', 'mongodb-server', 'redis-server', 'python-pip', 'python-dev', 'libpython-dev', 'npm', 'nodejs-legacy']
+$sysPackages = ['git', 'curl', 'supervisor', 'mongodb-server', 'redis-server', 'python-pip', 'python-dev', 'libpython-dev']
 package { $sysPackages:
   ensure => "installed",
   require => Exec['apt-get update'],
+}
+
+class { 'nodejs':
+  version => 'stable',
+  make_install => false,
+}
+
+package { 'bower':
+  provider => 'npm',
+  require  => Class['nodejs']
 }
 
 #class { 'python' :

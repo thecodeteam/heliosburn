@@ -787,6 +787,88 @@ class QOSViewTestCase(APITestCase):
         delete()
 
 
+class ServerOverloadViewTestCase(APITestCase):
+    """
+    Test views/serveroverload.py CRUD
+    """
+
+    def test_crud(self):
+        """
+        Tests CRUD for server overload model.
+        """
+        import json
+
+        def create():
+            self.profile = {
+                'name': 'test profile',
+                'description': 'test description',
+                'function': {
+                    'type': 'test type',
+                    'expValue': 1,
+                    'growthRate': 1,
+                },
+                'response_triggers': [
+                    {
+                        'fromLoad': 1,
+                        'toLoad': 1,
+                        'actions': [
+                            {
+                                'type': 'response',
+                                'value': '503',
+                                'percentage': 0.3,
+                            },
+                        ],
+                    },
+                ],
+            }
+            body = json.dumps(self.profile)
+            self.login(admin_username, admin_password)
+            response = self.client.post(path=api_url + "/serveroverload/",
+                                        data=body,
+                                        content_type="application/json",
+                                        HTTP_X_AUTH_TOKEN=self.x_auth_token)
+
+            self.assertEqual(response.status_code, 200)
+            self.assertIn("location", response._headers)
+            in_json = json.loads(response.content)
+            self.assertIn("id", in_json)
+            self.serveroverload_id = in_json['id']
+
+        def read():
+            self.login(admin_username, admin_password)
+            response = self.client.get(path=api_url + "/serveroverload/" + self.serveroverload_id,
+                                       HTTP_X_AUTH_TOKEN=self.x_auth_token)
+            self.assertEqual(response.status_code, 200)
+
+        def update():
+            self.profile['name'] = 'updated name'
+            body = json.dumps(self.profile)
+            self.login(admin_username, admin_password)
+            response = self.client.put(path=api_url + "/serveroverload/" + self.serveroverload_id,
+                                       data=body,
+                                       content_type="application/json",
+                                       HTTP_X_AUTH_TOKEN=self.x_auth_token)
+            self.assertEqual(response.status_code, 200)
+
+        def delete():
+            self.login(admin_username, admin_password)
+            response = self.client.delete(path=api_url + "/serveroverload/" + self.serveroverload_id,
+                                          HTTP_X_AUTH_TOKEN=self.x_auth_token)
+            self.assertEqual(response.status_code, 200)
+
+        print("Testing CREATE in %s" % self.__class__)
+        create()
+
+        print("Testing READ in %s" % self.__class__)
+        read()
+
+        print("Testing UPDATE in %s" % self.__class__)
+        update()
+
+        print("Testing DELETE in %s" % self.__class__)
+        delete()
+
+
 class LogTestCase(APITestCase):
     """
     Test log retrieval.
