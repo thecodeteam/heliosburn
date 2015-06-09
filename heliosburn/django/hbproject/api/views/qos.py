@@ -7,6 +7,7 @@ import json
 from api.models import db_model, auth
 from api.models.auth import RequireLogin
 from bson import ObjectId
+from datetime import datetime
 
 logger = logging.getLogger(__name__)
 
@@ -90,7 +91,9 @@ def post(request):
         "latency": new['latency'],
         "name": new['name'],
         "jitter": {"min": new['jitter']['min'], "max": new['jitter']['max']},
-        "trafficLoss": new['trafficLoss']
+        "trafficLoss": new['trafficLoss'],
+        "createdAt": datetime.isoformat(datetime.now()),
+        "updatedAt": datetime.isoformat(datetime.now()),
     }
 
     if "description" in new:
@@ -133,6 +136,9 @@ def put(request, qos_id):
         qos_profile['jitter']['max'] = new['jitter']['max']
     if "trafficLoss" in new:
         qos_profile['trafficLoss'] = new['trafficLoss']
+
+
+    qos_profile['updatedAt'] = datetime.isoformat(datetime.now())
 
     dbc.qos.save(qos_profile)
     logger.info("qos_profile '%s' updated by '%s'" % (qos_id, request.user['username']))
