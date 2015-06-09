@@ -48,7 +48,7 @@ The QoS profile is retrieved from information contained within the session docum
 }
 ```
 
-The `serverOverload.id` is then used to make a secod query to retrieve the server overload profile.
+The `qos.id` is then used to make a secod query to retrieve the quality of servic profile.
 When the module receives a response or request, each QoS quality is applied to the traffic as defined by the retrieved QoS profile.
 
 ## QoS Profile

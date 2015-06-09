@@ -3,6 +3,7 @@ import random
 import datetime
 from module import AbstractModule
 from twisted.python import log
+from threading import Lock
 
 test_profile = {
     "createdAt": "2014-02-12 03:34:51",
@@ -16,67 +17,50 @@ test_profile = {
 }
 
 test_session = {
-    "id": 1,
-    "name": "Session A",
-    "description": "This is a description for a Session",
-    "upstreamHost": "github.com",
-    "upstreamPort": 80,
-    "createdAt": "2014-02-12 03:34:51",
-    "updatedAt": "2014-02-12 03:34:51",
-    "testPlan":
-    {
-        "id": 12,
-        "name": "ViPR Test plan"
-    },
-    "qos":
-    {
-        "id": 45
-    },
-    "serverOverload":
-    {
-        "id": 951
-    },
-    "user":
-    {
         "id": 1,
-        "username": "John Doe"
-    },
-    "executions": 42,
-}
+        "name": "Session A",
+        "description": "This is a description for a Session",
+        "upstreamHost": "github.com",
+        "upstreamPort": 80,
+        "qosProfile": "0xdeadbeef",
+        "ServerOverloadProfile": "0xfedbeef",
+
+        "createdAt": "2014-02-12 03:34:51",
+        "updatedAt": "2014-02-12 03:34:51",
+        "testPlan": {
+                "id": 12,
+                "name": "ViPR Test plan"
+            },
+        "user": {
+                "id": 1,
+                "username": "John Doe"
+            },
+        "executions": 42,
+        "latest_execution_at": "2014-02-12 03:34:51"
+    }
 
 
-class QOSAction(object):
+class QOSInjector(object):
 
-    def __init__(self, action_dict, request=None, response=None):
-        self.action_dict = action_dict
+    def __init__(self, request, qos_profile):
         self.request = request
-        self.response = response
+        self.qos_profile = qos_profile
 
     def execute(self):
         pass
 
 
-class LatencyAction(QOSAction):
-
-    def __init__(self,
-                 action_dict,
-                 request=None,
-                 response=None,
-                 minimum=None,
-                 maximum=None):
-
-        QOSAction.__init__(self, action_dict, request, response)
-
-        if minimum:
-            self.minimum = minimum
-        if maximum:
-            self.maximum = maximum
+class LatencyInjector(QOSInjector):
 
     def execute(self):
-        lagtime = None
+        lagtime = 0
+        latency = self.qos_profile['latency']
+        minimum = self.qos_profile['jitter']['minimum']
+        maximum = self.qos_profile['jitter']['maximum']
 
-        if 0 < self.minimum < self.maximum:
-            lagtime = random.randrange(self.minimum, self.maximum)
+        if 0 < minimum < maximum:
+            lagtime = random.randrange(latency + self.minimum,
+                                       latency + self.maximum)
 
         if lagtime is not None:
             log.msg("sleeping for: %s (%s, %s)" % (lagtime,
@@ -84,38 +68,36 @@ class LatencyAction(QOSAction):
                                                    self.maximum))
             time.sleep(lagtime)
 
-        if self.request:
-            return self.request
-        else:
-            return self.response
+        return self.request
 
 
-class JitterAction(QOSAction):
+class PacketLossInjector(QOSInjector):
 
-    def execute(self):
-        pass
-
-
-class PacketLossAction(QOSAction):
+    _mutex = Lock()
+    _packets = 0
+    _requests_dropped = 0
 
     def execute(self):
-        pass
 
+        self._mutex.aquire()
 
-class NullAction(QOSAction):
-    def execute(self):
-        if self.request:
-            return self.request
-        else:
-            return self.response
+        self._packets += 1
+        traffic_loss = self.qos_profile["trafficloss"]
+        return_value = self.request
+
+        if self._packets_dropped/self._packets < traffic_loss:
+            self._requests_dropped += 1
+            return_value = False
+
+        self._mutex.release()
+
+        return return_value
 
 
 class QOS(AbstractModule):
     actions = {
-        'latency': LatencyAction,
-        'jitter': JitterAction,
-        'packet_loss': PacketLossAction,
-        'null': NullAction
+        'latency': LatencyInjector,
+        'packet_loss': PacketLossInjector,
     }
 
     def __init__(self):
@@ -130,21 +112,28 @@ class QOS(AbstractModule):
     def configure(self, **configs):
         pass
 
-    def handle_request(self, request, minimum=1, maximum=1):
+    def handle_request(self, request):
 
         return request
 
-    def handle_response(self, response, minimum=1, maximum=1):
-        pass
+    def _get_session(self, session_id):
+        # get from mongo here
+        return test_session
+
+    def _set_profile(self, session_id):
+        session = self._get_session(session_id)
+        session["qosProfile"]
+        # get from mongo here
+        self.qos_profile = test_profile
 
     def start(self, **params):
-        self.session_id = params['session_id']
+        session_id = params['session_id']
         self.state = "running"
         self.status = str(datetime.datetime.now())
+        self._set_profile(session_id)
         log.msg("QOS module started at: " + self.status)
 
     def stop(self, **params):
-        self.injection_engine = None
         self.state = "stopped"
         self.status = str(datetime.datetime.now())
         log.msg("QOS module stopped at: " + self.status)

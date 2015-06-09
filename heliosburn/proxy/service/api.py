@@ -348,9 +348,8 @@ class StopRecording(ServerOperation):
     def stop_recording(self, result):
         self.controller.module_registry.stop(module_name='TrafficRecorder',
                                              **self.params)
-        self.response.set_message("Stopped Recording: { "
-                                  + self.response.get_message() + ", "
-                                  + "}")
+        self.response.set_message("Stopped Recording: { " +
+                                  self.response.get_message() + ", " + "}")
 
 
 class StartRecording(ServerOperation):
@@ -416,9 +415,8 @@ class StopInjection(ServerOperation):
     def stop_injection(self, result):
         self.controller.module_registry.stop(module_name='Injection',
                                              **self.params)
-        self.response.set_message("Stopped Injection Session: { "
-                                  + self.response.get_message() + ", "
-                                  + "}")
+        self.response.set_message("Stopped Injection Session: { " +
+                                  self.response.get_message() + ", " + "}")
 
 
 class ResetPlugins(ServerOperation):
