@@ -95,7 +95,7 @@ class PacketLossInjector(QOSInjector):
 
 
 class QOS(AbstractModule):
-    actions = {
+    injectors = {
         'latency': LatencyInjector,
         'packet_loss': PacketLossInjector,
     }
@@ -113,18 +113,28 @@ class QOS(AbstractModule):
         pass
 
     def handle_request(self, request):
+        for injector in self.injectors:
+            request = injector(request, self.qos_profile).execute()
 
-        return request
+# might be a problem upstream if no request is returned
+        if request:
+            return request
 
     def _get_session(self, session_id):
-        # get from mongo here
-        return test_session
+        conn = pymongo.MongoClient()
+        db = conn.proxy
+        session = db.session.find_one({"_id": session_id})
+        session = test_session
+        return session
 
     def _set_profile(self, session_id):
         session = self._get_session(session_id)
-        session["qosProfile"]
-        # get from mongo here
-        self.qos_profile = test_profile
+        profile_id = session["qosProfile"]
+        conn = pymongo.MongoClient()
+        db = conn.proxy
+        profile = db.qos_profile.find_one({"_id": profile_id})
+        profile = test_profile
+        self.qos_profile = profile
 
     def start(self, **params):
         session_id = params['session_id']
