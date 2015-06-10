@@ -104,6 +104,7 @@ def post(request):
         'upstreamPort': new['upstreamPort'],
         'createdAt': datetime.isoformat(datetime.now()),
         'updatedAt': datetime.isoformat(datetime.now()),
+        'executions': 0,
     }
 
     # Add optional fields
@@ -242,6 +243,9 @@ def start(request, session_id):
         return HttpResponseNotFound()
     if session is None:
         return HttpResponseNotFound()
+
+    session['executions'] += 1
+    dbc.session.save(session)
 
     # set upstream host/port before starting
     redis_wrapper.publish_to_proxy(json.dumps({
