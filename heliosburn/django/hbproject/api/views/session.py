@@ -260,7 +260,7 @@ def start(request, session_id):
     }))
 
     redis_wrapper.publish_to_proxy(json.dumps({
-        "operation": "start_injection",
+        "operation": "start_session",
         "param": {"session": session_id},
         "key": response_key,
     }))
@@ -291,7 +291,7 @@ def stop(request, session_id):
     r = redis_wrapper.init_redis()
     response_key = str(ObjectId())
     redis_wrapper.publish_to_proxy(json.dumps({
-        "operation": "stop_injection",
+        "operation": "stop_session",
         "param": {"session": session_id},
         "key": response_key,
     }))

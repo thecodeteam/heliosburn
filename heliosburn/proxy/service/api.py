@@ -125,13 +125,13 @@ class OperationFactory(object):
                                        op_string['key'],
                                        recording_id=op_string['param'])
 
-        if "stop_injection" == op_string['operation']:
+        if "stop_session" == op_string['operation']:
             operation = StopInjection(self.controller,
                                       self.response_factory,
                                       op_string['key'],
                                       recording_id=op_string['param'])
 
-        if "start_injection" == op_string['operation']:
+        if "start_session" == op_string['operation']:
             operation = StartInjection(self.controller,
                                        self.response_factory,
                                        op_string['key'],
