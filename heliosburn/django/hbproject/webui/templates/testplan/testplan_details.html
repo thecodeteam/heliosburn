@@ -111,7 +111,7 @@
 {% block content %}
 
     <div class="row">
-        <div class="col-md-6">
+        <div class="col-md-12">
             <div class="nav-tabs-custom">
                 <ul class="nav nav-tabs">
                     <li class="header"><i class="fa fa-info-circle"></i>Test Plan details</li>
@@ -124,23 +124,6 @@
                         <dd>{{ testplan.createdAt }}</dd>
                         <dt>Last updated</dt>
                         <dd>{{ testplan.updatedAt }}</dd>
-                    </dl>
-                </div><!-- /.tab-content -->
-            </div>
-        </div>
-        <div class="col-md-6">
-            <div class="nav-tabs-custom">
-                <ul class="nav nav-tabs">
-                    <li class="header"><i class="fa fa-clock-o"></i>Latency</li>
-                </ul>
-                <div class="tab-content">
-                    <dl class="dl-horizontal">
-                        <dt>Latency enabled</dt>
-                        <dd><a href="#" id="testplan-enablelatency">{{ testplan.latencyEnabled|enabler }}</a></dd>
-                        <dt>Client latency</dt>
-                        <dd><a href="#" id="testplan-clientlatency">{{ testplan.clientLatency }}</a> ms</dd>
-                        <dt>Server latency</dt>
-                        <dd><a href="#" id="testplan-serverlatency">{{ testplan.serverLatency }}</a> ms</dd>
                     </dl>
                 </div><!-- /.tab-content -->
             </div>

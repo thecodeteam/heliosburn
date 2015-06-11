@@ -81,11 +81,6 @@ def testplan_update(request):
         response = 'field cannot be empty!'
         return HttpResponseBadRequest(response)
 
-    if name == 'latencyEnabled':
-        value = True if value == '1' else False
-    elif name == 'clientLatency' or name == 'serverLatency':
-        value = int(value)
-
     try:
         TestPlan(auth_token=request.user.password).update(pk, {name: value})
     except Exception as inst:
