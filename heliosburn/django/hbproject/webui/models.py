@@ -52,6 +52,18 @@ class Base(object):
                                                     extra=extra)
 
 
+class Session(Base):
+    __endpoint__ = '/session/'
+    __resourcename__ = 'session'
+
+    def create(self, data):
+        url = self.get_url()
+        headers = {'X-Auth-Token': self.auth_token}
+        response = requests.post(url, headers=headers, data=json.dumps(data))
+        resource_id = get_resource_id_or_raise_exception(self.__resourcename__, response)
+        return resource_id
+
+
 class TestPlan(Base):
     __endpoint__ = '/testplan/'
     __resourcename__ = 'testplan'
