@@ -40,6 +40,8 @@ The response body contains a list containing the following elements in JSON form
 | latency | A integer value that specifies latency in milliseconds. |
 | jitter | A JSON containing "min" and "max" keys that specify jitter min/max integers in milliseconds. |
 | trafficLoss | A decimal value that specifies traffic loss as a percentage(eg 0.01 == 1%) |
+| createdAt | A timestamp when the profile was created. |
+| updatedAt | A timestamp when the profile was last updated. |
 
 #### Status Codes
 
@@ -57,6 +59,8 @@ The response body contains a list containing the following elements in JSON form
             "_id": "0xdeadbeef",
             "name": "qos profile name",
             "description": "qos profile description",
+            "createdAt": "2014-02-12 03:34:51",
+            "updatedAt": "2014-02-12 03:34:51",
             "latency": 100,
             "jitter": {
                 "min": 30,
@@ -68,6 +72,8 @@ The response body contains a list containing the following elements in JSON form
             "_id": "0xbeefbeef",
             "name": "qos profile name",
             "description": "qos profile description",
+            "createdAt": "2014-02-12 03:34:51",
+            "updatedAt": "2014-02-12 03:34:51",
             "latency": 150,
             "jitter": {
                 "min": 15,
@@ -113,6 +119,8 @@ The response body contains the following elements in JSON format:
 | latency | A integer value that specifies latency in milliseconds. |
 | jitter | A JSON containing "min" and "max" keys that specify jitter min/max integers in milliseconds. |
 | trafficLoss | A decimal value that specifies traffic loss as a percentage(eg 0.01 == 1%) |
+| createdAt | A timestamp when the profile was created. |
+| updatedAt | A timestamp when the profile was last updated. |
 
 #### Status Codes
 
@@ -130,6 +138,8 @@ The response body contains the following elements in JSON format:
     "_id": "0xdeadbeef",
     "name": "qos profile name",
     "description": "qos profile description",
+    "createdAt": "2014-02-12 03:34:51",
+    "updatedAt": "2014-02-12 03:34:51",
     "latency": 100,
     "jitter": {
         "min": 30,

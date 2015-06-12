@@ -1,6 +1,5 @@
 import pymongo
 import json
-import uuid
 import datetime
 from module import AbstractModule
 from twisted.internet.endpoints import TCP4ClientEndpoint

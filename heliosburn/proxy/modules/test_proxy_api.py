@@ -1,5 +1,4 @@
 import json
-from twisted.python import log
 from service.api import OperationResponseFactory
 from module import AbstractAPITestModule
 
@@ -244,7 +243,6 @@ class TestBusyRecordingAPI(TestAPISuccess):
 
     def evaluate(self, result):
         response = json.loads(result)
-        expected = self.get_expected()
         result = self.assertEqual(501, response['code'])
         success_message = self.__class__.__name__ + ": "
         success_message += "SUCCESS!\n"

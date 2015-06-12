@@ -104,6 +104,7 @@ def post(request):
         'upstreamPort': new['upstreamPort'],
         'createdAt': datetime.isoformat(datetime.now()),
         'updatedAt': datetime.isoformat(datetime.now()),
+        'executions': 0,
     }
 
     # Add optional fields
@@ -114,19 +115,19 @@ def post(request):
         else:
             return HttpResponseNotFound("testplan '%s' does not exist" % new['testplan'])
 
-    if "serverOverloadProfile" in new:
-        so_profile = dbc.serveroverload.find_one({"_id": ObjectId(new['serverOverloadProfile'])})
+    if ("serverOverloadProfile" in new) and ("id" in new['serverOverloadProfile']):
+        so_profile = dbc.serveroverload.find_one({"_id": ObjectId(new['serverOverloadProfile']['id'])})
         if so_profile is not None:
-            session['serverOverloadProfile'] = new['serverOverloadProfile']
+            session['serverOverloadProfile'] = new['serverOverloadProfile']['id']
         else:
-            return HttpResponseNotFound("serverOverloadProfile '%s' does not exist" % new['serverOverloadProfile'])
+            return HttpResponseNotFound("serverOverloadProfile '%s' does not exist" % new['serverOverloadProfile']['id'])
 
-    if "qosProfile" in new:
-        qos_profile = dbc.qos.find_one({"_id": ObjectId(new['qosProfile'])})
+    if ("qosProfile" in new) and ("id" in new['qosProfile']):
+        qos_profile = dbc.qos.find_one({"_id": ObjectId(new['qosProfile']['id'])})
         if qos_profile is not None:
-            session['qosProfile'] = new['qosProfile']
+            session['qosProfile'] = new['qosProfile']['id']
         else:
-            return HttpResponseNotFound("qosProfile'%s' does not exist" % new['qosProfile'])
+            return HttpResponseNotFound("qosProfile'%s' does not exist" % new['qosProfile']['id'])
 
     try:
         session_id = str(dbc.session.save(session))
@@ -177,6 +178,21 @@ def put(request, session_id):
                 session['testplan'] = new['testplan']
             else:
                 return HttpResponseNotFound("testplan '%s' does not exist" % new['testplan'])
+
+        if ("serverOverloadProfile" in new) and ("id" in new['serverOverloadProfile']):
+            so_profile = dbc.serveroverload.find_one({"_id": ObjectId(new['serverOverloadProfile']['id'])})
+            if so_profile is not None:
+                session['serverOverloadProfile'] = new['serverOverloadProfile']['id']
+            else:
+                return HttpResponseNotFound("serverOverloadProfile '%s' does not exist" % new['serverOverloadProfile']['id'])
+
+        if ("qosProfile" in new) and ("id" in new['qosProfile']):
+            qos_profile = dbc.qos.find_one({"_id": ObjectId(new['qosProfile']['id'])})
+            if qos_profile is not None:
+                session['qosProfile'] = new['qosProfile']['id']
+            else:
+                return HttpResponseNotFound("qosProfile'%s' does not exist" % new['qosProfile']['id'])
+
         try:
             session['updatedAt'] = datetime.isoformat(datetime.now())
             dbc.session.save(session)
@@ -228,20 +244,11 @@ def start(request, session_id):
     if session is None:
         return HttpResponseNotFound()
 
-    # set upstream host/port before starting
-    redis_wrapper.publish_to_proxy(json.dumps({
-        "operation": "upstream_host",
-        "param": session['upstreamHost'],
-        "key": "0xdeadbeef"
-    }))
-    redis_wrapper.publish_to_proxy(json.dumps({
-        "operation": "upstream_port",
-        "param": session['upstreamPort'],
-        "key": "0xdeadbeef"
-    }))
+    session['executions'] += 1
+    dbc.session.save(session)
 
     redis_wrapper.publish_to_proxy(json.dumps({
-        "operation": "start_injection",
+        "operation": "start_session",
         "param": {"session": session_id},
         "key": response_key,
     }))
@@ -272,7 +279,7 @@ def stop(request, session_id):
     r = redis_wrapper.init_redis()
     response_key = str(ObjectId())
     redis_wrapper.publish_to_proxy(json.dumps({
-        "operation": "stop_injection",
+        "operation": "stop_session",
         "param": {"session": session_id},
         "key": response_key,
     }))

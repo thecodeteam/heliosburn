@@ -48,7 +48,7 @@ The QoS profile is retrieved from information contained within the session docum
 }
 ```
 
-The `serverOverload.id` is then used to make a secod query to retrieve the server overload profile.
+The `qos.id` is then used to make a secod query to retrieve the quality of servic profile.
 When the module receives a response or request, each QoS quality is applied to the traffic as defined by the retrieved QoS profile.
 
 ## QoS Profile
@@ -56,7 +56,7 @@ When the module receives a response or request, each QoS quality is applied to t
  The QoS profile can currently support three service quality types: latency, jitter and traffic loss.
 Three qualities are implemented and applied to the http proxy traffic with the parameters given by the QoS_profile as follows:
 
-| Feature      | Context | Description                                                                                                           |
+| Feature     | Context | Description                                                                                                           |
 |:------------|:--------|:----------------------------------------------------------------------------------------------------------------------|
 | Latency     | request | Injectes a constant wait time into the the traffic stream so as to increase the round-trip time of each request       |
 | Jitter      | request | Injects random wait time into the traffic stream so as to increase the round-trip time of each request inconsistently |
@@ -66,6 +66,8 @@ Three qualities are implemented and applied to the http proxy traffic with the p
 
 ```json
 {
+    "createdAt": "2014-02-12 03:34:51",
+    "updatedAt": "2014-02-12 03:34:51",
     "latency": 100,
     "jitter": {
         "min": 30,
@@ -82,17 +84,17 @@ E.g. latency=100ms and jitter(min=30ms, max=50ms) means that latency will vary f
 
 The `latency` quality has the following parameters.
 
-| Element | Context | Description                                                     |
-|:--------|:--------|:----------------------------------------------------------------|
+| Element | Context | Description                                        |
+|:--------|:--------|:---------------------------------------------------|
 | delay   | request | The delay, in miliseconds, the module will inject. |
-|
+|         |         |                                                    |
 
 ## Jitter
 
 The `Jitter` quality has the following parameters.
 
-| Element | Context | Description                                                     |
-|:--------|:--------|:----------------------------------------------------------------|
+| Element | Context | Description                                                          |
+|:--------|:--------|:---------------------------------------------------------------------|
 | maximum | request | The maximum amount of delay, in miliseconds, the module will inject. |
 | minimum | request | The minimum amount of delay, in miliseconds, the module will inject. |
 

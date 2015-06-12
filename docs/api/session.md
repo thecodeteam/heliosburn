@@ -46,8 +46,8 @@ The response body contains a list containing the following elements in JSON form
 | testPlan | Test Plan JSON representation. Refer to the Test Plan resource documentation. |
 | user | User JSON representation. Refer to the User resource documentation. |
 | executions | An integer value that specifies the number of times the session has been executed. |
-| qosProfile | The ID of a QoS profile . |
-| serverOverloadProfile | The ID of a Server Overload profile. |
+| qosProfile | Optional JSON containing a single key "id", which contains the ID of a QoS profile . |
+| serverOverloadProfile | Optional JSON containing a single key "id", which contains the ID of a Server Overload profile. |
 
 #### Status Codes
 
@@ -67,9 +67,14 @@ The response body contains a list containing the following elements in JSON form
         "description": "This is a description for a Session",
         "upstreamHost": "github.com",
         "upstreamPort": 80,
-        "qosProfile": "0xdeadbeef",
-        "ServerOverloadProfile": "0xfedbeef",
-
+        "qosProfile": 
+            {
+                "id": "0xdeadbeef"
+            },
+        "serverOverloadProfile": 
+            {
+                "0xfedbeef"
+            },
         "createdAt": "2014-02-12 03:34:51",
         "updatedAt": "2014-02-12 03:34:51",
         "testPlan":
@@ -90,8 +95,14 @@ The response body contains a list containing the following elements in JSON form
         "name": "ViPR Session 1",
         "upstreamHost": "github.com",
         "upstreamPort": 80,
-        "qosProfile": "0xdeadbeef",
-        "ServerOverloadProfile": "0xfedbeef",
+        "qosProfile": 
+            {
+                "id": "0xdeadbeef"
+            },
+        "serverOverloadProfile": 
+            {
+                "0xfedbeef"
+            },
 
         "description": "This is a description for a Session",
         "createdAt": "2014-02-12 03:34:51",
@@ -150,8 +161,8 @@ The response body contains the following elements in JSON format:
 | testPlan | Test Plan JSON representation. Refer to the Test Plan resource documentation. |
 | user | User JSON representation. Refer to the User resource documentation. |
 | executions | An integer value that specifies the number of times the session has been executed. |
-| qosProfile | The ID of a QoS profile . |
-| serverOverloadProfile | The ID of a Server Overload profile. |
+| qosProfile | Optional JSON containing a single key "id", which contains the ID of a QoS profile . |
+| serverOverloadProfile | Optional JSON containing a single key "id", which contains the ID of a Server Overload profile. |
 
 #### Status Codes
 
@@ -172,8 +183,14 @@ The response body contains the following elements in JSON format:
         "description": "This is a description for a Session",
         "upstreamHost": "github.com",
         "upstreamPort": 80,
-        "qosProfile": "0xdeadbeef",
-        "ServerOverloadProfile": "0xfedbeef",
+        "qosProfile": 
+            {
+                "id": "0xdeadbeef"
+            },
+        "serverOverloadProfile": 
+            {
+                "0xfedbeef"
+            },
         "createdAt": "2014-02-12 03:34:51",
         "updatedAt": "2014-02-12 03:34:51",
         "testPlan":
@@ -221,8 +238,8 @@ JSON input that contains a Session representation with the following elements:
 | testPlan | Optional. Test Plan JSON representation containing only the ID. |
 | upstreamHost | The upstream host or IP of the HTTP server to test. |
 | upstreamPort | The upstream port number of the HTTP server to test. |
-| qosProfile | The ID of a QoS profile . |
-| serverOverloadProfile | The ID of a Server Overload profile. |
+| qosProfile | Optional JSON containing a single key "id", which contains the ID of a QoS profile . |
+| serverOverloadProfile | Optional JSON containing a single key "id", which contains the ID of a Server Overload profile. |
 
 
 #### Request example
@@ -239,8 +256,14 @@ Content-Type: application/json; charset=UTF-8
     "description": "My session for Amazon S3...",
     "upstreamHost": "github.com",
     "upstreamPort": 80,
-    "qosProfile": "0xdeadbeef",
-    "ServerOverloadProfile": "0xfedbeef",
+    "qosProfile": 
+        {
+            "id": "0xdeadbeef"
+        },
+    "serverOverloadProfile": 
+        {
+            "0xfedbeef"
+        },
     "testPlan":
         {
             "id": 12,
@@ -310,8 +333,8 @@ JSON input that contains a Session representation with the elements to be modifi
 | name | Name of the session. |
 | description | Description of the session. |
 | testPlan | Test Plan JSON representation containing only the ID. |
-| qosProfile | The ID of a QoS profile . |
-| serverOverloadProfile | The ID of a Server Overload profile. |
+| qosProfile | Optional JSON containing a single key "id", which contains the ID of a QoS profile . |
+| serverOverloadProfile | Optional JSON containing a single key "id", which contains the ID of a Server Overload profile. |
 
 #### Request example
 
