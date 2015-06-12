@@ -2,6 +2,7 @@ import redis
 import modules
 import json
 import datetime
+import pymongo
 from zope.interface import implements
 from zope.interface import Interface
 from twisted.internet import defer
@@ -15,6 +16,29 @@ from twisted.web import server
 from twisted.web import resource
 from protocols.redis import HBRedisSubscriberFactory
 from protocols.redis import HBRedisTestMessageHandlerFactory
+
+test_session = {
+        "id": 1,
+        "name": "Session A",
+        "description": "This is a description for a Session",
+        "upstreamHost": "github.com",
+        "upstreamPort": 80,
+        "qosProfile": "0xdeadbeef",
+        "ServerOverloadProfile": "0xfedbeef",
+
+        "createdAt": "2014-02-12 03:34:51",
+        "updatedAt": "2014-02-12 03:34:51",
+        "testPlan": {
+                "id": 12,
+                "name": "ViPR Test plan"
+            },
+        "user": {
+                "id": 1,
+                "username": "John Doe"
+            },
+        "executions": 42,
+        "latest_execution_at": "2014-02-12 03:34:51"
+    }
 
 
 class HBProxyEchoServer(resource.Resource):
@@ -190,6 +214,17 @@ class AbstractModule(object):
             return True
         else:
             return False
+
+    def get_session(self, session_id):
+        if not self.session:
+            conn = pymongo.MongoClient()
+            db = conn.proxy
+            self.session = db.session.find_one({"_id": session_id})
+            self.session = test_session
+            self._set_upstream_server(host=self.session["upstream_host"],
+                                      port=self.session["upstream_port"]
+                                      )
+        return self.session
 
 
 class AbstractAPITestModule(AbstractModule, unittest.TestCase):
