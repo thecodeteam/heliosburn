@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+
+{% load staticfiles %}
+{% load django_bootstrap_breadcrumbs %}
+{% load tags %}
+
+{% block title %}Server Overload Manager{% endblock %}
+{% block content_header %}
+    <a href="#" id="serveroverload-name">{{ serveroverload.name }}</a>
+{% endblock %}
+{% block content_subheader %}{% endblock %}
+
+{% block breadcrumbs %}
+    {{ block.super }}
+    {% breadcrumb "Server Overload profiles" "serveroverload_list" %}
+    {% breadcrumb serveroverload.name "serveroverload_details" serveroverload.id %}
+{% endblock %}
+
+{% block styles %}
+    <!-- DATA TABLES -->
+    <link href="{% static 'webui/css/datatables/dataTables.bootstrap.css' %}" rel="stylesheet" type="text/css" />
+    <!-- X-editable -->
+    <link href="//cdnjs.cloudflare.com/ajax/libs/x-editable/1.5.0/bootstrap3-editable/css/bootstrap-editable.css" rel="stylesheet"/>
+{% endblock %}
+
+{% block scripts %}
+    <!-- X-Editable -->
+    <script src="//cdnjs.cloudflare.com/ajax/libs/x-editable/1.5.0/bootstrap3-editable/js/bootstrap-editable.min.js"></script>
+    <script type="text/javascript">
+        $.fn.editable.defaults.mode = 'inline';
+
+        //editables
+        $('#serveroverload-name').editable({
+            url: '{% url 'serveroverload_update' %}',
+            type: 'text',
+            pk: '{{ serveroverload.id }}',
+            name: 'name',
+            title: 'Server Overload profile name',
+            inputclass: 'title-input',
+            params: '{csrfmiddlewaretoken:"{{csrf_token}}"}'
+        });
+
+        $('#serveroverload-description').editable({
+            url: '{% url 'serveroverload_update' %}',
+            type: 'textarea',
+            pk: '{{ serveroverload.id }}',
+            name: 'description',
+            title: 'Server Overload description',
+            inputclass: 'description-input',
+            params: '{csrfmiddlewaretoken:"{{csrf_token}}"}'
+        });
+
+
+    </script>
+{% endblock %}
+
+{% block content %}
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="nav-tabs-custom">
+                <ul class="nav nav-tabs">
+                    <li class="header"><i class="fa fa-info-circle"></i>Server Overload profile</li>
+                </ul>
+                <div class="tab-content">
+                    <dl class="dl-horizontal">
+                        <dt>Description</dt>
+                        <dd><a href="#" id="qos-description">{{ serveroverload.description }}</a></dd>
+                        <dt>Latency</dt>
+                        <dd><a href="#" id="qos-latency">{{ serveroverload.latency }}</a></dd>
+                        <dt>Created at</dt>
+                        <dd>{{ serveroverload.createdAt }}</dd>
+                        <dt>Last updated</dt>
+                        <dd>{{ serveroverload.updatedAt }}</dd>
+                    </dl>
+                </div><!-- /.tab-content -->
+            </div>
+        </div>
+    </div>
+
+
+
+{% endblock %}

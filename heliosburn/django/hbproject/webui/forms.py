@@ -180,6 +180,11 @@ class QoSForm(forms.Form):
         return cleaned_data
 
 
+class ServerOverloadForm(forms.Form):
+    name = forms.CharField(label='Name', max_length=100)
+    description = forms.CharField(label='Description', widget=forms.Textarea)
+
+
 class RecordingForm(forms.Form):
     name = forms.CharField(label='Name', max_length=100)
     description = forms.CharField(label='Description', widget=forms.Textarea)
