@@ -247,18 +247,6 @@ def start(request, session_id):
     session['executions'] += 1
     dbc.session.save(session)
 
-    # set upstream host/port before starting
-    redis_wrapper.publish_to_proxy(json.dumps({
-        "operation": "upstream_host",
-        "param": session['upstreamHost'],
-        "key": "0xdeadbeef"
-    }))
-    redis_wrapper.publish_to_proxy(json.dumps({
-        "operation": "upstream_port",
-        "param": session['upstreamPort'],
-        "key": "0xdeadbeef"
-    }))
-
     redis_wrapper.publish_to_proxy(json.dumps({
         "operation": "start_session",
         "param": {"session": session_id},
