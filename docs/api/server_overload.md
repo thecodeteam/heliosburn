@@ -54,6 +54,8 @@ The response body contains a list containing the following elements in JSON form
             "_id": "0xdeadbeef",
             "name": "Raspberry PI Overload profile",
             "description": "bla bla...",
+            createdAt": "2014-02-12 03:34:51",
+            "updatedAt": "2014-02-12 03:34:51",
             "function": {
                 "type": "exponential",
                 "expValue": "3",
@@ -93,6 +95,8 @@ The response body contains a list containing the following elements in JSON form
             "_id": "0xfedbeef",
             "name": "Blueberry PI Overload profile",
             "description": "bla bla...",
+            createdAt": "2014-02-12 03:34:51",
+            "updatedAt": "2014-02-12 03:34:51",
             "function": {
                 "type": "exponential",
                 "expValue": "3",
@@ -161,6 +165,8 @@ The response body contains the following elements in JSON format:
 
 - name: string to name profile
 - description: string to describe profile
+- createdAt: timestamp
+- updatedAt: timestamp
 - function: JSON containing:
     - type: string
     - expValue: integer
@@ -189,6 +195,8 @@ The response body contains the following elements in JSON format:
     "_id": "0xfedbed",
     "name": "Raspberry PI Overload profile",
     "description": "bla bla...",
+    createdAt": "2014-02-12 03:34:51",
+    "updatedAt": "2014-02-12 03:34:51",
     "function": {
         "type": "exponential",
         "expValue": "3",
