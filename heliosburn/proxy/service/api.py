@@ -1,5 +1,6 @@
 
 import json
+import pymongo
 from txredis.client import RedisClientFactory
 from twisted.internet import defer
 from twisted.internet import reactor
@@ -7,6 +8,30 @@ from twisted.web import server
 from twisted.python import log
 from protocols.http import HBReverseProxyRequest
 from protocols.http import HBReverseProxyResource
+
+
+test_session = {
+        "id": 1,
+        "name": "Session A",
+        "description": "This is a description for a Session",
+        "upstreamHost": "github.com",
+        "upstreamPort": 80,
+        "qosProfile": "0xdeadbeef",
+        "ServerOverloadProfile": "0xfedbeef",
+
+        "createdAt": "2014-02-12 03:34:51",
+        "updatedAt": "2014-02-12 03:34:51",
+        "testPlan": {
+                "id": 12,
+                "name": "ViPR Test plan"
+            },
+        "user": {
+                "id": 1,
+                "username": "John Doe"
+            },
+        "executions": 42,
+        "latest_execution_at": "2014-02-12 03:34:51"
+    }
 
 
 class OperationResponse(object):
@@ -126,16 +151,16 @@ class OperationFactory(object):
                                        recording_id=op_string['param'])
 
         if "stop_session" == op_string['operation']:
-            operation = StopInjection(self.controller,
-                                      self.response_factory,
-                                      op_string['key'],
-                                      recording_id=op_string['param'])
+            operation = StopSession(self.controller,
+                                    self.response_factory,
+                                    op_string['key'],
+                                    recording_id=op_string['param'])
 
         if "start_session" == op_string['operation']:
-            operation = StartInjection(self.controller,
-                                       self.response_factory,
-                                       op_string['key'],
-                                       session_id=op_string['param'])
+            operation = StartSession(self.controller,
+                                     self.response_factory,
+                                     op_string['key'],
+                                     session_id=op_string['param'])
 
         if "reload" == op_string['operation']:
             operation = ReloadPlugins(self.controller,
@@ -377,23 +402,56 @@ class StartRecording(ServerOperation):
             self.response.set_message({'Busy': status})
 
 
-class StartInjection(ServerOperation):
+class StartSession(ServerOperation):
 
     def __init__(self, controller, response_factory, key, **params):
         ServerOperation.__init__(self, controller, response_factory, key)
 
         self.params = params
+        session = self._get_session(self.session_id)
 
-        d = self.addCallback(self.start_injection)
+        host_op = ChangeUpstreamHost(controller,
+                                     response_factory,
+                                     key,
+                                     session["upstream_host"])
+        port_op = ChangeUpstreamPort(controller,
+                                     response_factory,
+                                     key,
+                                     session["upstream_port"])
+        host_op.execute().addCallBack(port_op.execute())
+
+        d = self.addCallback(self.start_session)
         d.addCallback(self.respond)
 
-    def start_injection(self, result):
+    def _get_session(self, session_id):
+            conn = pymongo.MongoClient()
+            db = conn.proxy
+            self.session = db.session.find_one({"_id": session_id})
+            self.session = test_session
+
+            return self.session
+
+    def start_session(self, result):
+
         status = self.controller.module_registry.status(
             module_name='Injection',
             **self.params)
+        status = self.controller.module_registry.status(
+            module_name='QOS',
+            **self.params)
+        status = self.controller.module_registry.status(
+            module_name='ServerOverload',
+            **self.params)
+
         if status['state'] != "running":
             self.controller.module_registry.start(
                 module_name='Injection',
+                **self.params)
+            self.controller.module_registry.start(
+                module_name='QOS',
+                **self.params)
+            self.controller.module_registry.start(
+                module_name='ServerOverload',
                 **self.params)
             self.response.set_message({'Started Injection Session':
                                       [self.response.get_message()]})
@@ -402,18 +460,22 @@ class StartInjection(ServerOperation):
             self.response.set_message({'Busy': status})
 
 
-class StopInjection(ServerOperation):
+class StopSession(ServerOperation):
 
     def __init__(self, controller, response_factory, key, **params):
         ServerOperation.__init__(self, controller, response_factory, key)
 
         self.params = params
 
-        d = self.addCallback(self.stop_injection)
+        d = self.addCallback(self.stop_session)
         d.addCallback(self.respond)
 
-    def stop_injection(self, result):
+    def stop_session(self, result):
         self.controller.module_registry.stop(module_name='Injection',
+                                             **self.params)
+        self.controller.module_registry.stop(module_name='QOS',
+                                             **self.params)
+        self.controller.module_registry.stop(module_name='ServerOverload',
                                              **self.params)
         self.response.set_message("Stopped Injection Session: { " +
                                   self.response.get_message() + ", " + "}")

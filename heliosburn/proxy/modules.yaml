@@ -26,7 +26,7 @@ pipeline:
         redis_port: 6379,
         redis_db: 0,
         mongo_host: '127.0.0.1',
-        mongo_port: '27017',
+        mongo_port: 27017,
         mongo_db: 'heliosburn',
       }
      }
@@ -42,7 +42,7 @@ support:
         redis_port: 6379,
         redis_sub_queue: 'heliosburn.traffic',
         mongo_host: '127.0.0.1',
-        mongo_port: '27017',
+        mongo_port: 27017,
         mongo_db: 'proxy',
         mongo_collection: 'traffic',
       }
@@ -74,6 +74,28 @@ test:
     },
     {
       name: 'TestStopRecordingAPI',
+      kwargs:
+      {
+        redis_host: '127.0.0.1',
+        redis_port: 6379,
+        redis_db: 0,
+        redis_pub_queue: 'proxy_mgmt_request',
+        redis_sub_queue: 'proxy_mgmt_response',
+      }
+    },
+    {
+      name: 'TestStartSessionAPI',
+      kwargs:
+      {
+        redis_host: '127.0.0.1',
+        redis_port: 6379,
+        redis_db: 0,
+        redis_pub_queue: 'proxy_mgmt_request',
+        redis_sub_queue: 'proxy_mgmt_response',
+      }
+    },
+    {
+      name: 'TestStopSessionAPI',
       kwargs:
       {
         redis_host: '127.0.0.1',
