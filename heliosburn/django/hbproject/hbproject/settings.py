@@ -59,6 +59,8 @@ class Common(Configuration):
         'angular-ui-router',
         'angular-animate',
         'components-font-awesome',
+        'ng-table',
+        'ngDialog',
     )
 
     MIDDLEWARE_CLASSES = (

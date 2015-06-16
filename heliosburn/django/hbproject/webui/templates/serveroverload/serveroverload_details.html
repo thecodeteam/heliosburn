@@ -19,11 +19,16 @@
 {% block styles %}
     <!-- DATA TABLES -->
     <link href="{% static 'webui/css/datatables/dataTables.bootstrap.css' %}" rel="stylesheet" type="text/css" />
+    <!-- ngDialog -->
+    <link href="{% static 'ngDialog/css/ngDialog.min.css' %}" rel="stylesheet" type="text/css" />
+    <link href="{% static 'ngDialog/css/ngDialog-theme-default.min.css' %}" rel="stylesheet" type="text/css" />
     <!-- X-editable -->
     <link href="//cdnjs.cloudflare.com/ajax/libs/x-editable/1.5.0/bootstrap3-editable/css/bootstrap-editable.css" rel="stylesheet"/>
 {% endblock %}
 
 {% block scripts %}
+    <!-- Server Overload Controller -->
+    <script type="text/javascript" src='{% static 'webui/js/heliosburn/serveroverload.js' %}'></script>
     <!-- X-Editable -->
     <script src="//cdnjs.cloudflare.com/ajax/libs/x-editable/1.5.0/bootstrap3-editable/js/bootstrap-editable.min.js"></script>
     <script type="text/javascript">
@@ -75,6 +80,46 @@
                     </dl>
                 </div><!-- /.tab-content -->
             </div>
+        </div>
+    </div>
+
+    <div class="row" ng-controller="ServerOverloadCtrl">
+        <div class="col-xs-12">
+            <div class="box">
+                <div class="box-header">
+                    <i class="fa fa-th-list"></i>
+                    <h3 class="box-title">Triggers</h3>
+                </div><!-- /.box-header -->
+                <div class="box-body table-responsive">
+                    <div class="row">
+                        <div class="col-xs-12">
+                            <a class="btn btn-primary pull-right bold" href="#" ng-click="newTrigger()" role="button">Create a new trigger</a>
+                        </div>
+                    </div>
+                    <div class="row top7">
+                        <div class="col-xs-12">
+                            <table ng-table="" class="table table-bordered table-striped">
+                                <tr ng-repeat="trigger in triggers">
+                                    <td data-title="'From'">
+                                        {% verbatim %}{{trigger.fromLoad}}{% endverbatim %}
+                                    </td>
+                                    <td data-title="'To'">
+                                        {% verbatim %}{{trigger.toLoad}}{% endverbatim %}
+                                    </td>
+                                    <td data-title="'Actions'">
+                                        {% verbatim %}{{trigger.actions}}{% endverbatim %}
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div><!-- /.box-body -->
+            </div><!-- /.box -->
+
+            <pre>
+                {% verbatim %}{{ triggers }}{% endverbatim %}
+            </pre>
+
         </div>
     </div>
 

@@ -181,8 +181,25 @@ class QoSForm(forms.Form):
 
 
 class ServerOverloadForm(forms.Form):
+    function_choices = (
+        ('', 'Select a function'),
+        ('exponential', 'Exponential'),
+        ('plateau', 'Plateau'),
+    )
     name = forms.CharField(label='Name', max_length=100)
     description = forms.CharField(label='Description', widget=forms.Textarea)
+    function_type = forms.ChoiceField(label='Function', choices=function_choices)
+
+    def clean(self):
+        cleaned_data = super(ServerOverloadForm, self).clean()
+        cleaned_data['response_triggers'] = []
+
+        # FIXME: get real function info
+        function_type = cleaned_data.pop('function_type')
+        cleaned_data['function'] = dict()
+        cleaned_data['function']['type'] = function_type
+        cleaned_data['function']['expValue'] = 1
+        cleaned_data['function']['growthRate'] = 1
 
 
 class RecordingForm(forms.Form):

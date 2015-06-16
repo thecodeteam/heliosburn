@@ -1,4 +1,4 @@
-var hbApp = angular.module('hbApp', ['hbApp.controllers', 'ngAnimate', 'ui.router'])
+var hbApp = angular.module('hbApp', ['hbApp.controllers', 'ngAnimate', 'ui.router', 'ngTable', 'ngDialog'])
 
     .config(function($httpProvider) {
 
