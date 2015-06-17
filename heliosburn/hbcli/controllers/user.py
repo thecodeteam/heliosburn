@@ -39,17 +39,17 @@ def read(config, args):
 
 def update(config, args):
     pdb.set_trace()
-    url = config['url'] + "/api/user/" + config['user'] + "/"
+    url = config['url'] + "/api/user/" + args['username'] + "/"
     data = {}
     if args['password'] is not None:
         data['password'] = args['password']
     if args['email'] is not None:
         data['email'] = args['email']
     if args['admin'] is not None:
-        if ['admin'] is True:
+        if args['admin'] == "yes":
             data['roles'] = ["admin"]
         else:
-            data['roles'] = []
+            data['roles'] = ["standard"]
 
     token = auth.get_token(config)
     r = requests.put(url, data=json.dumps(data), headers={"X-Auth-Token": token})
@@ -71,9 +71,9 @@ def main(config, args):
     # create 
     create_parser = subparsers.add_parser("create", help="create user object")
     create_parser.add_argument("--username", type=str, required=True, help="username of new user")
-    create_parser.add_argument("--email", type=str, required=False, help="email of new user")
+    create_parser.add_argument("--email", type=str, required=True, help="email of new user")
     create_parser.add_argument("--password", type=str, required=True, help="password of new user")
-    create_parser.add_argument("--admin", type=bool, default=False, help="set new user as admin")
+    create_parser.add_argument("--admin", choices=("yes","no"), required=True, help="set new user as admin")
 
     # read
     read_parser = subparsers.add_parser("read", help="read user object(s)")
@@ -85,7 +85,7 @@ def main(config, args):
     update_parser.add_argument("username", type=str, help="username to update")
     update_parser.add_argument("--email", type=str, required=False, help="email of user")
     update_parser.add_argument("--password", type=str, required=False, help="password of user")
-    update_parser.add_argument("--admin", type=bool, help="set user as admin")
+    update_parser.add_argument("--admin", choices=("yes","no"), help="set user as admin")
 
     # delete
     delete_parser = subparsers.add_parser("delete", help="delete user object")
