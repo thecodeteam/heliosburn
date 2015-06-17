@@ -120,29 +120,6 @@ def put(request, profile_id):
     """
     try:
         new = json.loads(request.body)
-        assert "_id" not in new
-        assert "name" in new
-        assert "description" in new
-        assert "function" in new
-
-        p_function = new['function']
-        assert "type" in p_function
-        assert "expValue" in p_function
-        assert "growthRate" in p_function
-        assert "response_triggers" in new
-
-        p_response_triggers = new['response_triggers']
-        for rt in p_response_triggers:
-            assert "fromLoad" in rt
-            assert "toLoad" in rt
-            assert "actions" in rt
-            for action in rt['actions']:
-                assert "type" in action
-                assert "value" in action
-                assert "percentage" in action
-
-    except AssertionError:
-        return HttpResponseBadRequest("argument mismatch")
     except ValueError:
         return HttpResponseBadRequest("invalid JSON")
 
@@ -150,8 +127,33 @@ def put(request, profile_id):
     profile = dbc.serveroverload.find_one({"_id": ObjectId(profile_id)})
     if profile is None:
         return HttpResponseNotFound()
-    profile = new
-    profile['_id'] = ObjectId(profile_id)
+
+    # Update provided values
+    if "name" in new:
+        profile['name'] = new['name']
+    if "description" in new:
+        profile['description'] = new['description']
+    if "function" in new:
+        try:
+            p_function = new['function']
+            if p_function is not None:  # function can be updated as null to "unset" a previous definition
+                assert "type" in p_function
+                assert "expValue" in p_function
+                assert "growthRate" in p_function
+                assert "response_triggers" in new
+                p_response_triggers = new['response_triggers']
+                for rt in p_response_triggers:
+                    assert "fromLoad" in rt
+                    assert "toLoad" in rt
+                    assert "actions" in rt
+                    for action in rt['actions']:
+                        assert "type" in action
+                        assert "value" in action
+                        assert "percentage" in action
+            profile['function'] = new['function']
+        except AssertionError:
+            return HttpResponseBadRequest("argument mismatch")
+
     profile['updatedAt'] = datetime.isoformat(datetime.now())
     dbc.serveroverload.save(profile)
     logger.info("profile '%s' updated by '%s'" % (profile_id, request.user['username']))
