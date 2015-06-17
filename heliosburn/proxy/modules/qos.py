@@ -43,9 +43,7 @@ class QOS(AbstractModule):
         if request:
             return request
 
-    def _set_profile(self, session_id):
-        session = self.get_session(session_id)
-        profile_id = session["qosProfile"]
+    def _set_profile(self, profile_id):
         conn = pymongo.MongoClient()
         db = conn.proxy
         profile = db.qos_profile.find_one({"_id": profile_id})
@@ -53,10 +51,10 @@ class QOS(AbstractModule):
         self.qos_profile = profile
 
     def start(self, **params):
-        session_id = params['session_id']
+        profile_id = params['profile_id']
         self.state = "running"
         self.status = str(datetime.datetime.now())
-        self._set_profile(session_id)
+        self._set_profile(profile_id)
         log.msg("QOS module started at: " + self.status)
 
     def stop(self, **params):

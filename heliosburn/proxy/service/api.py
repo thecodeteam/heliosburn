@@ -16,9 +16,12 @@ test_session = {
         "description": "This is a description for a Session",
         "upstreamHost": "github.com",
         "upstreamPort": 80,
-        "qosProfile": "0xdeadbeef",
-        "ServerOverloadProfile": "0xfedbeef",
-
+        "qosProfile": {
+                "id": "0xdeadbeef"
+        },
+        "serverOverloadProfile": {
+                "id": "0xfedbeef"
+        },
         "createdAt": "2014-02-12 03:34:51",
         "updatedAt": "2014-02-12 03:34:51",
         "testPlan": {
@@ -40,7 +43,7 @@ class OperationResponse(object):
 
         self.deferred = defer.Deferred()
         self.response = {'code': code,
-                         'message': message,
+                         'message': [message],
                          'key': key
                          }
 
@@ -48,13 +51,17 @@ class OperationResponse(object):
         return self.response['code']
 
     def get_message(self):
-        return self.response['message']
+        return str(self.response['message'])
 
     def set_code(self, code):
         self.response['code'] = code
 
     def set_message(self, message):
-        self.response['message'] = message
+        self.response['message'] = []
+        self.response['message'].append(message)
+
+    def add_message(self, message):
+        self.response['message'].append(message)
 
     def send(self):
         pass
@@ -408,19 +415,19 @@ class StartSession(ServerOperation):
         ServerOperation.__init__(self, controller, response_factory, key)
 
         self.params = params
-        session = self._get_session(self.session_id)
+        session_id = params['session_id']
+        self.session = self._get_session(session_id)
+        controller.upstream_host = self.session["upstreamHost"]
+        self.response.add_message("Upstream Host set to: " +
+                                  str(controller.upstream_host))
+        controller.upstream_port = self.session["upstreamPort"]
+        self.response.add_message("Upstream Port set to: " +
+                                  str(controller.upstream_port))
+        stop_op = StopProxy(controller, response_factory, key)
+        start_op = StartProxy(controller, response_factory, key)
 
-        host_op = ChangeUpstreamHost(controller,
-                                     response_factory,
-                                     key,
-                                     session["upstream_host"])
-        port_op = ChangeUpstreamPort(controller,
-                                     response_factory,
-                                     key,
-                                     session["upstream_port"])
-        host_op.execute().addCallBack(port_op.execute())
-
-        d = self.addCallback(self.start_session)
+        d = self.addCallback(stop_op.stop).addCallback(start_op.start)
+        d.addCallback(self.start_session)
         d.addCallback(self.respond)
 
     def _get_session(self, session_id):
@@ -433,31 +440,56 @@ class StartSession(ServerOperation):
 
     def start_session(self, result):
 
-        status = self.controller.module_registry.status(
-            module_name='Injection',
-            **self.params)
-        status = self.controller.module_registry.status(
-            module_name='QOS',
-            **self.params)
-        status = self.controller.module_registry.status(
-            module_name='ServerOverload',
-            **self.params)
-
-        if status['state'] != "running":
-            self.controller.module_registry.start(
+        try:
+            self.params['test_plan'] = self.session['testPlan']['id']
+            status = self.controller.module_registry.status(
                 module_name='Injection',
                 **self.params)
-            self.controller.module_registry.start(
+            if status['state'] != "running":
+                self.controller.module_registry.start(
+                    module_name='Injection',
+                    **self.params)
+            else:
+                self.response.set_code(501)
+                self.response.set_message({'Busy': status})
+        except KeyError:
+            pass
+
+        try:
+            profile_id = self.session['qosProfile']['id']
+            self.params['profile_id'] = profile_id
+            status = self.controller.module_registry.status(
                 module_name='QOS',
                 **self.params)
-            self.controller.module_registry.start(
+            if status['state'] != "running":
+                self.controller.module_registry.start(
+                    module_name='QOS',
+                    **self.params)
+            else:
+                self.response.set_code(501)
+                self.response.set_message({'Busy': status})
+        except KeyError:
+            pass
+
+        try:
+            profile_id = self.session['serverOverloadProfile']['id']
+            self.params['profile_id'] = profile_id
+            status = self.controller.module_registry.status(
                 module_name='ServerOverload',
                 **self.params)
-            self.response.set_message({'Started Injection Session':
-                                      [self.response.get_message()]})
-        else:
-            self.response.set_code(501)
-            self.response.set_message({'Busy': status})
+
+            if status['state'] != "running":
+                self.controller.module_registry.start(
+                    module_name='ServerOverload',
+                    **self.params)
+            else:
+                self.response.set_code(501)
+                self.response.set_message({'Busy': status})
+        except KeyError:
+            pass
+
+        self.response.set_message({'Started Injection Session':
+                                  [self.response.get_message()]})
 
 
 class StopSession(ServerOperation):

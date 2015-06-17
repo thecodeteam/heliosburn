@@ -2,7 +2,6 @@ import redis
 import modules
 import json
 import datetime
-import pymongo
 from zope.interface import implements
 from zope.interface import Interface
 from twisted.internet import defer
