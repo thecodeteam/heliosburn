@@ -38,7 +38,22 @@ def read(config, args):
 
 
 def update(config, args):
-    pass
+    pdb.set_trace()
+    url = config['url'] + "/api/user/" + config['user'] + "/"
+    data = {}
+    if args['password'] is not None:
+        data['password'] = args['password']
+    if args['email'] is not None:
+        data['email'] = args['email']
+    if args['admin'] is not None:
+        if ['admin'] is True:
+            data['roles'] = ["admin"]
+        else:
+            data['roles'] = []
+
+    token = auth.get_token(config)
+    r = requests.put(url, data=json.dumps(data), headers={"X-Auth-Token": token})
+    print("API returned status code %s" % (r.status_code))
 
 
 def delete(config, args):
@@ -56,8 +71,9 @@ def main(config, args):
     # create 
     create_parser = subparsers.add_parser("create", help="create user object")
     create_parser.add_argument("--username", type=str, required=True, help="username of new user")
+    create_parser.add_argument("--email", type=str, required=False, help="email of new user")
     create_parser.add_argument("--password", type=str, required=True, help="password of new user")
-    create_parser.add_argument("--admin", type=bool, default=False, help="set user as admin")
+    create_parser.add_argument("--admin", type=bool, default=False, help="set new user as admin")
 
     # read
     read_parser = subparsers.add_parser("read", help="read user object(s)")
@@ -67,9 +83,9 @@ def main(config, args):
     # update 
     update_parser = subparsers.add_parser("update", help="update existing user object")
     update_parser.add_argument("username", type=str, help="username to update")
-    update_parser.add_argument("--username", type=str, required=True, help="username for user")
-    update_parser.add_argument("--password", type=str, required=True, help="password for user")
-    update_parser.add_argument("--admin", type=bool, default=False, help="set user as admin")
+    update_parser.add_argument("--email", type=str, required=False, help="email of user")
+    update_parser.add_argument("--password", type=str, required=False, help="password of user")
+    update_parser.add_argument("--admin", type=bool, help="set user as admin")
 
     # delete
     delete_parser = subparsers.add_parser("delete", help="delete user object")

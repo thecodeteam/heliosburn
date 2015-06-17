@@ -88,12 +88,16 @@ def post(request):
     else:
         m = hashlib.sha512()
         m.update(new['password'])
+        roles = []
+        if "roles" in new:
+            roles = new['roles']
         dbc.hbuser.save({
             'username': new['username'],
             'email': new['email'],
             'password': m.hexdigest(),
             'createdAt': datetime.isoformat(datetime.now()),
             'updatedAt': datetime.isoformat(datetime.now()),
+            'roles': roles,
         })
         r = HttpResponse(status=200)
         r['location'] = "/api/user/%s" % new['username']
@@ -127,6 +131,8 @@ def put(request, username):
             user['password'] = m.hexdigest()
         if "email" in in_json:
             user['email'] = in_json['email']
+        if "roles" in in_json:
+            user['roles'] = in_json['roles']
         user['updatedAt'] = datetime.isoformat(datetime.now())
         dbc.hbuser.save(user)
         logger.info("user '%s' updated by '%s'" % (username, request.user['username']))
