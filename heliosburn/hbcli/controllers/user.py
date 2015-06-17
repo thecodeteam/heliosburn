@@ -5,6 +5,7 @@ import json
 import requests
 from models import auth
 import pdb
+import pprint
 
 
 def create(config, args):
@@ -12,15 +13,24 @@ def create(config, args):
 
 
 def read(config, args):
+    pp = pprint.PrettyPrinter()
+    url = config['url'] + "/api/user/"
     if (args['all'] is False) and (args['username'] is None):
         print("No user object(s) specified to read.")
         return
     elif args['all'] is True:
         token = auth.get_token(config)
-        pass
+        r = requests.get(url, headers={"X-Auth-Token": token})
+        if r.status_code != 200:
+            print("API returned status code %s" % (r.status_code))
+            sys.exit(1)
+        else:
+            pp.pprint(json.loads(r.content))
     elif args['username'] is not None:
+        url += args['username'] + "/"
         token = auth.get_token(config)
-        r = requests.
+        r = requests.get(url, headers={"X-Auth-Token": token})
+        pass
 
 
 def update(config, args):
@@ -51,15 +61,15 @@ def main(config, args):
     read_parser.add_argument("--all", action="store_const", const=True, default=False, help="Display all user objects")
 
     # update 
-    create_parser = subparsers.add_parser("update", help="update existing user object")
-    create_parser.add_argument("username", type=str, help="username to update")
-    create_parser.add_argument("--username", type=str, required=True, help="username for user")
-    create_parser.add_argument("--password", type=str, required=True, help="password for user")
-    create_parser.add_argument("--admin", type=bool, default=False, help="set user as admin")
+    update_parser = subparsers.add_parser("update", help="update existing user object")
+    update_parser.add_argument("username", type=str, help="username to update")
+    update_parser.add_argument("--username", type=str, required=True, help="username for user")
+    update_parser.add_argument("--password", type=str, required=True, help="password for user")
+    update_parser.add_argument("--admin", type=bool, default=False, help="set user as admin")
 
     # delete
-    read_parser = subparsers.add_parser("delete", help="delete user object")
-    read_parser.add_argument("username", type=str, help="username to delete")
+    delete_parser = subparsers.add_parser("delete", help="delete user object")
+    delete_parser.add_argument("username", type=str, help="username to delete")
     
     args = vars(parser.parse_args())
     action_map = {

@@ -1,11 +1,9 @@
 import requests
 import json
-import pdb
 import sys
 
 
 def get_token(config):
-    pdb.set_trace()    
     login_url = config['url'] + "/api/auth/login/"
     data = {
         "username": config['user'],
