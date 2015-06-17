@@ -16,7 +16,7 @@ def read(config, args):
     pp = pprint.PrettyPrinter()
     url = config['url'] + "/api/user/"
     if (args['all'] is False) and (args['username'] is None):
-        print("No user object(s) specified to read.")
+        print("No user object(s) specified to read. Use -h to see usage.")
         return
     elif args['all'] is True:
         token = auth.get_token(config)
@@ -30,7 +30,11 @@ def read(config, args):
         url += args['username'] + "/"
         token = auth.get_token(config)
         r = requests.get(url, headers={"X-Auth-Token": token})
-        pass
+        if r.status_code != 200:
+            print("API returned status code %s" % (r.status_code))
+            sys.exit(1)
+        else:
+            pp.pprint(json.loads(r.content))
 
 
 def update(config, args):

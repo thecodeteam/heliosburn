@@ -58,17 +58,15 @@ def readrc():
 
 def main():
     help = """
-    usage: %s <command> [arguments]
+    usage: %s <command> [-h] [arguments]
 
     Commands:
         config    - adjust hbcli configuration
         user      - interact with users
         session   - interact with sessions
 
-    The argument '-h' can be used after a command for detailed usage help.
-
     """ % sys.argv[0]
-    if (len(sys.argv) < 2) or (sys.argv[1] == '-h'):
+    if len(sys.argv) < 2:
         print(help)
         sys.exit(0)
 
