@@ -8,6 +8,7 @@ from api.models import db_model, auth
 from api.models.auth import RequireLogin
 from bson import ObjectId
 from IPython.core.debugger import Tracer
+from datetime import datetime
 
 logger = logging.getLogger(__name__)
 
@@ -101,6 +102,8 @@ def post(request):
     except ValueError:
         return HttpResponseBadRequest("invalid JSON")
 
+    new['createdAt'] = datetime.isoformat(datetime.now())
+    new['updatedAt'] = datetime.isoformat(datetime.now())
     dbc = db_model.connect()
 
     profile_id = str(dbc.serveroverload.save(new))
@@ -149,6 +152,7 @@ def put(request, profile_id):
         return HttpResponseNotFound()
     profile = new
     profile['_id'] = ObjectId(profile_id)
+    profile['updatedAt'] = datetime.isoformat(datetime.now())
     dbc.serveroverload.save(profile)
     logger.info("profile '%s' updated by '%s'" % (profile_id, request.user['username']))
     return HttpResponse()
