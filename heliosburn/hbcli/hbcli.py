@@ -58,7 +58,7 @@ def readrc():
 
 def main():
     help = """
-    usage: %s <command> [-h] [arguments]
+    usage: %s <command> [-h] [command-specific-arguments] [-h]
 
     Commands:
         config    - adjust hbcli configuration
