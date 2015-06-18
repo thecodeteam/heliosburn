@@ -21,13 +21,8 @@ def create(config, args):
         else:
             data['roles'] = ["standard"]
     token = auth.get_token(config)
-    pdb.set_trace()
     r = requests.post(url, headers={"X-Auth-Token": token}, data=json.dumps(data))
-    if r.status_code != 200:
-        print("API returned status code %s" % (r.status_code))
-        sys.exit(1)
-    else:
-        print("API returned status code %s" % (r.status_code))
+    print("API returned status code %s" % (r.status_code))
 
 
 def read(config, args):
@@ -56,7 +51,6 @@ def read(config, args):
 
 
 def update(config, args):
-    pdb.set_trace()
     url = config['url'] + "/api/user/" + args['username'] + "/"
     data = {}
     if args['password'] is not None:
@@ -75,7 +69,10 @@ def update(config, args):
 
 
 def delete(config, args):
-    pass
+    url = config['url'] + "/api/user/" + args['username'] + "/"
+    token = auth.get_token(config)
+    r = requests.delete(url, headers={"X-Auth-Token": token})
+    print("API returned status code %s" % (r.status_code))
 
 
 def main(config, args):
