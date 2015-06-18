@@ -16,12 +16,14 @@ test_profile = {
     "trafficLoss": 0.1
 }
 
+injector_list = {
+    'latency': LatencyInjector,
+    'packet_loss': PacketLossInjector,
+}
+
 
 class QOS(AbstractModule):
-    injectors = {
-        'latency': LatencyInjector,
-        'packet_loss': PacketLossInjector,
-    }
+    injectors = []
 
     def __init__(self):
         AbstractModule.__init__(self)
@@ -31,13 +33,15 @@ class QOS(AbstractModule):
         self.mongo_host = 'heliosburn.traffic'
         self.mongo_port = '127.0.0.1'
         self.mongo_db = 'heliosburn'
+        self.stats['ServerOverload'] = []
 
     def configure(self, **configs):
         pass
 
     def handle_request(self, request):
         for injector in self.injectors:
-            request = injector(request, self.qos_profile).execute()
+            request = injector.execute()
+            self.stats['QOS'].append(injector.metrics)
 
 # might be a problem upstream if no request is returned
         if request:
@@ -51,15 +55,19 @@ class QOS(AbstractModule):
         self.qos_profile = profile
 
     def start(self, **params):
-        profile_id = params['profile_id']
+        self.session_id = params['session_id']
+        self.profile_id = params['profile_id']
         self.state = "running"
         self.status = str(datetime.datetime.now())
-        self._set_profile(profile_id)
+        self._set_profile(self.profile_id)
+        for c in injector_list:
+            self.injectors.append(c(self.profile))
         log.msg("QOS module started at: " + self.status)
 
     def stop(self, **params):
         self.state = "stopped"
         self.status = str(datetime.datetime.now())
+        self.injectors = []
         log.msg("QOS module stopped at: " + self.status)
 
 qos = QOS()

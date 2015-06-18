@@ -48,6 +48,12 @@ test_so_profile = {
     ]
 }
 
+# ultimately pull from settings file
+injector_list = {
+    ExponentialInjector,
+    PlateauInjector
+}
+
 
 class ResponseTrigger(object):
 
@@ -90,11 +96,8 @@ class DelayedResponseTrigger(ResponseTrigger):
 
 
 class ServerOverload(AbstractModule):
-    injectors = {
-        'exponential': ExponentialInjector,
-        'plateau': PlateauInjector
-    }
     triggers = []
+    injectors = []
 
     def __init__(self):
         AbstractModule.__init__(self)
@@ -104,13 +107,15 @@ class ServerOverload(AbstractModule):
         self.mongo_host = 'heliosburn.traffic'
         self.mongo_port = '127.0.0.1'
         self.mongo_db = 'heliosburn'
+        self.stats['ServerOverload'] = []
 
     def configure(self, **configs):
         pass
 
     def handle_request(self, request):
         for injector in self.injectors:
-            load = injector(request, self.profile).execute()
+            load = injector.execute()
+            self.stats['ServerOverload'].append(injector.metrics)
 
         for trigger in self.triggers:
             if trigger.match(load):
@@ -156,16 +161,21 @@ class ServerOverload(AbstractModule):
                     self.triggers.append(d_trigger)
 
     def start(self, **params):
-        profile_id = params['profile_id']
+        self.session_id = params['session_id']
+        self.profile_id = params['profile_id']
         self.state = "running"
         self.status = str(datetime.datetime.now())
-        self._set_profile(profile_id)
+        self._set_profile(self.profile_id)
+        for c in injector_list:
+            self.injectors.append(c(self.profile))
+
         log.msg("Server Overload module started at: " + self.status)
 
     def stop(self, **params):
         self.state = "stopped"
         self.profile = None
         self.status = str(datetime.datetime.now())
+        self.injectors = []
         log.msg("Server Overload module stopped at: " + self.status)
 
 so = ServerOverload()

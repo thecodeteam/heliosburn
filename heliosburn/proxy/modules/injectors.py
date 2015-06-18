@@ -8,18 +8,18 @@ from threading import Lock
 
 class Injector(object):
 
-    def __init__(self, request, profile):
-        self.request = request
+    metrics = {}
+
+    def __init__(self, profile):
         self.profile = profile
 
-    def execute(self):
+    def execute(self, request):
         pass
 
 
 class NullInjector(Injector):
     def execute(self):
-        if self.request:
-            return self.request
+        pass
 
 
 class ExponentialInjector(Injector):
@@ -42,6 +42,9 @@ class ExponentialInjector(Injector):
                 self.requests = 0
                 if self.load > 100:
                     self.load = 100
+
+        self.metrics['load'] = self.load
+        self.metrics['requests'] = self.requests
 
         return self.load
 
@@ -66,6 +69,9 @@ class PlateauInjector(Injector):
                 if self.load > 100:
                     self.load = 100
 
+        self.metrics['load'] = self.load
+        self.metrics['requests'] = self.requests
+
         return self.load
 
 
@@ -87,7 +93,7 @@ class LatencyInjector(Injector):
                                                    self.maximum))
             time.sleep(lagtime)
 
-        return self.request
+        self.metrics['lagtime'] = lagtime
 
 
 class PacketLossInjector(Injector):
@@ -102,12 +108,15 @@ class PacketLossInjector(Injector):
 
         self._packets += 1
         traffic_loss = self.qos_profile["trafficloss"]
-        return_value = self.request
+        return_value = True
 
         if self._packets_dropped/self._packets < traffic_loss:
             self._requests_dropped += 1
             return_value = False
 
         self._mutex.release()
+
+        self.metrics['requests'] = self._packets
+        self.metrics['dropped_requests'] = self._requests_dropped
 
         return return_value
