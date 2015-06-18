@@ -9,8 +9,34 @@ import pprint
 
 
 def create(config, args):
-    pass
+    pp = pprint.PrettyPrinter()
+    url = config['url'] + "/api/session/"
 
+    data = {
+       "name": args['name'],
+       "description": args['description'],
+       "upstreamHost": args['upstreamHost'],
+       "upstreamPort": args['upstreamPort'],
+    }
+
+    if args['testplan'] is not None:
+        data['testplan'] = args['testplan']
+
+    if args['serverOverloadProfile'] is not None:
+        data['serverOverloadProfile'] = {"id": args['serverOverloadProfile']}
+
+    if args['qosProfile'] is not None:
+        data['qosProfile'] = {"id": args['qosProfile']}
+
+    pdb.set_trace()
+
+    token = auth.get_token(config)
+    r = requests.post(url, data=json.dumps(data), headers={"X-Auth-Token": token})
+    if r.status_code != 200:
+        print("API returned status code %s" % (r.status_code))
+        sys.exit(1)
+    else:
+        pp.pprint(json.loads(r.content))
 
 def read(config, args):
     pp = pprint.PrettyPrinter()
@@ -38,6 +64,12 @@ def update(config, args):
 def delete(config, args):
     pass
 
+def start(config, args):
+    pass
+
+def stop(config, args):
+    pass
+
 
 def main(config, args):
     description = "Interact with session objects."
@@ -49,7 +81,14 @@ def main(config, args):
     
     # create 
     create_parser = subparsers.add_parser("create", help="create session object")
-    create_parser.add_argument("--stub", type=str, required=True, help="stub desc")
+    create_parser.add_argument("--name", type=str, required=True, help="session name")
+    create_parser.add_argument("--description", type=str, required=True, help="session description")
+    create_parser.add_argument("--upstreamHost", type=str, required=True, help="upstream hostname")
+    create_parser.add_argument("--upstreamPort", type=int, required=True, help="upstream port number")
+    create_parser.add_argument("--testplan", type=str, help="testplan id")
+    create_parser.add_argument("--serverOverloadProfile", type=str, help="server overload profile id")
+    create_parser.add_argument("--qosProfile", type=str, help="qos profile id")
+    
 
     # read
     read_parser = subparsers.add_parser("read", help="read session object(s)")
