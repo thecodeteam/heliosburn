@@ -28,8 +28,6 @@ def create(config, args):
     if args['qosProfile'] is not None:
         data['qosProfile'] = {"id": args['qosProfile']}
 
-    pdb.set_trace()
-
     token = auth.get_token(config)
     r = requests.post(url, data=json.dumps(data), headers={"X-Auth-Token": token})
     if r.status_code != 200:
@@ -37,6 +35,7 @@ def create(config, args):
         sys.exit(1)
     else:
         pp.pprint(json.loads(r.content))
+
 
 def read(config, args):
     pp = pprint.PrettyPrinter()
@@ -58,14 +57,44 @@ def read(config, args):
 
 
 def update(config, args):
-    pass
+    pp = pprint.PrettyPrinter()
+    url = config['url'] + "/api/session/" + args['session'] + "/"
+
+    data = {}
+
+    if args['name'] is not None:
+        data['name'] = args['name']
+
+    if args['description'] is not None:
+        data['description'] = args['description']
+
+    if args['upstreamHost'] is not None:
+        data['upstreamHost'] = args['upstreamHost']
+
+    if args['upstreamPort'] is not None:
+        data['upstreamPort'] = args['upstreamPort']
+
+    if args['testplan'] is not None:
+        data['testplan'] = args['testplan']
+
+    if args['serverOverloadProfile'] is not None:
+        data['serverOverloadProfile'] = {"id": args['serverOverloadProfile']}
+
+    if args['qosProfile'] is not None:
+        data['qosProfile'] = {"id": args['qosProfile']}
+
+    token = auth.get_token(config)
+    r = requests.put(url, data=json.dumps(data), headers={"X-Auth-Token": token})
+    print("API returned status code %s" % (r.status_code))
 
 
 def delete(config, args):
     pass
 
+
 def start(config, args):
     pass
+
 
 def stop(config, args):
     pass
@@ -78,8 +107,8 @@ def main(config, args):
     del sys.argv[1]
     parser = argparse.ArgumentParser(prog="%s %s" % (sys.argv[0], controller_name), description=description)
     subparsers = parser.add_subparsers(dest="action")
-    
-    # create 
+
+    # create
     create_parser = subparsers.add_parser("create", help="create session object")
     create_parser.add_argument("--name", type=str, required=True, help="session name")
     create_parser.add_argument("--description", type=str, required=True, help="session description")
@@ -88,21 +117,27 @@ def main(config, args):
     create_parser.add_argument("--testplan", type=str, help="testplan id")
     create_parser.add_argument("--serverOverloadProfile", type=str, help="server overload profile id")
     create_parser.add_argument("--qosProfile", type=str, help="qos profile id")
-    
 
     # read
     read_parser = subparsers.add_parser("read", help="read session object(s)")
     read_parser.add_argument("--all", action="store_const", const=True, default=False, help="read all sessions")
     read_parser.add_argument("--session", type=str, help="ID of session to read")
-    
-    # update 
+
+    # update
     update_parser = subparsers.add_parser("update", help="update existing session object")
-    update_parser.add_argument("--stub", type=str, required=True, help="stub desc")
+    update_parser.add_argument("session", type=str, help="session id to update")
+    update_parser.add_argument("--name", type=str, help="session name")
+    update_parser.add_argument("--description", type=str, help="session description")
+    update_parser.add_argument("--upstreamHost", type=str, help="upstream hostname")
+    update_parser.add_argument("--upstreamPort", type=int, help="upstream port number")
+    update_parser.add_argument("--testplan", type=str, help="testplan id")
+    update_parser.add_argument("--serverOverloadProfile", type=str, help="server overload profile id")
+    update_parser.add_argument("--qosProfile", type=str, help="qos profile id")
 
     # delete
     delete_parser = subparsers.add_parser("delete", help="delete session object")
     delete_parser.add_argument("--stub", type=str, required=True, help="stub desc")
-    
+
     args = vars(parser.parse_args())
     action_map = {
         "create": create,
