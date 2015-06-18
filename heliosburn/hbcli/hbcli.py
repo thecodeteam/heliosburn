@@ -4,56 +4,28 @@ import json
 from controllers import config
 from controllers import session
 from controllers import user
-from IPython.core.debugger import Tracer
 
 
 def readrc():
-    """Attemps to acquire a config from the follow locations in order to return a dict():
-
-    ENV variables:
-        $HBAPIURL
-        $HBAPIUSER
-        $HBAPIPASS
-
-    JSON in Files:
-        1) $HOME/.hbclirc
-        2) /etc/hbclirc
+    """Attemps to acquire a config from $HOME/.hbclirc
     Failures to parse a valid JSON will cause sys.exit(1)
     """
-
-    if ("HBAPIURL" in os.environ) and ("HBAPIUSER" in os.environ) and ("HBAPIPASS" in os.environ):
-        return {
-            "url": os.environ['HBAPIURL'],
-            "user": os.environ['HBAPIUSER'],
-            "pass": os.environ['HBAPIPASS']
-        }
-    else:
-        search_paths = []
-        config = None
-
-        if "HOME" in os.environ:
-            search_paths.append(os.environ['HOME'] + "/.hbclirc")
-        search_paths.append("/etc/hbclirc")
-
-        for path in search_paths:
-            if os.path.isfile(path) is False:
-                continue
-            else:
-                f = open(path, 'r')
-                config = f.read()
-                f.close()
-                try:
-                    config = json.loads(config)
-                    break
-                except ValueError as e:
-                    print("Unable to parse %s, error: %s" % (path, e))
-                    sys.exit(1)
-
-        if config is None:
-            print("Unable to load configuration from environment or files, please set the ENV or create a valid configuration file.")
-            sys.exit(1)
-        else:
-            return config
+    path = os.environ['HOME'] + "/.hbclirc"
+    if os.path.isfile(path) is False:
+        print("Config file %s is not present, please create one with `config` first." % (path))
+        sys.exit(1)
+    f = open(path, 'r')
+    config = f.read()
+    f.close()
+    try:
+        config = json.loads(config)
+        assert "user" in config
+        assert "pass" in config
+        assert "url" in config
+        return config
+    except (ValueError, AssertionError) as e:
+        print("Unable to parse %s, is your config saved? Error: %s" % (path, e))
+        sys.exit(1)
 
 
 def main():
