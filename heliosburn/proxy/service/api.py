@@ -1,5 +1,6 @@
 
 import json
+import pymongo
 from txredis.client import RedisClientFactory
 from twisted.internet import defer
 from twisted.internet import reactor
@@ -9,13 +10,40 @@ from protocols.http import HBReverseProxyRequest
 from protocols.http import HBReverseProxyResource
 
 
+test_session = {
+        "id": 1,
+        "name": "Session A",
+        "description": "This is a description for a Session",
+        "upstreamHost": "github.com",
+        "upstreamPort": 80,
+        "qosProfile": {
+                "id": "0xdeadbeef"
+        },
+        "serverOverloadProfile": {
+                "id": "0xfedbeef"
+        },
+        "createdAt": "2014-02-12 03:34:51",
+        "updatedAt": "2014-02-12 03:34:51",
+        "testPlan": {
+                "id": 12,
+                "name": "ViPR Test plan"
+            },
+        "user": {
+                "id": 1,
+                "username": "John Doe"
+            },
+        "executions": 42,
+        "latest_execution_at": "2014-02-12 03:34:51"
+    }
+
+
 class OperationResponse(object):
 
     def __init__(self, code, message, key):
 
         self.deferred = defer.Deferred()
         self.response = {'code': code,
-                         'message': message,
+                         'message': [message],
                          'key': key
                          }
 
@@ -23,13 +51,17 @@ class OperationResponse(object):
         return self.response['code']
 
     def get_message(self):
-        return self.response['message']
+        return str(self.response['message'])
 
     def set_code(self, code):
         self.response['code'] = code
 
     def set_message(self, message):
-        self.response['message'] = message
+        self.response['message'] = []
+        self.response['message'].append(message)
+
+    def add_message(self, message):
+        self.response['message'].append(message)
 
     def send(self):
         pass
@@ -126,16 +158,16 @@ class OperationFactory(object):
                                        recording_id=op_string['param'])
 
         if "stop_session" == op_string['operation']:
-            operation = StopInjection(self.controller,
-                                      self.response_factory,
-                                      op_string['key'],
-                                      recording_id=op_string['param'])
+            operation = StopSession(self.controller,
+                                    self.response_factory,
+                                    op_string['key'],
+                                    recording_id=op_string['param'])
 
         if "start_session" == op_string['operation']:
-            operation = StartInjection(self.controller,
-                                       self.response_factory,
-                                       op_string['key'],
-                                       session_id=op_string['param'])
+            operation = StartSession(self.controller,
+                                     self.response_factory,
+                                     op_string['key'],
+                                     session_id=op_string['param'])
 
         if "reload" == op_string['operation']:
             operation = ReloadPlugins(self.controller,
@@ -377,43 +409,105 @@ class StartRecording(ServerOperation):
             self.response.set_message({'Busy': status})
 
 
-class StartInjection(ServerOperation):
+class StartSession(ServerOperation):
 
     def __init__(self, controller, response_factory, key, **params):
         ServerOperation.__init__(self, controller, response_factory, key)
 
         self.params = params
+        session_id = params['session_id']
+        self.session = self._get_session(session_id)
+        controller.upstream_host = self.session["upstreamHost"]
+        self.response.add_message("Upstream Host set to: " +
+                                  str(controller.upstream_host))
+        controller.upstream_port = self.session["upstreamPort"]
+        self.response.add_message("Upstream Port set to: " +
+                                  str(controller.upstream_port))
+        stop_op = StopProxy(controller, response_factory, key)
+        start_op = StartProxy(controller, response_factory, key)
 
-        d = self.addCallback(self.start_injection)
+        d = self.addCallback(stop_op.stop).addCallback(start_op.start)
+        d.addCallback(self.start_session)
         d.addCallback(self.respond)
 
-    def start_injection(self, result):
-        status = self.controller.module_registry.status(
-            module_name='Injection',
-            **self.params)
-        if status['state'] != "running":
-            self.controller.module_registry.start(
+    def _get_session(self, session_id):
+            conn = pymongo.MongoClient()
+            db = conn.proxy
+            self.session = db.session.find_one({"_id": session_id})
+            self.session = test_session
+
+            return self.session
+
+    def start_session(self, result):
+
+        try:
+            self.params['test_plan'] = self.session['testPlan']['id']
+            status = self.controller.module_registry.status(
                 module_name='Injection',
                 **self.params)
-            self.response.set_message({'Started Injection Session':
-                                      [self.response.get_message()]})
-        else:
-            self.response.set_code(501)
-            self.response.set_message({'Busy': status})
+            if status['state'] != "running":
+                self.controller.module_registry.start(
+                    module_name='Injection',
+                    **self.params)
+            else:
+                self.response.set_code(501)
+                self.response.set_message({'Busy': status})
+        except KeyError:
+            pass
+
+        try:
+            profile_id = self.session['qosProfile']['id']
+            self.params['profile_id'] = profile_id
+            status = self.controller.module_registry.status(
+                module_name='QOS',
+                **self.params)
+            if status['state'] != "running":
+                self.controller.module_registry.start(
+                    module_name='QOS',
+                    **self.params)
+            else:
+                self.response.set_code(501)
+                self.response.set_message({'Busy': status})
+        except KeyError:
+            pass
+
+        try:
+            profile_id = self.session['serverOverloadProfile']['id']
+            self.params['profile_id'] = profile_id
+            status = self.controller.module_registry.status(
+                module_name='ServerOverload',
+                **self.params)
+
+            if status['state'] != "running":
+                self.controller.module_registry.start(
+                    module_name='ServerOverload',
+                    **self.params)
+            else:
+                self.response.set_code(501)
+                self.response.set_message({'Busy': status})
+        except KeyError:
+            pass
+
+        self.response.set_message({'Started Injection Session':
+                                  [self.response.get_message()]})
 
 
-class StopInjection(ServerOperation):
+class StopSession(ServerOperation):
 
     def __init__(self, controller, response_factory, key, **params):
         ServerOperation.__init__(self, controller, response_factory, key)
 
         self.params = params
 
-        d = self.addCallback(self.stop_injection)
+        d = self.addCallback(self.stop_session)
         d.addCallback(self.respond)
 
-    def stop_injection(self, result):
+    def stop_session(self, result):
         self.controller.module_registry.stop(module_name='Injection',
+                                             **self.params)
+        self.controller.module_registry.stop(module_name='QOS',
+                                             **self.params)
+        self.controller.module_registry.stop(module_name='ServerOverload',
                                              **self.params)
         self.response.set_message("Stopped Injection Session: { " +
                                   self.response.get_message() + ", " + "}")

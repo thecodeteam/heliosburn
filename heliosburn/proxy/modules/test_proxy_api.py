@@ -21,7 +21,7 @@ class TestAPISuccess(AbstractAPITestModule):
 
 class TestStopProxyAPI(TestAPISuccess):
     """
-    Used to teset the proxy controller API call 'stop'.
+    Used to test the proxy controller API call 'stop'.
     """
 
     def get_message(self):
@@ -39,7 +39,7 @@ test_stop_proxy = TestStopProxyAPI()
 
 class TestStartProxyAPI(TestAPISuccess):
     """
-    Used to teset the proxy controller API call 'start'.
+    Used to test the proxy controller API call 'start'.
     """
 
     def get_message(self):
@@ -57,7 +57,7 @@ test_start_proxy = TestStartProxyAPI()
 
 class TestChangeUpstreamPortAPI(TestAPISuccess):
     """
-    Used to teset the proxy controller API call
+    Used to test the proxy controller API call
     'upstream_port'.
     """
 
@@ -78,7 +78,7 @@ test_upstream_port_proxy = TestChangeUpstreamPortAPI()
 
 class TestChangeUpstreamHostAPI(TestAPISuccess):
     """
-    Used to teset the proxy controller API call
+    Used to test the proxy controller API call
     'upstream_host'.
     """
 
@@ -99,7 +99,7 @@ test_upstream_host_proxy = TestChangeUpstreamHostAPI()
 
 class TestChangeBindAddressAPI(TestAPISuccess):
     """
-    Used to teset the proxy controller API call
+    Used to test the proxy controller API call
     'bind_address'.
     """
 
@@ -120,7 +120,7 @@ test_bind_address_proxy = TestChangeBindAddressAPI()
 
 class TestReloadPluginsAPI(TestAPISuccess):
     """
-    Used to teset the proxy controller API call
+    Used to test the proxy controller API call
     'reload'.
     """
 
@@ -141,7 +141,7 @@ test_reload_proxy = TestReloadPluginsAPI()
 
 class TestResetPluginsAPI(TestAPISuccess):
     """
-    Used to teset the proxy controller API call
+    Used to test the proxy controller API call
     'reset'.
     """
 
@@ -162,7 +162,7 @@ test_Reset_proxy = TestResetPluginsAPI()
 
 class TestChangeBindPortAPI(TestAPISuccess):
     """
-    Used to teset the proxy controller API call
+    Used to test the proxy controller API call
     'bind_port'.
     """
 
@@ -183,7 +183,7 @@ test_bind_port_proxy = TestChangeBindPortAPI()
 
 class TestStartRecordingAPI(TestAPISuccess):
     """
-    Used to teset the proxy controller API call 'start_recording'.
+    Used to test the proxy controller API call 'start_recording'.
     """
 
     def get_message(self):
@@ -204,7 +204,7 @@ test_start_recording = TestStartRecordingAPI()
 
 class TestStopRecordingAPI(TestAPISuccess):
     """
-    Used to teset the proxy controller API call 'stop_recording'.
+    Used to test the proxy controller API call 'stop_recording'.
     """
 
     def get_message(self):
@@ -225,7 +225,7 @@ test_stop_recording = TestStopRecordingAPI()
 
 class TestBusyRecordingAPI(TestAPISuccess):
     """
-    Used to teset the proxy controller API call 'start_recording',
+    Used to test the proxy controller API call 'start_recording',
     for a busy response.
     """
 
@@ -265,7 +265,7 @@ test_busy_recording = TestBusyRecordingAPI()
 
 class TestStatusAPI(TestAPISuccess):
     """
-    Used to teset the proxy controller API call 'status'.
+    Used to test the proxy controller API call 'status'.
     """
 
     def get_message(self):
@@ -293,3 +293,45 @@ class TestStatusAPI(TestAPISuccess):
         print(success_message)
 
 test_status_proxy = TestStatusAPI()
+
+
+class TestStartSessionAPI(TestAPISuccess):
+    """
+    Used to test the proxy controller API call 'start_session'.
+    """
+
+    def get_message(self):
+        response_message = {'Started Injection Session':
+                            [self.op_response.get_message()],
+                            }
+        self.op_response.set_message(response_message)
+
+        recording_id = {'session_id': 1}
+        message = self._get_operation_message('start_session',
+                                              recording_id,
+                                              self.response_key)
+        return json.dumps(message)
+
+
+test_start_session = TestStartSessionAPI()
+
+
+class TestStopSessionAPI(TestAPISuccess):
+    """
+    Used to test the proxy controller API call 'stop_session'.
+    """
+
+    def get_message(self):
+        response_message = "Stopped Injection Session: { "
+        response_message += self.op_response.get_message() + ", "
+        response_message += "}"
+
+        self.op_response.set_message(response_message)
+        recording_id = {'session_id': 1}
+        message = self._get_operation_message('stop_session',
+                                              recording_id,
+                                              self.response_key)
+        return json.dumps(message)
+
+
+test_stop_session = TestStopSessionAPI()

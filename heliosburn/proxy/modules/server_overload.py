@@ -1,34 +1,14 @@
 import datetime
 import pymongo
-import math
+import random
+import time
+from injectors import ExponentialInjector
+from injectors import PlateauInjector
 from module import AbstractModule
 from twisted.python import log
 
 
-test_session = {
-        "id": 1,
-        "name": "Session A",
-        "description": "This is a description for a Session",
-        "upstreamHost": "github.com",
-        "upstreamPort": 80,
-        "qosProfile": "0xdeadbeef",
-        "ServerOverloadProfile": "0xfedbeef",
-
-        "createdAt": "2014-02-12 03:34:51",
-        "updatedAt": "2014-02-12 03:34:51",
-        "testPlan": {
-                "id": 12,
-                "name": "ViPR Test plan"
-            },
-        "user": {
-                "id": 1,
-                "username": "John Doe"
-            },
-        "executions": 42,
-        "latest_execution_at": "2014-02-12 03:34:51"
-    }
-
-test_profile = {
+test_so_profile = {
     "_id": "0xdeadbeef",
     "name": "Raspberry PI Overload profile",
     "description": "bla bla...",
@@ -68,75 +48,56 @@ test_profile = {
     ]
 }
 
+# ultimately pull from settings file
+injector_list = {
+    ExponentialInjector,
+    PlateauInjector
+}
 
-class SOInjector(object):
 
-    def __init__(self, request, so_profile):
-        self.request = request
-        self.so_profile = so_profile
+class ResponseTrigger(object):
 
-    def execute(self):
+    def __init__(self, min_load, max_load, probability):
+        self.min_load = min_load
+        self.max_load = max_load
+        self.probability = probability
+
+    def match(self, load):
+        matched = False
+        if load >= self.min_load and load <= self.max_load:
+            if random.random() <= self.probability/100:
+                matched = True
+
+        return matched
+
+    def get_response(self):
         pass
 
 
-class ExponentialInjector(SOInjector):
+class SimulatedResponseTrigger(ResponseTrigger):
 
-    load = 1
-    requests = 0
+    def __init__(self, min_load, max_load, probability, response):
+        ResponseTrigger.__init(self, min_load, max_load, probability)
+        self.response = response
 
-    def execute(self):
-        x = self.so_profile['function']['expValue']
-        r = self.so_profile['function']['growthRate']
-        self.f = self.so_profile['function']['fluxuation']
-        maxL = self.so_profile['function']['maxLoad']
-
-        if self.load < 100 and self.load < maxL:
-            if self.requests < r:
-                self.requests + 1
-
-            if self.requests == r:
-                self.load = (self.load * x) + math.sin(self.f)
-                self.requests = 0
-                if self.load > 100:
-                    self.load = 100
-
-        return self.load
+    def get_response(self):
+        return self.response
 
 
-class PlateauInjector(SOInjector):
-    load = 1
-    requests = 0
+class DelayedResponseTrigger(ResponseTrigger):
 
-    def execute(self):
-        self.requests = self.so_profile['function']['requestStart']
-        x = self.so_profile['function']['growthAmount']
-        r = self.so_profile['function']['growthRate']
-        self.f = self.so_profile['function']['fluxuation']
+    def __init__(self, min_load, max_load, probability, delay):
+        ResponseTrigger.__init(self, min_load, max_load, probability)
+        self.delay = delay
 
-        if self.load < 100:
-            if self.requests < r:
-                self.requests + 1
-
-            if self.requests == r:
-                self.load = (self.load * x) + math.sin(self.f)
-                self.requests = 0
-                if self.load > 100:
-                    self.load = 100
-
-
-class NullInjector(SOInjector):
-    def execute(self):
-        if self.request:
-            return self.request
-        else:
-            return self.response
+    def get_response(self):
+        time.sleep(self.delay)
+        return None
 
 
 class ServerOverload(AbstractModule):
-    injectors = {
-        'exponential': ExponentialInjector,
-        'plateau': PlateauInjector
-    }
+    triggers = []
+    injectors = []
 
     def __init__(self):
         AbstractModule.__init__(self)
@@ -146,42 +107,75 @@ class ServerOverload(AbstractModule):
         self.mongo_host = 'heliosburn.traffic'
         self.mongo_port = '127.0.0.1'
         self.mongo_db = 'heliosburn'
+        self.stats['ServerOverload'] = []
 
     def configure(self, **configs):
         pass
 
     def handle_request(self, request):
         for injector in self.injectors:
-            request = injector(request, self.so_profile).execute()
+            load = injector.execute()
+            self.stats['ServerOverload'].append(injector.metrics)
 
-        return request
+        for trigger in self.triggers:
+            if trigger.match(load):
+                response = trigger.get_response()
 
-    def _get_session(self, session_id):
-        conn = pymongo.MongoClient()
-        db = conn.proxy
-        session = db.session.find_one({"_id": session_id})
-        session = test_session
-        return session
+            if response:
+                pass
+                # add in automatically responding with response code
+            else:
+                return request
 
-    def _set_profile(self, session_id):
-        session = self._get_session(session_id)
-        profile_id = session["serverOverloadProfile"]
+    def _set_profile(self, profile_id):
         conn = pymongo.MongoClient()
         db = conn.proxy
         profile = db.so_profile.find_one({"_id": profile_id})
-        profile = test_profile
-        self.so_profile = profile
+        profile = test_so_profile
+        self.profile = profile
+
+    def _set_triggers(self):
+        for trigger in self.profile['response_triggers']:
+            min_load = trigger['fromLoad']
+            max_load = trigger['toLoad']
+            for action in trigger['actions']:
+                if action['type'] == "response":
+                    response = action['value']
+                    prob = action['percentage']
+                    sr_trigger = SimulatedResponseTrigger(min_load,
+                                                          max_load,
+                                                          prob,
+                                                          response
+                                                          )
+
+                    self.triggers.append(sr_trigger)
+
+                if action['type'] == "delay":
+                    response = action['value']
+                    prob = action['percentage']
+                    d_trigger = DelayedResponseTrigger(min_load,
+                                                       max_load,
+                                                       prob,
+                                                       response
+                                                       )
+                    self.triggers.append(d_trigger)
 
     def start(self, **params):
-        session_id = params['session_id']
+        self.session_id = params['session_id']
+        self.profile_id = params['profile_id']
         self.state = "running"
         self.status = str(datetime.datetime.now())
-        self._set_profile(session_id)
+        self._set_profile(self.profile_id)
+        for c in injector_list:
+            self.injectors.append(c(self.profile))
+
         log.msg("Server Overload module started at: " + self.status)
 
     def stop(self, **params):
         self.state = "stopped"
+        self.profile = None
         self.status = str(datetime.datetime.now())
+        self.injectors = []
         log.msg("Server Overload module stopped at: " + self.status)
 
 so = ServerOverload()

@@ -2,6 +2,9 @@ import redis
 import modules
 import json
 import datetime
+import pymongo
+import time
+from multiprocessing import Process
 from zope.interface import implements
 from zope.interface import Interface
 from twisted.internet import defer
@@ -108,10 +111,13 @@ class AbstractModule(object):
         Initialization of a proxy module instance
         """
 
+        self.session_id = None
+        self.profile_id = None
         self.name = self.__class__.__name__
         self.log = log
         self.state = "loaded"
         self.status = str(datetime.datetime.now())
+        self.stats = {}
 
     def get_name(self):
         """
@@ -181,9 +187,23 @@ class AbstractModule(object):
 
     def get_status(self):
         """
-        this method is called to  get the module(s) current status
+        this method is called to get the module(s) current status
         """
         return self.status
+
+    def store_stats(self):
+        if self.get_stats():
+            conn = pymongo.MongoClient()
+            db = conn.proxy
+            db.statistics.insert(self.get_stats())
+
+    def get_stats(self):
+        """
+        this method is called to get the module(s) current running statistics
+        """
+        self.stats['session_id'] = self.session_id
+        self.stats['profile_id'] = self.profile_id
+        return self.stats
 
     def isStarted(self):
         if self.state == "running":
@@ -293,6 +313,8 @@ class Registry(object):
         self._load_pipeline_modules()
         self._load_support_modules()
         self._load_test_modules()
+        p = Process(target=self._dump_stats)
+        p.start()
 
     def _load_pipeline_modules(self):
         for module in self.pipeline_modules:
@@ -360,6 +382,15 @@ class Registry(object):
     def _stop_echo_server(self):
         self.echo_server.stopListening()
         log.msg("Echo Server Stopped")
+
+    def _dump_stats(self):
+        while True:
+            for plugin in self.plugins.values():
+                p = Process(target=plugin.store_stats)
+                p.start()
+                log.msg("Started recording stats for module: " + plugin.name)
+
+            time.sleep(60)
 
     def handle_request(self, request, callback):
 
@@ -457,7 +488,8 @@ class Registry(object):
             status = {
                 "module": module_name,
                 "state": self.plugins[module_name].get_state(),
-                "status": self.plugins[module_name].get_status()
+                "status": self.plugins[module_name].get_status(),
+                "stats": self.plugins[module_name].get_status()
             }
         else:
             status = []
@@ -465,7 +497,8 @@ class Registry(object):
                 p_status = {
                     "module": plugin.get_name(),
                     "state": plugin.get_state(),
-                    "status": str(plugin.get_status())
+                    "status": str(plugin.get_status()),
+                    "stats": str(plugin.get_status())
                 }
                 status.append(p_status)
 
