@@ -9,7 +9,25 @@ import pprint
 
 
 def create(config, args):
-    pass
+    url = config['url'] + "/api/user/"
+    data = {
+        "username": args['username'],
+        "password": args['password'],
+        "email": args['email'],
+    }
+    if args['admin'] is not None:
+        if args['admin'] == "yes":
+            data['roles'] = ["admin"]
+        else:
+            data['roles'] = ["standard"]
+    token = auth.get_token(config)
+    pdb.set_trace()
+    r = requests.post(url, headers={"X-Auth-Token": token}, data=json.dumps(data))
+    if r.status_code != 200:
+        print("API returned status code %s" % (r.status_code))
+        sys.exit(1)
+    else:
+        print("API returned status code %s" % (r.status_code))
 
 
 def read(config, args):
