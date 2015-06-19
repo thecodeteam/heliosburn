@@ -173,11 +173,11 @@ def start(request, recording_id):
     from api.models import redis_wrapper
     r = redis_wrapper.init_redis()
     response_key = str(ObjectId())
-    redis_wrapper.publish_to_proxy({
+    redis_wrapper.publish_to_proxy(json.dumps({
         "operation": "start_recording",
         "param": recording_id,
         "key": response_key,
-    })
+    }))
     logger.info("recording '%s' started by '%s'" % (recording_id, request.user['username']))
     for i in range(0, 50):
         response = r.get(response_key)
