@@ -16,10 +16,11 @@ test_profile = {
     "trafficLoss": 0.1
 }
 
-injector_list = {
-    'latency': LatencyInjector,
-    'packet_loss': PacketLossInjector,
-}
+# ultimately pull from settings file
+injector_list = [
+    LatencyInjector,
+    PacketLossInjector
+]
 
 
 class QOS(AbstractModule):
@@ -33,7 +34,7 @@ class QOS(AbstractModule):
         self.mongo_host = 'heliosburn.traffic'
         self.mongo_port = '127.0.0.1'
         self.mongo_db = 'heliosburn'
-        self.stats['ServerOverload'] = []
+        self.stats['qos'] = []
 
     def configure(self, **configs):
         pass
@@ -52,7 +53,7 @@ class QOS(AbstractModule):
         db = conn.proxy
         profile = db.qos_profile.find_one({"_id": profile_id})
         profile = test_profile
-        self.qos_profile = profile
+        self.profile = profile
 
     def start(self, **params):
         self.session_id = params['session_id']

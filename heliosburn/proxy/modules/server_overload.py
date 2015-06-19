@@ -98,6 +98,7 @@ class DelayedResponseTrigger(ResponseTrigger):
 class ServerOverload(AbstractModule):
     triggers = []
     injectors = []
+    response = None
 
     def __init__(self):
         AbstractModule.__init__(self)
@@ -122,10 +123,14 @@ class ServerOverload(AbstractModule):
                 response = trigger.get_response()
 
             if response:
-                pass
-                # add in automatically responding with response code
-            else:
-                return request
+                self.response = response
+
+            return request
+
+    def handle_response(self, response):
+        if self.response:
+            response.code = self.response
+            return response
 
     def _set_profile(self, profile_id):
         conn = pymongo.MongoClient()
