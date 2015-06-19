@@ -84,10 +84,11 @@ def main(config, args):
     
     # create 
     create_parser = subparsers.add_parser("create", help="create user object")
-    create_parser.add_argument("--username", type=str, required=True, help="username of new user")
-    create_parser.add_argument("--email", type=str, required=True, help="email of new user")
-    create_parser.add_argument("--password", type=str, required=True, help="password of new user")
-    create_parser.add_argument("--admin", choices=("yes","no"), required=True, help="set new user as admin")
+    create_parser_required = create_parser.add_argument_group("required arguments")
+    create_parser_required.add_argument("--username", type=str, required=True, help="username of new user")
+    create_parser_required.add_argument("--email", type=str, required=True, help="email of new user")
+    create_parser_required.add_argument("--password", type=str, required=True, help="password of new user")
+    create_parser_required.add_argument("--admin", choices=("yes","no"), required=True, help="set new user as admin")
 
     # read
     read_parser = subparsers.add_parser("read", help="read user object(s)")
@@ -96,14 +97,16 @@ def main(config, args):
 
     # update 
     update_parser = subparsers.add_parser("update", help="update existing user object")
-    update_parser.add_argument("username", type=str, help="username to update")
-    update_parser.add_argument("--email", type=str, required=False, help="email of user")
-    update_parser.add_argument("--password", type=str, required=False, help="password of user")
+    update_parser_required = update_parser.add_argument_group("required arguments")
+    update_parser_required.add_argument("--username", type=str, required=True, help="username to update")
+    update_parser.add_argument("--email", type=str, help="email of user")
+    update_parser.add_argument("--password", type=str, help="password of user")
     update_parser.add_argument("--admin", choices=("yes","no"), help="set user as admin")
 
     # delete
     delete_parser = subparsers.add_parser("delete", help="delete user object")
-    delete_parser.add_argument("username", type=str, help="username to delete")
+    delete_parser_required = delete_parser.add_argument_group("required arguments")
+    delete_parser_required.add_argument("--username", type=str, required=True, help="username to delete")
     
     args = vars(parser.parse_args())
     action_map = {
