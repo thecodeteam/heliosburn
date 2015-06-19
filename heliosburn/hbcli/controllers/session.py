@@ -57,7 +57,6 @@ def read(config, args):
 
 
 def update(config, args):
-    pp = pprint.PrettyPrinter()
     url = config['url'] + "/api/session/" + args['session'] + "/"
 
     data = {}
@@ -96,11 +95,17 @@ def delete(config, args):
 
 
 def start(config, args):
-    pass
+    url = config['url'] + "/api/session/" + args['session'] + "/start/"
+    token = auth.get_token(config)
+    r = requests.get(url, headers={"X-Auth-Token": token})
+    print("API returned status code %s" % (r.status_code))
 
 
 def stop(config, args):
-    pass
+    url = config['url'] + "/api/session/" + args['session'] + "/start/"
+    token = auth.get_token(config)
+    r = requests.get(url, headers={"X-Auth-Token": token})
+    print("API returned status code %s" % (r.status_code))
 
 
 def main(config, args):
@@ -141,11 +146,22 @@ def main(config, args):
     delete_parser = subparsers.add_parser("delete", help="delete session object")
     delete_parser.add_argument("--session", type=str, required=True, help="session id to delete")
 
+    # start 
+    start_parser = subparsers.add_parser("start", help="start a running session")
+    start_parser.add_argument("--session", type=str, required=True, help="session id to start")
+
+    # stop 
+    stop_parser = subparsers.add_parser("stop", help="stop a running session")
+    stop_parser.add_argument("--session", type=str, required=True, help="session id to stop")
+
+
     args = vars(parser.parse_args())
     action_map = {
         "create": create,
         "read": read,
         "update": update,
         "delete": delete,
+        "start": start,
+        "stop": stop,
     }
     action_map[args['action']](config, args)
