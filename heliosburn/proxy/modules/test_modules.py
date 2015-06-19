@@ -28,8 +28,8 @@ class TestModifyStatus(AbstractModule):
         """
         Alter the statuscode to be 400
         """
-#        response.setHeader('original_code', response.code)
-#        response.setResponseCode(400)
+        response.setHeader('original_code', response.code)
+        response.setResponseCode(400)
         return response
 
 test_modify_status = TestModifyStatus()

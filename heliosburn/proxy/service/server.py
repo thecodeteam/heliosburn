@@ -5,19 +5,14 @@
 # it discards all modules from config.yaml except those in the,
 # test section.
 
-import sys
-import json
 import logging
 import logging.config
 from settings import Common
 from service.api import RedisOperationFactory
 from twisted.internet import reactor
-from twisted.internet import endpoints
-from twisted.internet import defer
 from twisted.internet.endpoints import TCP4ClientEndpoint
 from twisted.web import proxy
 from twisted.web import server
-from twisted.web import resource
 from twisted.python import log
 from module import Registry
 from protocols.http import HBReverseProxyRequest
@@ -67,7 +62,6 @@ class HBProxyServer(object):
         self.redis_conn.addCallback(self.subscribe).addCallback(
             self.start_proxy)
 
-
     def _start_logging(self):
         self.observer = log.PythonLoggingObserver(loggerName="proxy")
         self.observer.start()
@@ -99,5 +93,3 @@ class HBProxyServer(object):
         self.tests.addCallback(self._stop_test)
         self.tests.callback("start test")
         reactor.run()
-
-
