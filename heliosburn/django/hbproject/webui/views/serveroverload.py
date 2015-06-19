@@ -1,3 +1,4 @@
+import json
 import logging
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -69,12 +70,18 @@ def serveroverload_new(request):
 
 @login_required
 def serveroverload_update(request):
-    if not request.POST:
+    if not request.method == "POST":
         return HttpResponseRedirect(reverse('serveroverload_list'))
 
-    name = request.POST.get('name')
-    pk = request.POST.get('pk')
-    value = request.POST.get('value')
+    if "application/json" in request.META["CONTENT_TYPE"]:
+        data = json.loads(request.body)
+        name = data['name']
+        pk = data['pk']
+        value = data['value']
+    else:
+        name = request.POST.get('name')
+        pk = request.POST.get('pk')
+        value = request.POST.get('value')
 
     if not name or not pk:
         response = 'field cannot be empty!'

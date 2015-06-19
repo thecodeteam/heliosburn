@@ -22,6 +22,8 @@
     <!-- ngDialog -->
     <link href="{% static 'ngDialog/css/ngDialog.min.css' %}" rel="stylesheet" type="text/css" />
     <link href="{% static 'ngDialog/css/ngDialog-theme-default.min.css' %}" rel="stylesheet" type="text/css" />
+    <!-- range slider -->
+    <link href="{% static 'angular-rangeslider/angular.rangeSlider.css' %}" rel="stylesheet" type="text/css" />
     <!-- X-editable -->
     <link href="//cdnjs.cloudflare.com/ajax/libs/x-editable/1.5.0/bootstrap3-editable/css/bootstrap-editable.css" rel="stylesheet"/>
 {% endblock %}
@@ -71,8 +73,8 @@
                     <dl class="dl-horizontal">
                         <dt>Description</dt>
                         <dd><a href="#" id="qos-description">{{ serveroverload.description }}</a></dd>
-                        <dt>Latency</dt>
-                        <dd><a href="#" id="qos-latency">{{ serveroverload.latency }}</a></dd>
+                        <dt>Function</dt>
+                        <dd><a href="#" id="qos-function">{{ serveroverload.function }}</a></dd>
                         <dt>Created at</dt>
                         <dd>{{ serveroverload.createdAt }}</dd>
                         <dt>Last updated</dt>
@@ -93,24 +95,56 @@
                 <div class="box-body table-responsive">
                     <div class="row">
                         <div class="col-xs-12">
-                            <a class="btn btn-primary pull-right bold" href="#" ng-click="newTrigger()" role="button">Create a new trigger</a>
+                            <button type="button" class="btn btn-default top10" ng-click="newTrigger()">
+                                <span class="glyphicon glyphicon-plus" aria-hidden="true"></span> Trigger
+                            </button>
+
+                            <button type="button" class="btn btn-success pull-right" ng-click="saveTriggers()">
+                                <span class="glyphicon glyphicon-floppy-disk" aria-hidden="true"></span> Save
+                            </button>
                         </div>
                     </div>
                     <div class="row top7">
                         <div class="col-xs-12">
-                            <table ng-table="" class="table table-bordered table-striped">
-                                <tr ng-repeat="trigger in triggers">
-                                    <td data-title="'From'">
-                                        {% verbatim %}{{trigger.fromLoad}}{% endverbatim %}
-                                    </td>
-                                    <td data-title="'To'">
-                                        {% verbatim %}{{trigger.toLoad}}{% endverbatim %}
-                                    </td>
-                                    <td data-title="'Actions'">
-                                        {% verbatim %}{{trigger.actions}}{% endverbatim %}
-                                    </td>
-                                </tr>
-                            </table>
+
+                            <div ng-repeat="trigger in triggers" class="box box-primary box-solid">
+                                <div class="box-header">
+                                  <h3 class="box-title">Trigger #{% verbatim %}{{ $index+1 }} {% endverbatim %}</h3>
+                                  <div class="box-tools pull-right">
+                                    <button class="btn btn-box-tool" ng-click="removeTrigger(trigger)"><i class="fa fa-times"></i></button>
+                                  </div><!-- /.box-tools -->
+                                </div><!-- /.box-header -->
+                                <div class="box-body">
+
+                                    <h4>Server load:</h4>
+                                    <div range-slider min="0" max="100" model-min="trigger.fromLoad" model-max="trigger.toLoad"></div>
+
+                                    <h4>Actions:</h4>
+                                    <table ng-table="" class="table table-bordered table-striped">
+                                        <tr ng-repeat="action in trigger.actions">
+                                            <td data-title="'Type'">
+                                                {% verbatim %}{{action.type}}{% endverbatim %}
+                                            </td>
+                                            <td data-title="'Value'">
+                                                {% verbatim %}{{action.value}}{% endverbatim %}
+                                            </td>
+                                            <td data-title="'Percentage'">
+                                                {% verbatim %}{{action.percentage}}{% endverbatim %}
+                                            </td>
+                                            <td data-title="'Delete'">
+                                                <a href="#" ng-click="removeAction(trigger, action)">Delete</a>
+                                            </td>
+                                        </tr>
+                                    </table>
+
+                                    <button type="button" class="btn btn-default top10" ng-click="newAction(trigger)">
+                                        <span class="glyphicon glyphicon-plus" aria-hidden="true"></span> Action
+                                    </button>
+
+                                </div><!-- /.box-body -->
+                              </div>
+
+
                         </div>
                     </div>
                 </div><!-- /.box-body -->
@@ -119,7 +153,6 @@
             <pre>
                 {% verbatim %}{{ triggers }}{% endverbatim %}
             </pre>
-
         </div>
     </div>
 
