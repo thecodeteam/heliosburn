@@ -50,6 +50,7 @@ class Common(Configuration):
         'django_bootstrap_breadcrumbs',
         'bootstrap3',
         'djangobower',
+        'jsonify',
 
         'webui',
     )

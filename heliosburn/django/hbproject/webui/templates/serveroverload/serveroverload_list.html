@@ -141,8 +141,8 @@
                                             <td>{{ p.name }}</td>
                                             <td><a href="{% url 'serveroverload_details' p.id %}">{{ p.name }}</a></td>
                                             <td>{{ p.description }}</td>
-                                            <td>-</td>
-                                            <td>-</td>
+                                            <td>{{ p.function.type }}</td>
+                                            <td>{{ p.response_triggers|length }}</td>
                                         </tr>
                                     {% endfor %}
                                 </tbody>

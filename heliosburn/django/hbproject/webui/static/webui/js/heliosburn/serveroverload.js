@@ -1,16 +1,18 @@
 angular.module('hbApp.controllers').controller('ServerOverloadCtrl', ['$scope', '$http', '$log', 'ngDialog', function($scope, $http, $log, ngDialog){
 
 
-    $scope.triggers = [
-        {
-            fromLoad: 20,
-            toLoad: 60,
-            actions: [
-                {type: "response", value: "503", percentage: "60"},
-                {type: "response", value: "429", percentage: "10"}
-            ]
-        }
-    ];
+    //$scope.triggers = [
+    //    {
+    //        fromLoad: 20,
+    //        toLoad: 60,
+    //        actions: [
+    //            {type: "response", value: "503", percentage: "60"},
+    //            {type: "response", value: "429", percentage: "10"}
+    //        ]
+    //    }
+    //];
+
+    $scope.triggers = response_triggers;
 
     $scope.newTrigger = function() {
         $scope.triggers.push({fromLoad:0, toLoad:100, actions: []});
@@ -70,7 +72,7 @@ angular.module('hbApp.controllers').controller('ServerOverloadCtrl', ['$scope', 
 
         var data = {
             pk: "557fffcdeb9089088541bc1c",
-            name: "triggers",
+            name: "response_triggers",
             value: $scope.triggers
         }
 

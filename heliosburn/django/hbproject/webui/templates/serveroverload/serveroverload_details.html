@@ -3,6 +3,7 @@
 {% load staticfiles %}
 {% load django_bootstrap_breadcrumbs %}
 {% load tags %}
+{% load jsonify %}
 
 {% block title %}Server Overload Manager{% endblock %}
 {% block content_header %}
@@ -56,6 +57,9 @@
             inputclass: 'description-input',
             params: '{csrfmiddlewaretoken:"{{csrf_token}}"}'
         });
+
+
+        var response_triggers = JSON.parse('{{ serveroverload.response_triggers|jsonify }}');
 
 
     </script>
