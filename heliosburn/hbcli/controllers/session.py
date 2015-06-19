@@ -89,7 +89,10 @@ def update(config, args):
 
 
 def delete(config, args):
-    pass
+    url = config['url'] + "/api/session/" + args['session'] + "/"
+    token = auth.get_token(config)
+    r = requests.delete(url, headers={"X-Auth-Token": token})
+    print("API returned status code %s" % (r.status_code))
 
 
 def start(config, args):
@@ -136,7 +139,7 @@ def main(config, args):
 
     # delete
     delete_parser = subparsers.add_parser("delete", help="delete session object")
-    delete_parser.add_argument("--stub", type=str, required=True, help="stub desc")
+    delete_parser.add_argument("--session", type=str, required=True, help="session id to delete")
 
     args = vars(parser.parse_args())
     action_map = {
