@@ -61,6 +61,7 @@ class Common(Configuration):
         'components-font-awesome',
         'ng-table',
         'ngDialog',
+        'angular-rangeslider',
     )
 
     MIDDLEWARE_CLASSES = (
