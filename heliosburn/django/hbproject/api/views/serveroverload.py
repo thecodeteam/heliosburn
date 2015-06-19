@@ -79,14 +79,14 @@ def post(request):
         assert "_id" not in new
         assert "name" in new
         assert "description" in new
-        assert "function" in new
 
+        assert "function" in new
         p_function = new['function']
         assert "type" in p_function
         assert "expValue" in p_function
         assert "growthRate" in p_function
-        assert "response_triggers" in new
 
+        assert "response_triggers" in new
         p_response_triggers = new['response_triggers']
         for rt in p_response_triggers:
             assert "fromLoad" in rt
@@ -140,17 +140,23 @@ def put(request, profile_id):
                 assert "type" in p_function
                 assert "expValue" in p_function
                 assert "growthRate" in p_function
-                assert "response_triggers" in new
-                p_response_triggers = new['response_triggers']
-                for rt in p_response_triggers:
-                    assert "fromLoad" in rt
-                    assert "toLoad" in rt
-                    assert "actions" in rt
-                    for action in rt['actions']:
-                        assert "type" in action
-                        assert "value" in action
-                        assert "percentage" in action
-            profile['function'] = new['function']
+                profile['function'] = new['function']
+
+        except AssertionError:
+            return HttpResponseBadRequest("argument mismatch")
+
+    if "response_triggers" in new:
+        try:
+            p_response_triggers = new['response_triggers']
+            for rt in p_response_triggers:
+                assert "fromLoad" in rt
+                assert "toLoad" in rt
+                assert "actions" in rt
+                for action in rt['actions']:
+                    assert "type" in action
+                    assert "value" in action
+                    assert "percentage" in action
+            profile['response_triggers'] = new['response_triggers']
         except AssertionError:
             return HttpResponseBadRequest("argument mismatch")
 
