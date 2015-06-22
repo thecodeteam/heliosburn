@@ -2,6 +2,7 @@ angular.module('hbApp.controllers').controller('ServerOverloadCtrl', ['$scope', 
 
     $scope.saveText = "Save";
     $scope.saving = false;
+    $scope.error = false;
 
     $scope.triggers = response_triggers;
 
@@ -53,6 +54,7 @@ angular.module('hbApp.controllers').controller('ServerOverloadCtrl', ['$scope', 
     $scope.saveTriggers = function() {
         $log.debug("Saving triggers");
         $scope.saving = true;
+        $scope.error = false;
         $scope.saveText = "Saving";
 
         var data = {
@@ -67,6 +69,7 @@ angular.module('hbApp.controllers').controller('ServerOverloadCtrl', ['$scope', 
             })
             .error(function() {
                 $log.error("Error updating trigger");
+                $scope.error = true;
             })
             .finally(function () {
                 $scope.saving = false;

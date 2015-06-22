@@ -119,6 +119,12 @@
                 <div class="box-body table-responsive">
                     <div class="row">
                         <div class="col-xs-12">
+
+                            <div class="alert alert-danger alert-dismissible" role="alert" ng-show="error">
+                              <button type="button" class="close" ng-click="error = false" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                              There was an error saving the triggers
+                            </div>
+
                             <button type="button" class="btn btn-default" ng-click="newTrigger()">
                                 <span class="glyphicon glyphicon-plus" aria-hidden="true"></span> Trigger
                             </button>
