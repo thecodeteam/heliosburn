@@ -1,21 +1,69 @@
 
 
-from configurations import Configuration, values
+from configurations import Configuration
 import redis
 
 
 class Common(Configuration):
-    REDIS_HOST = 'localhost'
+    REDIS_HOST = '127.0.0.1'
     REDIS_PORT = 6379
     REDIS_DB = 0
+    MONGO_HOST = '127.0.0.1'
+    MONGO_PORT = 27017
+    MONGO_DB = 'heliosburn'
 
+    PROXY = {
+        'proxy_address': '127.0.0.1',
+        'proxy_port': 8880,
+        'upstream_address': '209.118.208.30',
+        'upstream_port': 80,
+        'redis_host': REDIS_HOST,
+        'redis_port': REDIS_PORT,
+        'redis_db': REDIS_DB,
+        'mongo_host': MONGO_HOST,
+        'mongo_port':  MONGO_PORT,
+        'mongo_db':  MONGO_DB,
+        'traffic_pub_queue': 'heliosburn.traffic',
+        'traffic_sub_queue': 'heliosburn.traffic',
+        'control_pub_queue': 'proxy_mgmt_request',
+        'control_sub_queue': 'proxy_mgmt_response',
+        'plugins': {
+            'support': [
+                'TrafficeReader',
+                'TrafficStream',
+                'TrafficRecorder'
+            ],
+            'session': [
+                'QOS',
+                'ServerOverload',
+                'Injection'
+            ],
+            'test': [
+                'TestStopRecordingAPI',
+                'TestStartSessionAPI',
+                'TestStopSessionAPI',
+                'TestStopProxyAPI',
+                'TestStartProxyAPI',
+                'TestChangeUpstreamHostAPI',
+                'TestChangeUpstreamPortAPI',
+                'TestChangeBindAddressAPI',
+                'TestChangeBindPortAPI',
+                'TestResetPluginsAPI',
+                'TestReloadPluginsAPI',
+                'TestStatusAPI',
+                'TestBusyRecordingAPI',
+            ],
+        }
+    }
+
+    FORMAT = "[%(asctime)s] %(levelname)s [%(name)s:%(lineno)s] %(message)s"
     LOGGING = {
         'version': 1,
         'disable_existing_loggers': False,
         'formatters': {
             'verbose': {
-                'format' : "[%(asctime)s] %(levelname)s [%(name)s:%(lineno)s] %(message)s",
-                'datefmt' : "%d/%b/%Y %H:%M:%S"
+                'format': FORMAT,
+                'datefmt': "%d/%b/%Y %H:%M:%S"
             },
             'simple': {
                 'format': '%(levelname)s %(message)s'
@@ -56,4 +104,3 @@ class Common(Configuration):
             },
         }
     }
-

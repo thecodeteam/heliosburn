@@ -1,23 +1,16 @@
-import yaml
 import uuid
 import datetime
-from io import BytesIO
 from twisted.internet.protocol import Protocol
 from twisted.internet.protocol import ClientFactory
 from twisted.web.proxy import ProxyClient
 from twisted.web.proxy import ReverseProxyRequest
 from twisted.web.proxy import ReverseProxyResource
 from twisted.web.proxy import ProxyClientFactory
-from twisted.web import resource
 from twisted.internet import reactor
-from twisted.internet.endpoints import TCP4ClientEndpoint
 from twisted.python import log
-from txredis.client import RedisClient
-from txredis.client import RedisClientFactory
 from txredis.client import RedisSubscriber
 from django.utils.http import urlquote
 from twisted.internet import protocol
-from module import Registry
 
 
 class DRConnectionClient(Protocol):
@@ -74,7 +67,6 @@ class HBProxyClient(ProxyClient):
 
     def handleResponsePart(self, buffer):
         self.buffer += buffer
-#        log.msg("handled partial response: " + str(buffer))
         log.msg("handled partial response")
 
     def handleResponseEnd(self):
@@ -173,17 +165,20 @@ class HBReverseProxyRequest(ReverseProxyRequest):
 
             self.reactor.connectTCP(self.upstream_host, self.upstream_port,
                                     clientFactory)
-            log.msg("Forwarding request to: " + str(self.upstream_host)
-                    + ":" + str(self.upstream_port))
+            log.msg("Forwarding request to: " +
+                    str(self.upstream_host) + ":" +
+                    str(self.upstream_port))
         else:
             if request.drop_connection:
                 request.transport.loseConnection()
-                log.msg("Connection to: " + str(self.upstream_host)
-                        + ":" + str(self.upstream_port) + " dropped")
+                log.msg("Connection to: " +
+                        str(self.upstream_host) + ":" +
+                        str(self.upstream_port) + " dropped")
             else:
                 request.transport.abortConnection()
-                log.msg("Connection to: " + str(self.upstream_host)
-                        + ":" + str(self.upstream_port) + " reset")
+                log.msg("Connection to: " +
+                        str(self.upstream_host) + ":" +
+                        str(self.upstream_port) + " reset")
 
     def process(self):
         """
@@ -241,17 +236,17 @@ class HBProxyMgmtRedisSubscriber(RedisSubscriber):
         return operation.execute()
 
     def channelSubscribed(self, channel, numSubscriptions):
-        log.msg("HBproxy subscribed to channel: "
-                + channel
-                + " it is subscriber 1 of : "
-                + str(numSubscriptions))
+        log.msg("HBproxy subscribed to channel: " +
+                channel +
+                " it is subscriber 1 of : " +
+                str(numSubscriptions))
 
     def channelUnSubscribed(self, channel, numSubscriptions):
-        log.msg("HBproxy unsubscribed from channel: "
-                + channel
-                + " there are : "
-                + str(numSubscriptions)
-                + " subscribers remaining ")
+        log.msg("HBproxy unsubscribed from channel: " +
+                channel +
+                " there are : " +
+                str(numSubscriptions) +
+                " subscribers remaining ")
 
 
 class HBProxyMgmtRedisSubscriberFactory(protocol.Factory):
@@ -265,24 +260,22 @@ class HBProxyMgmtRedisSubscriberFactory(protocol.Factory):
                                           self.op_factory)
 
 
-class HBProxyMgmtProtocol(protocol.Protocol):
+# class HBProxyMgmtProtocol(protocol.Protocol):
 
-    def __init__(self, op_factory):
-        self.op_factory = op_factory
+#    def __init__(self, op_factory):
+#        self.op_factory = op_factory
 
-    def dataReceived(self, data):
-        operation = self.op_factory.get_operation(data)
-        response = operation.execute()
-        self.transport.write(response)
-        return response
-
-
-class HBProxyMgmtProtocolFactory(protocol.Factory):
-
-    def __init__(self, op_factory):
-        self.op_factory = op_factory
-
-    def buildProtocol(self, addr):
-        return HBProxyMgmtProtocol(self.op_factory)
+#    def dataReceived(self, data):
+#        operation = self.op_factory.get_operation(data)
+#        response = operation.execute()
+#        self.transport.write(response)
+#        return response
 
 
+# class HBProxyMgmtProtocolFactory(protocol.Factory):
+
+#    def __init__(self, op_factory):
+#        self.op_factory = op_factory
+
+#    def buildProtocol(self, addr):
+#        return HBProxyMgmtProtocol(self.op_factory)
