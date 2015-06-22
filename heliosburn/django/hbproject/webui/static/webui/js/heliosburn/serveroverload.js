@@ -1,16 +1,7 @@
 angular.module('hbApp.controllers').controller('ServerOverloadCtrl', ['$scope', '$http', '$log', 'ngDialog', function($scope, $http, $log, ngDialog){
 
-
-    //$scope.triggers = [
-    //    {
-    //        fromLoad: 20,
-    //        toLoad: 60,
-    //        actions: [
-    //            {type: "response", value: "503", percentage: "60"},
-    //            {type: "response", value: "429", percentage: "10"}
-    //        ]
-    //    }
-    //];
+    $scope.saveText = "Save";
+    $scope.saving = false;
 
     $scope.triggers = response_triggers;
 
@@ -42,15 +33,7 @@ angular.module('hbApp.controllers').controller('ServerOverloadCtrl', ['$scope', 
 
     $scope.newAction = function(trigger) {
         var dialog = ngDialog.openConfirm({
-            //template: 'externalTemplate.html',
-            template: '<div class="dialog-contents"> \
-                        <input ng-model="action.type" placeholder="Type" /><br /> \
-                        <input ng-model="action.value" placeholder="Value" /><br /> \
-                        <input ng-model="action.percentage" placeholder="Percentage" /><br /> \
-                        <button ng-click="confirm(action)">Confirm</button> \
-                        <button ng-click="closeThisDialog(1)">Cancel</button> \
-                        </div>',
-            plain: true,
+            template: 'newActionDialog',
             controller: ['$scope', function ($scope) {
                 $log.info('Dialog open');
             }]
@@ -69,6 +52,8 @@ angular.module('hbApp.controllers').controller('ServerOverloadCtrl', ['$scope', 
 
     $scope.saveTriggers = function() {
         $log.debug("Saving triggers");
+        $scope.saving = true;
+        $scope.saveText = "Saving";
 
         var data = {
             pk: "557fffcdeb9089088541bc1c",
@@ -82,6 +67,10 @@ angular.module('hbApp.controllers').controller('ServerOverloadCtrl', ['$scope', 
             })
             .error(function() {
                 $log.error("Error updating trigger");
+            })
+            .finally(function () {
+                $scope.saving = false;
+                $scope.saveText = "Save";
             });
     };
 
