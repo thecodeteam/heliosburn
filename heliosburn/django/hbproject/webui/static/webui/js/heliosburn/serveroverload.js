@@ -58,7 +58,7 @@ angular.module('hbApp.controllers').controller('ServerOverloadCtrl', ['$scope', 
         $scope.saveText = "Saving";
 
         var data = {
-            pk: "557fffcdeb9089088541bc1c",
+            pk: profile_id,
             name: "response_triggers",
             value: $scope.triggers
         }

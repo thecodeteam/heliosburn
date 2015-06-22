@@ -60,6 +60,7 @@
 
 
         var response_triggers = JSON.parse('{{ serveroverload.response_triggers|jsonify }}');
+        var profile_id = '{{ serveroverload.id }}';
 
 
     </script>
@@ -139,7 +140,7 @@
                         <div class="col-xs-12">
 
                             <div ng-hide="triggers.length">
-                                <em><h3 class="text-center">There are no triggers enabled. <a href="#" ng-click="newTrigger()">Create one</a>.</h3></em>
+                                <em><h3 class="text-center">There are no triggers. <a href="#" ng-click="newTrigger()">Create one</a>.</h3></em>
                             </div>
 
                             <div ng-repeat="trigger in triggers" class="box box-primary box-solid">
