@@ -58,12 +58,29 @@
             params: '{csrfmiddlewaretoken:"{{csrf_token}}"}'
         });
 
+        $('#serveroverload-function').editable({
+            url: '{% url 'serveroverload_update' %}',
+            type: 'select',
+            mode: 'popup',
+            pk: '{{ serveroverload.id }}',
+            name: 'function',
+            title: 'Server Overload function',
+            source: [
+                {value: 'plateau', text: 'Plateau'},
+                {value: 'exponential', text: 'Exponential'}
+            ],
+            value: '{{ serveroverload.function.type }}',
+            inputclass: 'function-input',
+            params: '{csrfmiddlewaretoken:"{{csrf_token}}"}'
+        });
+
 
         var response_triggers = JSON.parse('{{ serveroverload.response_triggers|jsonify }}');
         var profile_id = '{{ serveroverload.id }}';
 
 
     </script>
+
 
     <script type="text/ng-template" id="newActionDialog">
         <h3>Create a new action</h3>
@@ -99,7 +116,7 @@
                         <dt>Description</dt>
                         <dd><a href="#" id="serveroverload-description">{{ serveroverload.description }}</a></dd>
                         <dt>Function</dt>
-                        <dd><a href="#">{{ serveroverload.function }}</a></dd>
+                        <dd><a href="#" id="serveroverload-function">{{ serveroverload.function.type|capfirst }}</a></dd>
                         <dt>Created at</dt>
                         <dd>{{ serveroverload.createdAt }}</dd>
                         <dt>Last updated</dt>

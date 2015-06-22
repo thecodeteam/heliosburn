@@ -87,12 +87,8 @@ def serveroverload_update(request):
         response = 'field cannot be empty!'
         return HttpResponseBadRequest(response)
 
-    if name == 'jitter-min':
-        name = 'jitter'
-        value = {'min': value}
-    elif name == 'jitter-max':
-        name = 'jitter'
-        value = {'max': value}
+    if name == 'function':
+        value = {'type': value, 'expValue': 1, 'growthRate': 1}
 
     try:
         ServerOverload(auth_token=request.user.password).update(pk, {name: value})
