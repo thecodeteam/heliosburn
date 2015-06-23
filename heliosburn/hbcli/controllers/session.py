@@ -57,7 +57,6 @@ def read(config, args):
 
 
 def update(config, args):
-    pp = pprint.PrettyPrinter()
     url = config['url'] + "/api/session/" + args['session'] + "/"
 
     data = {}
@@ -89,15 +88,24 @@ def update(config, args):
 
 
 def delete(config, args):
-    pass
+    url = config['url'] + "/api/session/" + args['session'] + "/"
+    token = auth.get_token(config)
+    r = requests.delete(url, headers={"X-Auth-Token": token})
+    print("API returned status code %s" % (r.status_code))
 
 
 def start(config, args):
-    pass
+    url = config['url'] + "/api/session/" + args['session'] + "/start/"
+    token = auth.get_token(config)
+    r = requests.get(url, headers={"X-Auth-Token": token})
+    print("API returned status code %s" % (r.status_code))
 
 
 def stop(config, args):
-    pass
+    url = config['url'] + "/api/session/" + args['session'] + "/start/"
+    token = auth.get_token(config)
+    r = requests.get(url, headers={"X-Auth-Token": token})
+    print("API returned status code %s" % (r.status_code))
 
 
 def main(config, args):
@@ -110,10 +118,11 @@ def main(config, args):
 
     # create
     create_parser = subparsers.add_parser("create", help="create session object")
-    create_parser.add_argument("--name", type=str, required=True, help="session name")
-    create_parser.add_argument("--description", type=str, required=True, help="session description")
-    create_parser.add_argument("--upstreamHost", type=str, required=True, help="upstream hostname")
-    create_parser.add_argument("--upstreamPort", type=int, required=True, help="upstream port number")
+    create_parser_required = create_parser.add_argument_group("required arguments")
+    create_parser_required.add_argument("--name", type=str, required=True, help="session name")
+    create_parser_required.add_argument("--description", type=str, required=True, help="session description")
+    create_parser_required.add_argument("--upstreamHost", type=str, required=True, help="upstream hostname")
+    create_parser_required.add_argument("--upstreamPort", type=int, required=True, help="upstream port number")
     create_parser.add_argument("--testplan", type=str, help="testplan id")
     create_parser.add_argument("--serverOverloadProfile", type=str, help="server overload profile id")
     create_parser.add_argument("--qosProfile", type=str, help="qos profile id")
@@ -125,7 +134,8 @@ def main(config, args):
 
     # update
     update_parser = subparsers.add_parser("update", help="update existing session object")
-    update_parser.add_argument("session", type=str, help="session id to update")
+    update_parser_required = update_parser.add_argument_group("required arguments")
+    update_parser_required.add_argument("--session", type=str, required=True, help="session id to update")
     update_parser.add_argument("--name", type=str, help="session name")
     update_parser.add_argument("--description", type=str, help="session description")
     update_parser.add_argument("--upstreamHost", type=str, help="upstream hostname")
@@ -136,7 +146,19 @@ def main(config, args):
 
     # delete
     delete_parser = subparsers.add_parser("delete", help="delete session object")
-    delete_parser.add_argument("--stub", type=str, required=True, help="stub desc")
+    delete_parser_required = delete_parser.add_argument_group("required arguments")
+    delete_parser_required.add_argument("--session", type=str, required=True, help="session id to delete")
+
+    # start 
+    start_parser = subparsers.add_parser("start", help="start a running session")
+    start_parser_required = start_parser.add_argument_group("required arguments")
+    start_parser_required.add_argument("--session", type=str, required=True, help="session id to start")
+
+    # stop 
+    stop_parser = subparsers.add_parser("stop", help="stop a running session")
+    stop_parser_required = stop_parser.add_argument_group("required arguments")
+    stop_parser_required.add_argument("--session", type=str, required=True, help="session id to stop")
+
 
     args = vars(parser.parse_args())
     action_map = {
@@ -144,5 +166,7 @@ def main(config, args):
         "read": read,
         "update": update,
         "delete": delete,
+        "start": start,
+        "stop": stop,
     }
     action_map[args['action']](config, args)

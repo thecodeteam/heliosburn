@@ -2,6 +2,8 @@ import os
 import sys
 import json
 from controllers import config
+from controllers import recording 
+from controllers import qos
 from controllers import session
 from controllers import user
 
@@ -34,7 +36,9 @@ def main():
 
     Commands:
         config    - adjust hbcli configuration
+        qos       - interact with qos profiles
         user      - interact with users
+        recording - interact with recordings 
         session   - interact with sessions
 
     """ % sys.argv[0]
@@ -45,6 +49,8 @@ def main():
 
     f_map = {
         "config": config.main,
+        "qos": qos.main,
+        "recording": recording.main,
         "session": session.main,
         "user": user.main,
     }
