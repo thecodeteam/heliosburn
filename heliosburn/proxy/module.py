@@ -220,8 +220,8 @@ class AbstractAPITestModule(AbstractModule, unittest.TestCase):
         self.redis_host = configs['redis_host']
         self.redis_port = configs['redis_port']
         self.redis_db = configs['redis_db']
-        self.redis_pub_queue = configs['redis_pub_queue']
-        self.redis_sub_queue = configs['redis_sub_queue']
+        self.redis_pub_queue = configs['traffic_pub_queue']
+        self.redis_sub_queue = configs['traffic_sub_queue']
         self.redis_client = redis.StrictRedis(host=self.redis_host,
                                               port=self.redis_port,
                                               db=self.redis_db)
@@ -300,41 +300,39 @@ class AbstractAPITestModule(AbstractModule, unittest.TestCase):
 
 class Registry(object):
 
-    def __init__(self, plugin_config):
-        self.plugin_config = plugin_config
-        self.pipeline_modules = plugin_config['pipeline']
-        self.support_modules = plugin_config['support']
-        self.test_modules = plugin_config['test']
+    def __init__(self, configs):
+        self.configs = configs
+        self.session_modules = configs['plugins']['session']
+        self.support_modules = configs['plugins']['support']
+        self.test_modules = configs['plugins']['test']
+        self.echo_server_port = configs['echo_server_port']
         self.test_mode = False
 
         self.plugins = {plugin.get_name(): plugin for plugin in
                         getPlugins(IModule, modules)}
 
-        self._load_pipeline_modules()
+        self._load_session_modules()
         self._load_support_modules()
         self._load_test_modules()
         p = Process(target=self._dump_stats)
         p.start()
 
-    def _load_pipeline_modules(self):
-        for module in self.pipeline_modules:
-            name = module['name']
-            configs = module['kwargs']
-            self.plugins[name].configure(**configs)
-            log.msg(name + " loaded into proxy processing pipeline")
+    def _load_session_modules(self):
+        for module in self.session_modules:
+            name = module
+            self.plugins[name].configure(**self.configs)
+            log.msg(name + " loaded into proxy session pipeline")
 
     def _load_support_modules(self):
         for module in self.support_modules:
-            name = module['name']
-            configs = module['kwargs']
-            self.plugins[name].configure(**configs)
+            name = module
+            self.plugins[name].configure(**self.configs)
             log.msg("Proxy support module: " + name + " loaded")
 
     def _load_test_modules(self):
         for module in self.test_modules:
-            name = module['name']
-            configs = module['kwargs']
-            self.plugins[name].configure(**configs)
+            name = module
+            self.plugins[name].configure(**self.configs)
             log.msg(name + " loaded into proxy test pipeline")
 
     def _build_request_pipeline(self):
@@ -342,7 +340,7 @@ class Registry(object):
         pipeline = defer.Deferred()
 
         for module in self.pipeline_modules:
-            module_name = module['name']
+            module_name = module
             if self.plugins[module_name].isStarted():
                 pipeline.addCallback(self.plugins[module_name].handle_request)
 
@@ -352,7 +350,7 @@ class Registry(object):
 
         pipeline = defer.Deferred()
         for module in self.pipeline_modules:
-            module_name = module['name']
+            module_name = module
             if self.plugins[module_name].isStarted():
                 pipeline.addCallback(self.plugins[module_name].handle_response)
 
@@ -365,8 +363,8 @@ class Registry(object):
 
     def _test_mode_off(self, ignored):
         self.test_mode = False
-        self.pipeline_modules = self.plugin_config['pipeline']
-        self.test_modules = self.plugin_config['test']
+        self.session_modules = self.configs['plugins']['session']
+        self.test_modules = self.configs['plugins']['test']
         log.msg("Test mode: off")
         self._stop_echo_server()
 
@@ -375,7 +373,7 @@ class Registry(object):
         echo_resource.set_response(response_file)
 
         echo_site = server.Site(echo_resource)
-        self.echo_server = reactor.listenTCP(7599, echo_site)
+        self.echo_server = reactor.listenTCP(self.echo_server_port, echo_site)
 
         log.msg("Echo Server Started")
 

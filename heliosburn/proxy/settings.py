@@ -15,7 +15,7 @@ class Common(Configuration):
     PROXY = {
         'proxy_address': '127.0.0.1',
         'proxy_port': 8880,
-        'upstream_address': '209.118.208.30',
+        'upstream_host': '209.118.208.30',
         'upstream_port': 80,
         'redis_host': REDIS_HOST,
         'redis_port': REDIS_PORT,
@@ -27,9 +27,10 @@ class Common(Configuration):
         'traffic_sub_queue': 'heliosburn.traffic',
         'control_pub_queue': 'proxy_mgmt_request',
         'control_sub_queue': 'proxy_mgmt_response',
+        'echo_server_port': 7599,
         'plugins': {
             'support': [
-                'TrafficeReader',
+                'TrafficReader',
                 'TrafficStream',
                 'TrafficRecorder'
             ],
