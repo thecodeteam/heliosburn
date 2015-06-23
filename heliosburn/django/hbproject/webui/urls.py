@@ -35,6 +35,12 @@ urlpatterns = patterns(
     url(r'^qos/new/$', 'qos.qos_new', name='qos_new'),
     url(r'^qos/delete/$', 'qos.qos_delete', name='qos_delete'),
 
+    url(r'^serveroverload/$', 'serveroverload.serveroverload_list', name='serveroverload_list'),
+    url(r'^serveroverload/(?P<serveroverload_id>[\w-]+)$', 'serveroverload.serveroverload_details', name='serveroverload_details'),
+    url(r'^serveroverload/update/$', 'serveroverload.serveroverload_update', name='serveroverload_update'),
+    url(r'^serveroverload/new/$', 'serveroverload.serveroverload_new', name='serveroverload_new'),
+    url(r'^serveroverload/delete/$', 'serveroverload.serveroverload_delete', name='serveroverload_delete'),
+
     url(r'^recordings/$', 'recording.recording_list', name='recording_list'),
     url(r'^recordings/(?P<recording_id>[\w-]+)$', 'recording.recording_details', name='recording_details'),
     url(r'^recordings/(?P<recording_id>[\w-]+)/live$', 'recording.recording_live', name='recording_live'),
