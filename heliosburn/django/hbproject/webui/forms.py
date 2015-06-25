@@ -11,11 +11,6 @@ class LoginForm(forms.Form):
 class TestPlanForm(forms.Form):
     name = forms.CharField(label='Name', max_length=100)
     description = forms.CharField(label='Description', widget=forms.Textarea)
-    latencyEnabled = forms.BooleanField(label='Enable latency', required=False)
-    clientLatency = forms.IntegerField(label='Client latency', required=False, initial=0,
-                                       validators=[MinValueValidator(0)])
-    serverLatency = forms.IntegerField(label='Server latency', required=False, initial=0,
-                                       validators=[MinValueValidator(0)])
 
 
 class RuleForm(forms.Form):
@@ -183,6 +178,28 @@ class QoSForm(forms.Form):
         cleaned_data['jitter']['min'] = cleaned_data.pop('jitterMin')
         cleaned_data['jitter']['max'] = cleaned_data.pop('jitterMax')
         return cleaned_data
+
+
+class ServerOverloadForm(forms.Form):
+    function_choices = (
+        ('', 'Select a function'),
+        ('exponential', 'Exponential'),
+        ('plateau', 'Plateau'),
+    )
+    name = forms.CharField(label='Name', max_length=100)
+    description = forms.CharField(label='Description', widget=forms.Textarea)
+    function_type = forms.ChoiceField(label='Function', choices=function_choices)
+
+    def clean(self):
+        cleaned_data = super(ServerOverloadForm, self).clean()
+        cleaned_data['response_triggers'] = []
+
+        # FIXME: get real function info
+        function_type = cleaned_data.pop('function_type')
+        cleaned_data['function'] = dict()
+        cleaned_data['function']['type'] = function_type
+        cleaned_data['function']['expValue'] = 1
+        cleaned_data['function']['growthRate'] = 1
 
 
 class RecordingForm(forms.Form):

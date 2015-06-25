@@ -1,0 +1,214 @@
+{% extends 'base.html' %}
+
+{% load staticfiles %}
+{% load django_bootstrap_breadcrumbs %}
+{% load tags %}
+{% load jsonify %}
+
+{% block title %}Server Overload Manager{% endblock %}
+{% block content_header %}
+    <a href="#" id="serveroverload-name">{{ serveroverload.name }}</a>
+{% endblock %}
+{% block content_subheader %}{% endblock %}
+
+{% block breadcrumbs %}
+    {{ block.super }}
+    {% breadcrumb "Server Overload profiles" "serveroverload_list" %}
+    {% breadcrumb serveroverload.name "serveroverload_details" serveroverload.id %}
+{% endblock %}
+
+{% block styles %}
+    <!-- DATA TABLES -->
+    <link href="{% static 'webui/css/datatables/dataTables.bootstrap.css' %}" rel="stylesheet" type="text/css" />
+    <!-- ngDialog -->
+    <link href="{% static 'ngDialog/css/ngDialog.min.css' %}" rel="stylesheet" type="text/css" />
+    <link href="{% static 'ngDialog/css/ngDialog-theme-default.min.css' %}" rel="stylesheet" type="text/css" />
+    <!-- range slider -->
+    <link href="{% static 'angular-rangeslider/angular.rangeSlider.css' %}" rel="stylesheet" type="text/css" />
+    <!-- X-editable -->
+    <link href="//cdnjs.cloudflare.com/ajax/libs/x-editable/1.5.0/bootstrap3-editable/css/bootstrap-editable.css" rel="stylesheet"/>
+{% endblock %}
+
+{% block scripts %}
+    <!-- Server Overload Controller -->
+    <script type="text/javascript" src='{% static 'webui/js/heliosburn/serveroverload.js' %}'></script>
+    <!-- X-Editable -->
+    <script src="//cdnjs.cloudflare.com/ajax/libs/x-editable/1.5.0/bootstrap3-editable/js/bootstrap-editable.min.js"></script>
+    <script type="text/javascript">
+        $.fn.editable.defaults.mode = 'inline';
+
+        //editables
+        $('#serveroverload-name').editable({
+            url: '{% url 'serveroverload_update' %}',
+            type: 'text',
+            pk: '{{ serveroverload.id }}',
+            name: 'name',
+            title: 'Server Overload profile name',
+            inputclass: 'title-input',
+            params: '{csrfmiddlewaretoken:"{{csrf_token}}"}'
+        });
+
+        $('#serveroverload-description').editable({
+            url: '{% url 'serveroverload_update' %}',
+            type: 'textarea',
+            pk: '{{ serveroverload.id }}',
+            name: 'description',
+            title: 'Server Overload description',
+            inputclass: 'description-input',
+            params: '{csrfmiddlewaretoken:"{{csrf_token}}"}'
+        });
+
+        $('#serveroverload-function').editable({
+            url: '{% url 'serveroverload_update' %}',
+            type: 'select',
+            mode: 'popup',
+            pk: '{{ serveroverload.id }}',
+            name: 'function',
+            title: 'Server Overload function',
+            source: [
+                {value: 'plateau', text: 'Plateau'},
+                {value: 'exponential', text: 'Exponential'}
+            ],
+            value: '{{ serveroverload.function.type }}',
+            inputclass: 'function-input',
+            params: '{csrfmiddlewaretoken:"{{csrf_token}}"}'
+        });
+
+
+        var response_triggers = JSON.parse('{{ serveroverload.response_triggers|jsonify }}');
+        var profile_id = '{{ serveroverload.id }}';
+
+
+    </script>
+
+
+    <script type="text/ng-template" id="newActionDialog">
+        <h3>Create a new action</h3>
+        <form ng-submit="confirm(action)">
+          <div class="form-group">
+            <label for="actionType">Type</label>
+            <input ng-model="action.type" type="text" class="form-control" id="actionType" placeholder="Type" required>
+          </div>
+          <div class="form-group">
+            <label for="actionValue">Value</label>
+            <input ng-model="action.value" type="text" class="form-control" id="actionValue" placeholder="Value" required>
+          </div>
+          <div class="form-group">
+            <label for="actionPercentage">Percentage</label>
+            <input ng-model="action.percentage" type="number" class="form-control" min="0" max="100" step="1" id="actionPercentage" placeholder="Percentage">
+          </div>
+          <button type="submit" class="btn btn-primary">Create</button>
+          <button class="btn btn-default" ng-click="closeThisDialog(1)">Cancel</button>
+        </form>
+    </script>
+{% endblock %}
+
+{% block content %}
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="nav-tabs-custom">
+                <ul class="nav nav-tabs">
+                    <li class="header"><i class="fa fa-info-circle"></i>Server Overload profile</li>
+                </ul>
+                <div class="tab-content">
+                    <dl class="dl-horizontal">
+                        <dt>Description</dt>
+                        <dd><a href="#" id="serveroverload-description">{{ serveroverload.description }}</a></dd>
+                        <dt>Function</dt>
+                        <dd><a href="#" id="serveroverload-function">{{ serveroverload.function.type|capfirst }}</a></dd>
+                        <dt>Created at</dt>
+                        <dd>{{ serveroverload.createdAt }}</dd>
+                        <dt>Last updated</dt>
+                        <dd>{{ serveroverload.updatedAt }}</dd>
+                    </dl>
+                </div><!-- /.tab-content -->
+            </div>
+        </div>
+    </div>
+
+    <div class="row" ng-controller="ServerOverloadCtrl">
+        <div class="col-xs-12">
+            <div class="box">
+                <div class="box-header">
+                    <i class="fa fa-th-list"></i>
+                    <h3 class="box-title">Triggers ({% verbatim %}{{ triggers.length }}{% endverbatim %})</h3>
+                </div><!-- /.box-header -->
+                <div class="box-body table-responsive">
+                    <div class="row">
+                        <div class="col-xs-12">
+
+                            <div class="alert alert-danger alert-dismissible" role="alert" ng-show="error">
+                              <button type="button" class="close" ng-click="error = false" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                              There was an error saving the triggers
+                            </div>
+
+                            <button type="button" class="btn btn-default" ng-click="newTrigger()">
+                                <span class="glyphicon glyphicon-plus" aria-hidden="true"></span> Trigger
+                            </button>
+
+                            <button type="button" class="btn btn-success pull-right" ng-click="saveTriggers()" ng-disabled="saving">
+                                <span class="glyphicon glyphicon-floppy-disk" aria-hidden="true"></span>
+                                {% verbatim %}{{ saveText }}{% endverbatim %}
+                            </button>
+                        </div>
+                    </div>
+                    <div class="row top7">
+                        <div class="col-xs-12">
+
+                            <div ng-hide="triggers.length">
+                                <em><h3 class="text-center">There are no triggers. <a href="#" ng-click="newTrigger()">Create one</a>.</h3></em>
+                            </div>
+
+                            <div ng-repeat="trigger in triggers" class="box box-primary box-solid">
+                                <div class="box-header">
+                                  <h3 class="box-title">Trigger #{% verbatim %}{{ $index+1 }} {% endverbatim %}</h3>
+                                  <div class="box-tools pull-right">
+                                    <button class="btn btn-box-tool" ng-click="removeTrigger(trigger)"><i class="fa fa-times"></i></button>
+                                  </div><!-- /.box-tools -->
+                                </div><!-- /.box-header -->
+                                <div class="box-body">
+
+                                    <h4>Server load:</h4>
+                                    <div range-slider min="0" max="100" model-min="trigger.fromLoad" model-max="trigger.toLoad"></div>
+
+                                    <h4>Actions:</h4>
+                                    <table ng-table="" class="table table-bordered table-striped">
+                                        <tr ng-repeat="action in trigger.actions">
+                                            <td data-title="'Type'">
+                                                {% verbatim %}{{action.type}}{% endverbatim %}
+                                            </td>
+                                            <td data-title="'Value'">
+                                                {% verbatim %}{{action.value}}{% endverbatim %}
+                                            </td>
+                                            <td data-title="'Percentage'">
+                                                {% verbatim %}{{action.percentage}}{% endverbatim %}
+                                            </td>
+                                            <td data-title="'Delete'">
+                                                <a href="#" ng-click="removeAction(trigger, action)">Delete</a>
+                                            </td>
+                                        </tr>
+                                    </table>
+
+                                    <button type="button" class="btn btn-default top10" ng-click="newAction(trigger)">
+                                        <span class="glyphicon glyphicon-plus" aria-hidden="true"></span> Action
+                                    </button>
+
+                                </div><!-- /.box-body -->
+                              </div>
+
+
+                        </div>
+                    </div>
+                </div><!-- /.box-body -->
+            </div><!-- /.box -->
+
+            <pre>
+                {% verbatim %}{{ triggers }}{% endverbatim %}
+            </pre>
+        </div>
+    </div>
+
+
+
+{% endblock %}

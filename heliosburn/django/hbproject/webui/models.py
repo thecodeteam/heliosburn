@@ -52,6 +52,18 @@ class Base(object):
                                                     extra=extra)
 
 
+class Session(Base):
+    __endpoint__ = '/session/'
+    __resourcename__ = 'session'
+
+    def create(self, data):
+        url = self.get_url()
+        headers = {'X-Auth-Token': self.auth_token}
+        response = requests.post(url, headers=headers, data=json.dumps(data))
+        resource_id = get_resource_id_or_raise_exception(self.__resourcename__, response)
+        return resource_id
+
+
 class TestPlan(Base):
     __endpoint__ = '/testplan/'
     __resourcename__ = 'testplan'
@@ -253,6 +265,58 @@ class QoS(Base):
             raise exception
         qos = json.loads(response.text)
         return qos
+
+    def delete(self, resource_id):
+        url = self.get_url(extra=str(resource_id))
+        headers = {'X-Auth-Token': self.auth_token}
+        response = requests.delete(url, headers=headers)
+        if not validate_response(response):
+            exception = status_code_to_exception(response.status_code)
+            exception.message = response.text
+            raise exception
+
+
+class ServerOverload(Base):
+    __endpoint__ = '/serveroverload/'
+    __resourcename__ = 'serveroverload'
+
+    def create(self, data):
+        url = self.get_url()
+        headers = {'X-Auth-Token': self.auth_token}
+        response = requests.post(url, headers=headers, data=json.dumps(data))
+        resource_id = get_resource_id_or_raise_exception(self.__resourcename__, response)
+        return resource_id
+
+    def update(self, resource_id, data):
+        url = self.get_url(extra=str(resource_id))
+        headers = {'X-Auth-Token': self.auth_token}
+        response = requests.put(url, headers=headers, data=json.dumps(data))
+        if not validate_response(response):
+            exception = status_code_to_exception(response.status_code)
+            exception.message = response.text
+            raise exception
+
+    def get(self, resource_id):
+        url = self.get_url(extra=str(resource_id))
+        headers = {'X-Auth-Token': self.auth_token}
+        response = requests.get(url, headers=headers)
+        if not validate_response(response):
+            exception = status_code_to_exception(response.status_code)
+            exception.message = response.text
+            raise exception
+        profile = json.loads(response.text)
+        return profile
+
+    def get_all(self):
+        url = self.get_url()
+        headers = {'X-Auth-Token': self.auth_token}
+        response = requests.get(url, headers=headers)
+        if not validate_response(response):
+            exception = status_code_to_exception(response.status_code)
+            exception.message = response.text
+            raise exception
+        profile = json.loads(response.text)
+        return profile
 
     def delete(self, resource_id):
         url = self.get_url(extra=str(resource_id))

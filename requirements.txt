@@ -19,3 +19,4 @@ uuid
 python-redis-log==0.1.2
 python-dateutil==2.4.2
 django-bower==5.0.4
+django-jsonify==0.3.0
