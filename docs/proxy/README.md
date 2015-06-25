@@ -9,7 +9,7 @@
 
 # Overview
 
-The proxy service is at the heart to of HeliosBurn's fault injection capabilities.
+The proxy service is at the heart to of HeliosBurn's fault injection capabilities by implementing man-in-the-middle interception of HTTP traffic.
 
 
 # The proxy service

@@ -3,7 +3,6 @@ import math
 import time
 import random
 from twisted.python import log
-from threading import Lock
 
 
 class Injector(object):
@@ -28,10 +27,10 @@ class ExponentialInjector(Injector):
     requests = 0
 
     def execute(self):
-        x = self.so_profile['function']['expValue']
-        r = self.so_profile['function']['growthRate']
-        self.f = self.so_profile['function']['fluxuation']
-        maxL = self.so_profile['function']['maxLoad']
+        x = self.profile['function']['expValue']
+        r = self.profile['function']['growthRate']
+        self.f = self.profile['function']['fluxuation']
+        maxL = self.profile['function']['maxLoad']
 
         if self.load < 100 and self.load < maxL:
             if self.requests < r:
@@ -54,10 +53,10 @@ class PlateauInjector(Injector):
     requests = 0
 
     def execute(self):
-        self.requests = self.so_profile['function']['requestStart']
-        x = self.so_profile['function']['growthAmount']
-        r = self.so_profile['function']['growthRate']
-        self.f = self.so_profile['function']['flucuation']
+        self.requests = self.profile['function']['requestStart']
+        x = self.profile['function']['growthAmount']
+        r = self.profile['function']['growthRate']
+        self.f = self.profile['function']['flucuation']
 
         if self.load < 100:
             if self.requests < r:
@@ -79,18 +78,18 @@ class LatencyInjector(Injector):
 
     def execute(self):
         lagtime = 0
-        latency = self.qos_profile['latency']
-        minimum = self.qos_profile['jitter']['minimum']
-        maximum = self.qos_profile['jitter']['maximum']
+        latency = self.profile['latency']
+        minimum = self.profile['jitter']['min']
+        maximum = self.profile['jitter']['max']
 
         if 0 < minimum < maximum:
-            lagtime = random.randrange(latency + self.minimum,
-                                       latency + self.maximum)
+            lagtime = random.randrange(latency + minimum,
+                                       latency + maximum)
 
         if lagtime is not None:
             log.msg("sleeping for: %s (%s, %s)" % (lagtime,
-                                                   self.minimum,
-                                                   self.maximum))
+                                                   minimum,
+                                                   maximum))
             time.sleep(lagtime)
 
         self.metrics['lagtime'] = lagtime
@@ -98,25 +97,20 @@ class LatencyInjector(Injector):
 
 class PacketLossInjector(Injector):
 
-    _mutex = Lock()
-    _packets = 0
+    _requests = 0
     _requests_dropped = 0
 
     def execute(self):
 
-        self._mutex.aquire()
-
-        self._packets += 1
-        traffic_loss = self.qos_profile["trafficloss"]
+        self._requests += 1
+        traffic_loss = self.profile["trafficLoss"]
         return_value = True
 
-        if self._packets_dropped/self._packets < traffic_loss:
+        if self._requests_dropped/self._requests < traffic_loss:
             self._requests_dropped += 1
             return_value = False
 
-        self._mutex.release()
-
-        self.metrics['requests'] = self._packets
+        self.metrics['requests'] = self._requests
         self.metrics['dropped_requests'] = self._requests_dropped
 
         return return_value

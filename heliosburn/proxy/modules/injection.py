@@ -240,28 +240,29 @@ class Injection(AbstractModule):
         return action
 
     def handle_request(self, request):
-        request_headers = [[k, v] for (k, v)
-                           in request.requestHeaders.getAllRawHeaders()]
-        http_metadata = {
-            "request": {
-                "url": request.uri,
-                "httpProtocol": request.clientproto,
-                "method": request.method,
-                "headers": request_headers
+        if request:
+            request_headers = [[k, v] for (k, v)
+                               in request.requestHeaders.getAllRawHeaders()]
+            http_metadata = {
+                "request": {
+                    "url": request.uri,
+                    "httpProtocol": request.clientproto,
+                    "method": request.method,
+                    "headers": request_headers
+                }
             }
-        }
 
-        action_dict = self._process_request(http_metadata, self.session_id)
-        if action_dict:
-            action_type = action_dict['action']['type']
-        else:
-            action_type = 'null'
+            action_dict = self._process_request(http_metadata, self.session_id)
+            if action_dict:
+                action_type = action_dict['action']['type']
+            else:
+                action_type = 'null'
 
-        action = self.actions[action_type](action_dict=action_dict,
-                                           request=request)
-        result = action.execute()
-        if result:
-            return request
+            action = self.actions[action_type](action_dict=action_dict,
+                                               request=request)
+            result = action.execute()
+            if result:
+                return request
 
     def handle_response(self, response):
         response_headers = [[k, v] for (k, v)

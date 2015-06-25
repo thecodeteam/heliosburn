@@ -15,7 +15,9 @@ test_so_profile = {
     "function": {
         "type": "exponential",
         "expValue": "3",
-        "growthRate": "3"
+        "growthRate": "3",
+        "fluxuation": "4",
+        "maxLoad": "100"
     },
     "response_triggers": [
         {
@@ -49,9 +51,9 @@ test_so_profile = {
 }
 
 # ultimately pull from settings file
-injector_list = {
-    ExponentialInjector,
-    PlateauInjector
+injector_map = {
+    "exponential": ExponentialInjector,
+    "plateau": PlateauInjector
 }
 
 
@@ -171,8 +173,8 @@ class ServerOverload(AbstractModule):
         self.state = "running"
         self.status = str(datetime.datetime.now())
         self._set_profile(self.profile_id)
-        for c in injector_list:
-            self.injectors.append(c(self.profile))
+        injector_type = self.profile['function']['type']
+        self.injectors.append(injector_map[injector_type](self.profile))
 
         log.msg("Server Overload module started at: " + self.status)
 
