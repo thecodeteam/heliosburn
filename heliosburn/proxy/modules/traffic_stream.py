@@ -1,13 +1,11 @@
 from module import AbstractModule
 import time
-import json
 import redis
 from protocols.redis import HBRedisSubscriberFactory
 from protocols.redis import HBRedisMessageHandlerFactory
 from protocols.redis import HBRedisMessageHandler
 from twisted.internet.endpoints import TCP4ClientEndpoint
 from twisted.internet import reactor
-from twisted.python import log
 
 
 class TrafficHandler(HBRedisMessageHandler):
@@ -49,7 +47,7 @@ class TrafficStream(AbstractModule):
 
     def configure(self, **configs):
         self.configs = configs
-        self.channel = configs['redis_sub_queue']
+        self.channel = configs['traffic_sub_queue']
         self.start()
 
     def start(self, **params):

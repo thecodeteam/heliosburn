@@ -42,7 +42,12 @@
         </li>
         <li class="{% active request "qos_list" %}">
             <a href="{% url 'qos_list' %}">
-                <i class="fa fa-line-chart"></i> <span>QoS</span>
+                <i class="fa fa-bar-chart"></i> <span>QoS</span>
+            </a>
+        </li>
+        <li class="{% active request "serveroverload_list" %}">
+            <a href="{% url 'serveroverload_list' %}">
+                <i class="fa fa-line-chart"></i> <span>Server Overload</span>
             </a>
         </li>
         <li class="{% active request "recording_list" %}">

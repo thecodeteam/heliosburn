@@ -2,6 +2,7 @@
   - [exponential overload](#exponential-overload)
   - [DoS](#DoS)
   - [servoer overload Profile](#server-overload-profile)
+  - [Metrics](#metric-collection)
 
 # Server Overload Module
 
@@ -148,3 +149,13 @@ Response triggers are meant to provide the end user a mechanism for emulating se
 | actions["type"]        | The action type |
 | actions["value"]       | The value of the action |
 | actions["percentage"]  | The chance the action will be applied |
+
+# Metric Collection
+
+The Server Overload module will continuously update a set of metrics that may be useful in future analysis of the injection session. Each metrics is available in real-time by making the module `status` API call. The following metrics are collected:
+
+| metric      | Description                                             |
+|:------------|:--------------------------------------------------------|
+| load      | The current amount load being injected              |
+| requests  | The current total number of requests that have processd |
+| responses | The current count of each response type  |

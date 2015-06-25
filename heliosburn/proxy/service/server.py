@@ -18,7 +18,6 @@ from module import Registry
 from protocols.http import HBReverseProxyRequest
 from protocols.http import HBReverseProxyResource
 from protocols.http import HBProxyMgmtRedisSubscriberFactory
-from protocols.http import HBProxyMgmtProtocolFactory
 
 logging.config.dictConfig(Common.LOGGING)
 logger = logging.getLogger("proxy")
@@ -26,30 +25,22 @@ logger = logging.getLogger("proxy")
 
 class HBProxyServer(object):
 
-    def __init__(self, bind_address, protocols, upstream_host, upstream_port,
-                 redis_mgmt, redis_host, redis_port, request_channel,
-                 response_channel, tcp_mgmt, tcp_mgmt_address, tcp_mgmt_port,
-                 plugins):
+    def __init__(self, configs):
 
-        self.bind_address = bind_address
+        self.proxy_address = configs['proxy_address']
+        self.proxy_port = configs['proxy_port']
+        self.upstream_host = configs['upstream_host']
+        self.upstream_port = configs['upstream_port']
+        self.redis_host = configs['redis_host']
+        self.redis_port = configs['redis_port']
+        self.request_channel = configs['control_pub_queue']
+        self.response_channel = configs['control_sub_queue']
+
         self._start_logging()
-        self.protocols = protocols
-        self.upstream_host = upstream_host
-        self.upstream_port = upstream_port
-        self.redis_host = redis_host
-        self.redis_port = redis_port
-        self.request_channel = request_channel
-        self.response_channel = response_channel
-        self.tcp_mgmt_address = tcp_mgmt_address
-        self.tcp_mgmt_port = tcp_mgmt_port
 
-        self.module_registry = Registry(plugins)
+        self.module_registry = Registry(configs)
         self.site = server.Site(proxy.ReverseProxyResource(self.upstream_host,
                                 self.upstream_port, ''))
-
-        self.mgmt_protocol_factory = HBProxyMgmtProtocolFactory(self)
-        reactor.listenTCP(self.tcp_mgmt_port, self.mgmt_protocol_factory,
-                          interface=self.tcp_mgmt_address)
 
         redis_endpoint = TCP4ClientEndpoint(reactor, self.redis_host,
                                             self.redis_port)
@@ -73,9 +64,9 @@ class HBProxyServer(object):
                                           self.module_registry)
         f = server.Site(resource)
         f.requestFactory = HBReverseProxyRequest
-        self.protocol = self.protocols['http']
+        self.protocol = self.proxy_port['http']
         self.proxy = reactor.listenTCP(self.protocol, f,
-                                       interface=self.bind_address)
+                                       interface=self.proxy_address)
         log.msg("Proxy Started")
         return self.proxy
 

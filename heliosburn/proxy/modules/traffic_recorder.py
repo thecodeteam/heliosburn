@@ -47,7 +47,7 @@ class TrafficRecorder(AbstractModule):
         self.configs = configs
         self.redis_host = configs['redis_host']
         self.redis_port = configs['redis_port']
-        self.redis_sub_queue = configs['redis_sub_queue']
+        self.redis_sub_queue = configs['traffic_sub_queue']
 
     def start(self, **params):
         handler_factory = TrafficRecorderHandlerFactory(TrafficHandler)

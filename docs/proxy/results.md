@@ -1,6 +1,4 @@
-- [Modules Results](#module-results)
-
-#Module Results
+# Module Metrics
 Each module will collect statistical measurements over a given session of operation. Those results will be available via the API, by retrieving the results document for a given session.
 
 Each module will collect the set of metrics appropriate for the respective modules execution. Those metrics will be stored in a results document in mongo at a configurable frequency that is less than once per request. Furthermore, any `status` request on the `proxy` management queue (i.e. redis queu) will contain the current statistical results.

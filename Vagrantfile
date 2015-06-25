@@ -31,6 +31,9 @@ Vagrant.configure(2) do |config|
   # Twisted server
   config.vm.network "forwarded_port", guest: 9000, host: 9100
 
+  # locust load testing server
+  config.vm.network "forwarded_port", guest: 8089, host: 8089
+
   # IPython notebook
   #config.vm.network "forwarded_port", guest: 8888, host: 9888
 

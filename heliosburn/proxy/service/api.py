@@ -192,13 +192,13 @@ class OperationFactory(object):
                                            new_host=op_string['param'])
 
         if "bind_address" == op_string['operation']:
-            self.controller.bind_address = op_string['param']
+            self.controller.proxy_address = op_string['param']
             operation = ChangeBindAddress(self.controller,
                                           self.response_factory,
                                           op_string['key'])
 
         if "bind_port" == op_string['operation']:
-            self.controller.protocol = op_string['param']
+            self.controller.proxy_port = op_string['param']
             operation = ChangeBindPort(self.controller,
                                        self.response_factory,
                                        op_string['key'])
@@ -284,10 +284,10 @@ class StartProxy(ServerOperation):
                                           self.controller.module_registry)
         f = server.Site(resource)
         f.requestFactory = HBReverseProxyRequest
-        protocol = self.controller.protocol
-        bind_address = self.controller.bind_address
-        self.controller.proxy = reactor.listenTCP(protocol, f,
-                                                  interface=bind_address)
+        proxy_port = self.controller.proxy_port
+        proxy_address = self.controller.proxy_address
+        self.controller.proxy = reactor.listenTCP(proxy_port, f,
+                                                  interface=proxy_address)
         self.response.set_message("start " + self.response.get_message())
 
         return self.controller.proxy
@@ -423,10 +423,9 @@ class StartSession(ServerOperation):
         controller.upstream_port = self.session["upstreamPort"]
         self.response.add_message("Upstream Port set to: " +
                                   str(controller.upstream_port))
-        stop_op = StopProxy(controller, response_factory, key)
         start_op = StartProxy(controller, response_factory, key)
 
-        d = self.addCallback(stop_op.stop).addCallback(start_op.start)
+        d = self.addCallback(start_op.start)
         d.addCallback(self.start_session)
         d.addCallback(self.respond)
 
@@ -511,6 +510,7 @@ class StopSession(ServerOperation):
                                              **self.params)
         self.response.set_message("Stopped Injection Session: { " +
                                   self.response.get_message() + ", " + "}")
+#        stop_op = StopProxy(controller, response_factory, key)
 
 
 class ResetPlugins(ServerOperation):

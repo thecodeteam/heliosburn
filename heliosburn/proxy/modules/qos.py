@@ -8,10 +8,10 @@ from twisted.python import log
 test_profile = {
     "createdAt": "2014-02-12 03:34:51",
     "updatedAt": "2014-02-12 03:34:51",
-    "latency": 100,
+    "latency": 5,
     "jitter": {
-        "min": 30,
-        "max": 50
+        "min": 3,
+        "max": 5
     },
     "trafficLoss": 0.1
 }
@@ -34,7 +34,7 @@ class QOS(AbstractModule):
         self.mongo_host = 'heliosburn.traffic'
         self.mongo_port = '127.0.0.1'
         self.mongo_db = 'heliosburn'
-        self.stats['qos'] = []
+        self.stats['QOS'] = []
 
     def configure(self, **configs):
         pass
