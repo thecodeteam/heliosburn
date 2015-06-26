@@ -20,7 +20,7 @@
                         <h3 class="box-title">Test Plan</h3>
                     </div><!-- /.box-header -->
                     <div class="box-body">
-                        <p ng-hide="formData.testplan.id">None selected</p>
+                        <em ng-hide="formData.testplan.id">None selected</em>
 
                         <div ng-show="formData.testplan.id">
                             <dt>Test Plan name:</dt>
@@ -82,7 +82,28 @@
                         <h3 class="box-title">Server Overload profile</h3>
                     </div><!-- /.box-header -->
                     <div class="box-body">
-                        <p ng-hide="formData.serveroverload.id">None selected</p>
+                        <em ng-hide="formData.serveroverload.id">None selected</em>
+
+                        <div ng-show="formData.serveroverload.id">
+                            <dt>Server Overload profile name:</dt>
+                            <dd>{{ formData.serveroverload.name }}</dd>
+
+                            <dt>Description:</dt>
+                            <dd>{{ formData.serveroverload.description }}</dd>
+
+                            <dt>Created at:</dt>
+                            <dd>{{ formData.serveroverload.createdAt }}</dd>
+
+                            <dt>Updated at:</dt>
+                            <dd>{{ formData.serveroverload.updatedAt }}</dd>
+
+                            <dt>Function:</dt>
+                            <dd>{{ formData.serveroverload.function.type }}</dd>
+
+                            <dt>Triggers:</dt>
+                            <dd>{{ formData.serveroverload.response_triggers.length }}</dd>
+
+                        </div>
                     </div><!-- /.box-body -->
                 </div><!-- /.box -->
             </div>
@@ -91,6 +112,6 @@
     </div><!-- /.box-body -->
     <div class="box-footer">
         <a ui-sref="form.step4" class="btn btn-default">← Back</a>
-        <button type="submit" class="btn btn-danger pull-right bold">Run session</button>
+        <button type="submit" class="btn btn-success pull-right bold">Create session</button>
     </div>
 </div><!-- /.box -->

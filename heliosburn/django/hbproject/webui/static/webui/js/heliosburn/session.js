@@ -50,7 +50,7 @@ angular.module('hbApp.controllers').controller('SessionCtrl', ['$scope', '$http'
         .success(function(data) {
             $log.info(data);
             $scope.testplans = data.testplans;
-            $scope.testplans.splice(0, 0, {name: "<No Test Plan selected>"});
+            $scope.testplans.splice(0, 0, {name: "<No profile selected>"});
             $scope.formData.testplan = $scope.testplans[0];
 
         });
@@ -59,8 +59,17 @@ angular.module('hbApp.controllers').controller('SessionCtrl', ['$scope', '$http'
         .success(function(data) {
             $log.info(data);
             $scope.qoss = data.profiles;
-            $scope.qoss.splice(0, 0, {name: "<No QoS selected>"});
+            $scope.qoss.splice(0, 0, {name: "<No profile selected>"});
             $scope.formData.qos = $scope.qoss[0];
+
+        });
+
+    $http.get('/webui/serveroverload/', $scope.formData)
+        .success(function(data) {
+            $log.info(data);
+            $scope.serveroverloads = data.profiles;
+            $scope.serveroverloads.splice(0, 0, {name: "<No profile selected>"});
+            $scope.formData.serveroverload = $scope.serveroverloads[0];
 
         });
 
