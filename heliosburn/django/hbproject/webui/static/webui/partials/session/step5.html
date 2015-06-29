@@ -9,8 +9,8 @@
         <dd>{{ formData.description }}<em ng-hide="formData.name">None</em></dd>
         <dt>Upstream server:</dt>
         <dd>
-            {{ formData.upstream_server.host}}<span ng-show="formData.upstream_server.port">:{{ formData.upstream_server.port }}</span>
-            <em ng-hide="formData.upstream_server.host">None</em>
+            {{ formData.upstreamHost}}<span ng-show="formData.upstreamPort">:{{ formData.upstreamPort }}</span>
+            <em ng-hide="formData.upstreamHost">None</em>
         </dd>
 
         <div class="row top30">
@@ -20,23 +20,25 @@
                         <h3 class="box-title">Test Plan</h3>
                     </div><!-- /.box-header -->
                     <div class="box-body">
-                        <em ng-hide="formData.testplan.id">None selected</em>
+                        <em ng-hide="formData.testPlan.id">None selected</em>
 
-                        <div ng-show="formData.testplan.id">
+                        <div ng-show="formData.testPlan.id">
                             <dt>Test Plan name:</dt>
-                            <dd>{{ formData.testplan.name }}</dd>
+                            <dd>{{ formData.testPlan.name }}</dd>
 
                             <dt>Description:</dt>
-                            <dd>{{ formData.testplan.description }}</dd>
+                            <dd>{{ formData.testPlan.description }}</dd>
 
                             <dt>Created at:</dt>
-                            <dd>{{ formData.testplan.createdAt }}</dd>
+                            <dd>{{ formData.testPlan.createdAt }}</dd>
 
                             <dt>Updated at:</dt>
-                            <dd>{{ formData.testplan.updatedAt }}</dd>
+                            <dd>{{ formData.testPlan.updatedAt }}</dd>
 
                             <dt>Rules:</dt>
-                            <dd>{{ formData.testplan.rules.length }}</dd>
+                            <dd ng-show="formData.testPlan.rules.length">{{ formData.testPlan.rules.length }}</dd>
+                            <dd ng-hide="formData.testPlan.rules.length">None</dd>
+
                         </div>
                     </div><!-- /.box-body -->
                 </div><!-- /.box -->
@@ -48,29 +50,29 @@
                         <h3 class="box-title">QoS profile</h3>
                     </div><!-- /.box-header -->
                     <div class="box-body">
-                        <em ng-hide="formData.qos.id">None selected</em>
+                        <em ng-hide="formData.qosProfile.id">None selected</em>
 
-                        <div ng-show="formData.qos.id">
+                        <div ng-show="formData.qosProfile.id">
                             <dt>QoS profile name:</dt>
-                            <dd>{{ formData.qos.name }}</dd>
+                            <dd>{{ formData.qosProfile.name }}</dd>
 
                             <dt>Description:</dt>
-                            <dd>{{ formData.qos.description }}</dd>
+                            <dd>{{ formData.qosProfile.description }}</dd>
 
                             <dt>Created at:</dt>
-                            <dd>{{ formData.qos.createdAt }}</dd>
+                            <dd>{{ formData.qosProfile.createdAt }}</dd>
 
                             <dt>Updated at:</dt>
-                            <dd>{{ formData.qos.updatedAt }}</dd>
+                            <dd>{{ formData.qosProfile.updatedAt }}</dd>
 
                             <dt>Latency:</dt>
-                            <dd>{{ formData.qos.latency }} ms</dd>
+                            <dd>{{ formData.qosProfile.latency }} ms</dd>
 
                             <dt>Jitter:</dt>
-                            <dd>{{ formData.qos.jitter.min }} - {{ formData.qos.jitter.max }}</dd>
+                            <dd>{{ formData.qosProfile.jitter.min }} - {{ formData.qosProfile.jitter.max }}</dd>
 
                             <dt>Traffic loss ratio:</dt>
-                            <dd>{{ formData.qos.trafficLoss }}</dd>
+                            <dd>{{ formData.qosProfile.trafficLoss }}</dd>
                         </div>
                     </div><!-- /.box-body -->
                 </div><!-- /.box -->
@@ -82,26 +84,26 @@
                         <h3 class="box-title">Server Overload profile</h3>
                     </div><!-- /.box-header -->
                     <div class="box-body">
-                        <em ng-hide="formData.serveroverload.id">None selected</em>
+                        <em ng-hide="formData.serverOverloadProfile.id">None selected</em>
 
-                        <div ng-show="formData.serveroverload.id">
+                        <div ng-show="formData.serverOverloadProfile.id">
                             <dt>Server Overload profile name:</dt>
-                            <dd>{{ formData.serveroverload.name }}</dd>
+                            <dd>{{ formData.serverOverloadProfile.name }}</dd>
 
                             <dt>Description:</dt>
-                            <dd>{{ formData.serveroverload.description }}</dd>
+                            <dd>{{ formData.serverOverloadProfile.description }}</dd>
 
                             <dt>Created at:</dt>
-                            <dd>{{ formData.serveroverload.createdAt }}</dd>
+                            <dd>{{ formData.serverOverloadProfile.createdAt }}</dd>
 
                             <dt>Updated at:</dt>
-                            <dd>{{ formData.serveroverload.updatedAt }}</dd>
+                            <dd>{{ formData.serverOverloadProfile.updatedAt }}</dd>
 
                             <dt>Function:</dt>
-                            <dd>{{ formData.serveroverload.function.type }}</dd>
+                            <dd>{{ formData.serverOverloadProfile.function.type }}</dd>
 
                             <dt>Triggers:</dt>
-                            <dd>{{ formData.serveroverload.response_triggers.length }}</dd>
+                            <dd>{{ formData.serverOverloadProfile.response_triggers.length }}</dd>
 
                         </div>
                     </div><!-- /.box-body -->

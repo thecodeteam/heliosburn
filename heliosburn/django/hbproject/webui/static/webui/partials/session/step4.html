@@ -5,44 +5,44 @@
     <!-- /.box-header -->
     <div class="box-body">
         <div class="form-group">
-            <select ng-model="formData.serveroverload"
-                    ng-options="serveroverload as serveroverload.name for serveroverload in serveroverloads"
+            <select ng-model="formData.serverOverloadProfile"
+                    ng-options="serverOverloadProfile as serverOverloadProfile.name for serverOverloadProfile in serveroverloads"
                     class="form-control"></select>
         </div>
 
-        <div ng-show="formData.serveroverload.id">
+        <div ng-show="formData.serverOverloadProfile.id">
             <div class="form-group">
                 <label>Description:</label>
-                <textarea class="form-control" rows="3" ng-model="formData.serveroverload.description"
+                <textarea class="form-control" rows="3" ng-model="formData.serverOverloadProfile.description"
                           readonly></textarea>
             </div>
 
             <div class="form-group">
                 <label>Function:</label>
 
-                <p>{{ formData.serveroverload.function.type }}</p>
+                <p>{{ formData.serverOverloadProfile.function.type }}</p>
             </div>
 
             <div class="form-group">
                 <label>Created at:</label>
 
-                <p>{{ formData.serveroverload.createdAt }}</p>
+                <p>{{ formData.serverOverloadProfile.createdAt }}</p>
             </div>
 
             <div class="form-group">
                 <label>Updated at:</label>
 
-                <p>{{ formData.serveroverload.updatedAt }}</p>
+                <p>{{ formData.serverOverloadProfile.updatedAt }}</p>
             </div>
 
             <div class="form-group">
                 <label>Triggers:</label>
 
-                <div ng-hide="formData.serveroverload.response_triggers.length">
+                <div ng-hide="formData.serverOverloadProfile.response_triggers.length">
                     <em><h3 class="text-center">There are no triggers.</h3></em>
                 </div>
 
-                <div ng-repeat="trigger in formData.serveroverload.response_triggers" class="box box-primary box-solid">
+                <div ng-repeat="trigger in formData.serverOverloadProfile.response_triggers" class="box box-primary box-solid">
                     <div class="box-header">
                         <h3 class="box-title">Trigger #{{ $index+1 }}</h3>
                         <!-- /.box-tools -->

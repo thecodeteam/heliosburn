@@ -51,7 +51,7 @@ angular.module('hbApp.controllers').controller('SessionCtrl', ['$scope', '$http'
             $log.info(data);
             $scope.testplans = data.testplans;
             $scope.testplans.splice(0, 0, {name: "<No profile selected>"});
-            $scope.formData.testplan = $scope.testplans[0];
+            $scope.formData.testPlan = $scope.testplans[0];
 
         });
 
@@ -60,7 +60,7 @@ angular.module('hbApp.controllers').controller('SessionCtrl', ['$scope', '$http'
             $log.info(data);
             $scope.qoss = data.profiles;
             $scope.qoss.splice(0, 0, {name: "<No profile selected>"});
-            $scope.formData.qos = $scope.qoss[0];
+            $scope.formData.qosProfile = $scope.qoss[0];
 
         });
 
@@ -69,7 +69,7 @@ angular.module('hbApp.controllers').controller('SessionCtrl', ['$scope', '$http'
             $log.info(data);
             $scope.serveroverloads = data.profiles;
             $scope.serveroverloads.splice(0, 0, {name: "<No profile selected>"});
-            $scope.formData.serveroverload = $scope.serveroverloads[0];
+            $scope.formData.serverOverloadProfile = $scope.serveroverloads[0];
 
         });
 
