@@ -7,6 +7,9 @@ from controllers import qos
 from controllers import session
 from controllers import serveroverload
 from controllers import user
+from controllers import proxy
+from controllers import testplan
+from controllers import testplan_rule
 
 
 def readrc():
@@ -37,11 +40,14 @@ def main():
 
     Commands:
         config         - adjust hbcli configuration
+        proxy          - interact with proxy 
         qos            - interact with qos profiles
         user           - interact with users
         recording      - interact with recordings 
         session        - interact with sessions
-        serveroverload - interact with sessions
+        serveroverload - interact with serveroverload profiles
+        testplan       - interact with testplans
+        testplanrule   - interact with rules within a testplan
 
     """ % sys.argv[0]
     if len(sys.argv) < 2:
@@ -51,10 +57,13 @@ def main():
 
     f_map = {
         "config": config.main,
+        "proxy": proxy.main,
         "qos": qos.main,
         "recording": recording.main,
         "session": session.main,
         "serveroverload": serveroverload.main,
+        "testplan": testplan.main,
+        "testplanrule": testplan_rule.main,
         "user": user.main,
     }
 
