@@ -8,7 +8,6 @@
 
 ![alt text](../figures/HB-Test-Diagram.png "Proxy Test Framework")
 
-<insert proxy testing diagram>
 
 In general proxy tests are twisted plugins that have been added to the proxy modules directory.
 Once added to the modules directory they will be loaded on start-up of the proxy service.

@@ -138,6 +138,7 @@ class HBReverseProxyRequest(ReverseProxyRequest):
 
         self.drop_connection = False
         self.reset_connection = False
+        self.delay = 0
 
     def __repr__(self):
         request_headers = [[k, v] for (k, v)
@@ -155,30 +156,32 @@ class HBReverseProxyRequest(ReverseProxyRequest):
         return str(request)
 
     def _forward_request(self, request):
+        if request:
+            if not request.drop_connection and not request.reset_connection:
+                clientFactory = self.proxyClientFactoryClass(
+                    self.method, self.uri,
+                    self.clientproto,
+                    self.getAllHeaders(),
+                    self.content.read(),
+                    request
+                )
 
-        if not request.drop_connection and not request.reset_connection:
-            clientFactory = self.proxyClientFactoryClass(self.method, self.uri,
-                                                         self.clientproto,
-                                                         self.getAllHeaders(),
-                                                         self.content.read(),
-                                                         request)
-
-            self.reactor.connectTCP(self.upstream_host, self.upstream_port,
-                                    clientFactory)
-            log.msg("Forwarding request to: " +
-                    str(self.upstream_host) + ":" +
-                    str(self.upstream_port))
-        else:
-            if request.drop_connection:
-                request.transport.loseConnection()
-                log.msg("Connection to: " +
+                self.reactor.connectTCP(self.upstream_host, self.upstream_port,
+                                        clientFactory)
+                log.msg("Forwarding request to: " +
                         str(self.upstream_host) + ":" +
-                        str(self.upstream_port) + " dropped")
+                        str(self.upstream_port))
             else:
-                request.transport.abortConnection()
-                log.msg("Connection to: " +
-                        str(self.upstream_host) + ":" +
-                        str(self.upstream_port) + " reset")
+                if request.drop_connection:
+                    request.transport.loseConnection()
+                    log.msg("Connection to: " +
+                            str(self.upstream_host) + ":" +
+                            str(self.upstream_port) + " dropped")
+                else:
+                    request.transport.abortConnection()
+                    log.msg("Connection to: " +
+                            str(self.upstream_host) + ":" +
+                            str(self.upstream_port) + " reset")
 
     def process(self):
         """
@@ -258,24 +261,3 @@ class HBProxyMgmtRedisSubscriberFactory(protocol.Factory):
     def buildProtocol(self, addr):
         return HBProxyMgmtRedisSubscriber(self.request_channel,
                                           self.op_factory)
-
-
-# class HBProxyMgmtProtocol(protocol.Protocol):
-
-#    def __init__(self, op_factory):
-#        self.op_factory = op_factory
-
-#    def dataReceived(self, data):
-#        operation = self.op_factory.get_operation(data)
-#        response = operation.execute()
-#        self.transport.write(response)
-#        return response
-
-
-# class HBProxyMgmtProtocolFactory(protocol.Factory):
-
-#    def __init__(self, op_factory):
-#        self.op_factory = op_factory
-
-#    def buildProtocol(self, addr):
-#        return HBProxyMgmtProtocol(self.op_factory)

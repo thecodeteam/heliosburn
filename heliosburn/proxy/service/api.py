@@ -1,6 +1,5 @@
 
 import json
-import pymongo
 from txredis.client import RedisClientFactory
 from twisted.internet import defer
 from twisted.internet import reactor
@@ -8,33 +7,7 @@ from twisted.web import server
 from twisted.python import log
 from protocols.http import HBReverseProxyRequest
 from protocols.http import HBReverseProxyResource
-
-
-test_session = {
-        "id": 1,
-        "name": "Session A",
-        "description": "This is a description for a Session",
-        "upstreamHost": "github.com",
-        "upstreamPort": 80,
-        "qosProfile": {
-                "id": "0xdeadbeef"
-        },
-        "serverOverloadProfile": {
-                "id": "0xfedbeef"
-        },
-        "createdAt": "2014-02-12 03:34:51",
-        "updatedAt": "2014-02-12 03:34:51",
-        "testPlan": {
-                "id": 12,
-                "name": "ViPR Test plan"
-            },
-        "user": {
-                "id": 1,
-                "username": "John Doe"
-            },
-        "executions": 42,
-        "latest_execution_at": "2014-02-12 03:34:51"
-    }
+from models import SessionModel
 
 
 class OperationResponse(object):
@@ -192,13 +165,13 @@ class OperationFactory(object):
                                            new_host=op_string['param'])
 
         if "bind_address" == op_string['operation']:
-            self.controller.bind_address = op_string['param']
+            self.controller.proxy_address = op_string['param']
             operation = ChangeBindAddress(self.controller,
                                           self.response_factory,
                                           op_string['key'])
 
         if "bind_port" == op_string['operation']:
-            self.controller.protocol = op_string['param']
+            self.controller.proxy_port = op_string['param']
             operation = ChangeBindPort(self.controller,
                                        self.response_factory,
                                        op_string['key'])
@@ -284,10 +257,10 @@ class StartProxy(ServerOperation):
                                           self.controller.module_registry)
         f = server.Site(resource)
         f.requestFactory = HBReverseProxyRequest
-        protocol = self.controller.protocol
-        bind_address = self.controller.bind_address
-        self.controller.proxy = reactor.listenTCP(protocol, f,
-                                                  interface=bind_address)
+        proxy_port = self.controller.proxy_port
+        proxy_address = self.controller.proxy_address
+        self.controller.proxy = reactor.listenTCP(proxy_port, f,
+                                                  interface=proxy_address)
         self.response.set_message("start " + self.response.get_message())
 
         return self.controller.proxy
@@ -416,7 +389,7 @@ class StartSession(ServerOperation):
 
         self.params = params
         session_id = params['session_id']
-        self.session = self._get_session(session_id)
+        self.session = SessionModel({"_id": session_id})
         controller.upstream_host = self.session["upstreamHost"]
         self.response.add_message("Upstream Host set to: " +
                                   str(controller.upstream_host))
@@ -430,18 +403,10 @@ class StartSession(ServerOperation):
         d.addCallback(self.start_session)
         d.addCallback(self.respond)
 
-    def _get_session(self, session_id):
-            conn = pymongo.MongoClient()
-            db = conn.proxy
-            self.session = db.session.find_one({"_id": session_id})
-            self.session = test_session
-
-            return self.session
-
     def start_session(self, result):
 
         try:
-            self.params['test_plan'] = self.session['testPlan']['id']
+            self.params['test_plan'] = self.session['testplan']['id']
             status = self.controller.module_registry.status(
                 module_name='Injection',
                 **self.params)
@@ -511,6 +476,7 @@ class StopSession(ServerOperation):
                                              **self.params)
         self.response.set_message("Stopped Injection Session: { " +
                                   self.response.get_message() + ", " + "}")
+#        stop_op = StopProxy(controller, response_factory, key)
 
 
 class ResetPlugins(ServerOperation):

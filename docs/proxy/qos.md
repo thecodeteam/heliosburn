@@ -3,18 +3,15 @@
   - [Latency](#latency)
   - [Jitter](#jitter)
   - [Packet Loss](#packet-loss)
+  - [Metrics](#metric-collection)
 
 # Quality of Service Module
 
   ![alt text](../figures/HB_QoS_Module.png "Altering QoS")
 
-
-
-# QOS Module
-
-The QOS module is situated inside the proxy processing pipline so as to apply a given QoS profile to proxy traffic.
+The QOS module is situated inside the proxy processing pipline so as to :apply a given QoS profile to proxy traffic.
 When the QoS module is started the given `session_id` is used to retrieve the QoS profile from `mongo`.
-The QoS profile is retrieved from information contained within the session document, specficlially the `serverOverload.id`
+The QoS profile is retrieved from information contained within the session document, specifically the `serverOverload.id`
 
 ### Example session document
 ```json
@@ -48,7 +45,7 @@ The QoS profile is retrieved from information contained within the session docum
 }
 ```
 
-The `qos.id` is then used to make a secod query to retrieve the quality of servic profile.
+The `qos.id` is then used to make a secod query to retrieve the quality of service profile.
 When the module receives a response or request, each QoS quality is applied to the traffic as defined by the retrieved QoS profile.
 
 ## QoS Profile
@@ -105,3 +102,12 @@ The `Packet Loss` quality has the following parameters.
 | Element | Context | Description                                                         |
 |:--------|:--------|:--------------------------------------------------------------------|
 | chance  | both    | The percentage chance that any given request/response will be lost. |
+
+#Metric Collection
+
+The QOS module will continuously update a set of metrics that may be useful in future analysis of the injection session. Each metrics is available in real-time by making the module `status` API call. The following metrics are collected:
+
+| metric      | Description                                             |
+|:------------|:--------------------------------------------------------|
+| lagtime     | The current amount of delay being injected              |
+| packet-loss | The current total number of packets that have been lost |

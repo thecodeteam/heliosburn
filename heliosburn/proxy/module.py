@@ -2,12 +2,11 @@ import redis
 import modules
 import json
 import datetime
-import pymongo
-import time
-from multiprocessing import Process
+# import pymongo
 from zope.interface import implements
 from zope.interface import Interface
 from twisted.internet import defer
+from twisted.internet import task
 from twisted.plugin import IPlugin
 from twisted.plugin import getPlugins
 from twisted.python import log
@@ -18,6 +17,7 @@ from twisted.web import server
 from twisted.web import resource
 from protocols.redis import HBRedisSubscriberFactory
 from protocols.redis import HBRedisTestMessageHandlerFactory
+from models import StatisticsModel
 
 
 class HBProxyEchoServer(resource.Resource):
@@ -192,18 +192,29 @@ class AbstractModule(object):
         return self.status
 
     def store_stats(self):
-        if self.get_stats():
-            conn = pymongo.MongoClient()
-            db = conn.proxy
-            db.statistics.insert(self.get_stats())
+        stats = self.get_stats()
+        if stats:
+            stats_model = StatisticsModel(stats)
+            stats_model.save()
 
     def get_stats(self):
         """
         this method is called to get the module(s) current running statistics
         """
-        self.stats['session_id'] = self.session_id
-        self.stats['profile_id'] = self.profile_id
-        return self.stats
+        stats = None
+        if self.stats:
+            for key in self.stats:
+                if self.stats[key]:
+                    stats = self.stats
+
+        if stats:
+            if self.session_id:
+                stats['session_id'] = self.session_id
+
+            if self.profile_id:
+                stats['profile_id'] = self.profile_id
+
+        return stats
 
     def isStarted(self):
         if self.state == "running":
@@ -298,6 +309,16 @@ class AbstractAPITestModule(AbstractModule, unittest.TestCase):
         return result
 
 
+class PipelineDelay(object):
+
+    def __init__(self, callback):
+        self.callback = callback
+
+    def delay(self, request):
+        log.msg("Injecting: " + str(request.delay) + " second lag")
+        reactor.callLater(request.delay, self.callback, request)
+
+
 class Registry(object):
 
     def __init__(self, configs):
@@ -314,8 +335,7 @@ class Registry(object):
         self._load_session_modules()
         self._load_support_modules()
         self._load_test_modules()
-        p = Process(target=self._dump_stats)
-        p.start()
+        self._dump_stats()
 
     def _load_session_modules(self):
         for module in self.session_modules:
@@ -339,7 +359,7 @@ class Registry(object):
 
         pipeline = defer.Deferred()
 
-        for module in self.pipeline_modules:
+        for module in self.session_modules:
             module_name = module
             if self.plugins[module_name].isStarted():
                 pipeline.addCallback(self.plugins[module_name].handle_request)
@@ -349,7 +369,7 @@ class Registry(object):
     def _build_response_pipeline(self):
 
         pipeline = defer.Deferred()
-        for module in self.pipeline_modules:
+        for module in self.session_modules:
             module_name = module
             if self.plugins[module_name].isStarted():
                 pipeline.addCallback(self.plugins[module_name].handle_response)
@@ -382,22 +402,20 @@ class Registry(object):
         log.msg("Echo Server Stopped")
 
     def _dump_stats(self):
-        while True:
-            for plugin in self.plugins.values():
-                p = Process(target=plugin.store_stats)
-                p.start()
-                log.msg("Started recording stats for module: " + plugin.name)
-
-            time.sleep(60)
+        for plugin in self.plugins.values():
+            stat_dump = task.LoopingCall(plugin.store_stats)
+            stat_dump.start(60)
+            log.msg("Started recording stats for module: " + plugin.name)
 
     def handle_request(self, request, callback):
 
         """
         Executes the handle_request method of all currently active modules
         """
-        pipeline = self._build_request_pipeline()
-        pipeline.addCallback(callback)
 
+        pipeline = self._build_request_pipeline()
+        pd = PipelineDelay(callback)
+        pipeline.addCallback(pd.delay)
         pipeline.callback(request)
 
     def handle_response(self, response, callback):

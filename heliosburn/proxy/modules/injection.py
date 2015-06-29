@@ -2,76 +2,7 @@ import datetime
 from module import AbstractModule
 from twisted.python import log
 from traffic_eval.traffic_evaluator import TrafficEvaluator
-
-
-drop_test = {
-    "action": {
-        "type": "drop",
-        "payload": "Intercepted by HeliosBurn"
-    }}
-
-reset_test = {
-    "action": {
-        "type": "reset",
-        "payload": "Intercepted by HeliosBurn"
-    }}
-
-null_test = None
-
-modify_test = {
-    "action": {
-        "type": "modify",
-        "method": "PUT",
-        "setHeaders": [
-            {
-                "key": "X-Auth-Token",
-                "value": "k54l3b6k6b43l56b346"
-            }
-        ],
-        "deleteHeaders": [
-            {
-                "key": "User-Agent"
-            }
-        ]
-    }}
-
-new_request_test = {
-    "action": {
-        "type": "newRequest",
-        "httpProtocol": "HTTP/1.1",
-        "statusCode": 400,
-        "statusDescription": "Bad Request",
-        "headers": [
-            {
-                "key": "E-Tag",
-                "value": "9384253245"
-            },
-            {
-                "key": "Server",
-                "value": "HeliosBurn"
-            }
-        ],
-        "payload": "Intercepted by HeliosBurn"
-    }}
-
-new_response_test = {
-    "action": {
-        "type": "newResponse",
-        "httpProtocol": "HTTP/1.1",
-        "statusCode": 400,
-        "statusDescription": "Bad Request",
-        "headers": [
-            {
-                "key": "E-Tag",
-                "value": "9384253245"
-            },
-            {
-                "key": "Server",
-                "value": "HeliosBurn"
-            }
-        ],
-        "payload": "Intercepted by HeliosBurn"
-    }}
+from module_decorators import SkipHandler
 
 
 class InjectionAction(object):
@@ -193,6 +124,7 @@ class Injection(AbstractModule):
 
     def __init__(self):
         AbstractModule.__init__(self)
+        self.stats['injection'] = {}
 
     def configure(self, **configs):
         self.redis_host = configs['redis_host']
@@ -239,6 +171,7 @@ class Injection(AbstractModule):
 
         return action
 
+    @SkipHandler
     def handle_request(self, request):
         request_headers = [[k, v] for (k, v)
                            in request.requestHeaders.getAllRawHeaders()]
@@ -252,17 +185,21 @@ class Injection(AbstractModule):
         }
 
         action_dict = self._process_request(http_metadata, self.session_id)
+
         if action_dict:
             action_type = action_dict['action']['type']
+            action = self.actions[action_type](action_dict=action_dict,
+                                               request=request)
+            request = action.execute()
+            self.stats['injection'][action_type] += 1
         else:
             action_type = 'null'
 
-        action = self.actions[action_type](action_dict=action_dict,
-                                           request=request)
-        result = action.execute()
-        if result:
-            return request
+        log.msg("Injection request: " + str(request))
 
+        return request
+
+    @SkipHandler
     def handle_response(self, response):
         response_headers = [[k, v] for (k, v)
                             in response.responseHeaders.getAllRawHeaders()]
@@ -294,9 +231,10 @@ class Injection(AbstractModule):
 
         action = self.actions[action_type](action_dict=action_dict,
                                            response=response)
-        result = action.execute()
-        if result:
-            return response
+        response = action.execute()
+        log.msg("Injection response: " + str(response))
+
+        return response
 
     def start(self, **params):
         self.injection_engine = TrafficEvaluator(self._get_config())
