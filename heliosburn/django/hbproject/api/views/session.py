@@ -231,7 +231,7 @@ def start(request, session_id):
     """
     Inform the proxy to start a session based on session_id.
     """
-    if request.method != "GET":
+    if request.method != "POST":
         return HttpResponse(status=405)
     r = redis_wrapper.init_redis()
     response_key = str(ObjectId())
@@ -265,7 +265,7 @@ def start(request, session_id):
                 return HttpResponse(status=500)
         else:
             time.sleep(.1)  # sleep 100ms
-    return HttpResponse(status=408)
+    return HttpResponse(status=408, content='The proxy did not respond')
 
 
 @csrf_exempt
@@ -274,7 +274,7 @@ def stop(request, session_id):
     """
     Inform the proxy to stop a session based on session_id.
     """
-    if request.method != "GET":
+    if request.method != "POST":
         return HttpResponse(status=405)
     r = redis_wrapper.init_redis()
     response_key = str(ObjectId())
@@ -296,4 +296,4 @@ def stop(request, session_id):
                 return HttpResponse(status=500)
         else:
             time.sleep(.1)  # sleep 100ms
-    return HttpResponse(status=408)
+    return HttpResponse(status=408, content='The proxy did not respond')
