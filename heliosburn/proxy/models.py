@@ -3,21 +3,23 @@ from bson import ObjectId
 from settings import Common
 # import datetime
 # import sys
-# from twisted.python import log
+from twisted.python import log
 
 
 class MongoModel(dict):
     collection_name = None
 
-    def __init__(self, id=None,  *args, **kwargs):
+    def __init__(self, *args, **kwargs):
         dict.__init__(self, *args, **kwargs)
         self.db = self.connect()
         self.collection = self.db[self.collection_name]
 
-        if id:
-            record = self.collection.find_one({"_id": ObjectId(id)})
+        if "_id" in self:
+            record = self.collection.find_one({"_id": ObjectId(self["_id"])})
             for key in record:
                 self[key] = record[key]
+
+        log.msg("self: " + str(self))
 
     def connect(self):
         """
@@ -30,7 +32,8 @@ class MongoModel(dict):
         return client[Common.MONGO_DB]
 
     def save(self):
-        return self.collection.save(self)._id
+        return self.collection.save(self)
+#        return self.collection.save(self)._id
 
 
 class SessionModel(MongoModel):

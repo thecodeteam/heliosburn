@@ -46,7 +46,7 @@ class QOS(AbstractModule):
     def start(self, **params):
         self.session_id = params['session_id']
         self.profile_id = params['profile_id']
-        self.profile = QOSProfileModel(self.profile_id)
+        self.profile = QOSProfileModel({"_id": self.profile_id})
         self.state = "running"
         self.status = str(datetime.datetime.now())
         for c in injector_list:

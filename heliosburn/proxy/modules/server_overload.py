@@ -132,7 +132,7 @@ class ServerOverload(AbstractModule):
     def start(self, **params):
         self.session_id = params['session_id']
         self.profile_id = params['profile_id']
-        self.profile = SOProfileModel(self.profile_id)
+        self.profile = SOProfileModel({"_id": self.profile_id})
         self.state = "running"
         self.status = str(datetime.datetime.now())
         self._set_triggers()

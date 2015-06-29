@@ -389,7 +389,7 @@ class StartSession(ServerOperation):
 
         self.params = params
         session_id = params['session_id']
-        self.session = SessionModel(session_id)
+        self.session = SessionModel({"_id": session_id})
         controller.upstream_host = self.session["upstreamHost"]
         self.response.add_message("Upstream Host set to: " +
                                   str(controller.upstream_host))

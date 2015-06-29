@@ -2,7 +2,7 @@ import redis
 import modules
 import json
 import datetime
-import pymongo
+# import pymongo
 from zope.interface import implements
 from zope.interface import Interface
 from twisted.internet import defer
@@ -17,6 +17,7 @@ from twisted.web import server
 from twisted.web import resource
 from protocols.redis import HBRedisSubscriberFactory
 from protocols.redis import HBRedisTestMessageHandlerFactory
+from models import StatisticsModel
 
 
 class HBProxyEchoServer(resource.Resource):
@@ -191,12 +192,10 @@ class AbstractModule(object):
         return self.status
 
     def store_stats(self):
-        if self.get_stats():
-            conn = pymongo.MongoClient()
-            db = conn.proxy
-            stats = self.get_stats()
-            if stats:
-                db.statistics.save(self.get_stats())
+        stats = self.get_stats()
+        if stats:
+            stats_model = StatisticsModel(stats)
+            stats_model.save()
 
     def get_stats(self):
         """
