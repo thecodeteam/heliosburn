@@ -8,6 +8,7 @@ from bson import ObjectId
 import re
 import time
 import json
+from django.views.decorators.csrf import csrf_exempt
 
 logger = logging.getLogger(__name__)
 
@@ -37,6 +38,7 @@ def status(request):
     return JsonResponse({"proxyStatus": None}, status=503)
 
 
+@csrf_exempt
 @RequireLogin(role='admin')
 def start(request):
     """
@@ -69,6 +71,7 @@ def start(request):
     return HttpResponse(status=408)
 
 
+@csrf_exempt
 @RequireLogin(role='admin')
 def stop(request):
     """
