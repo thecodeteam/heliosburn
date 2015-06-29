@@ -50,18 +50,23 @@ class ExponentialInjector(LoadInjector):
         self.f = self.profile['function']['fluxuation']
         maxL = self.profile['function']['maxLoad']
 
-        if self.load < 100 and self.load < maxL:
-            if self.requests < r:
-                self.requests + 1
+        if int(self.load) < 100 and int(self.load) < int(maxL):
+            if int(self.requests) < int(r):
+                self.requests += 1
 
-            if self.requests == r:
-                self.load = (self.load * x) + math.sin(self.f)
+            if int(self.requests) >= int(r):
+                self.load += (int(self.load) * int(x)) + random.randrange(
+                    0, int(self.f))
                 self.requests = 0
-                if self.load > 100:
+                if int(self.load) > 100:
                     self.load = 100
 
         self.metrics['load'] = self.load
-        self.metrics['requests'] = self.requests
+        if 'requests' in self.metrics:
+            self.metrics['requests'] += self.requests
+        else:
+            self.metrics['requests'] = self.requests
+
         log.msg("Current Exponential  Metrics: " + str(self.metrics))
 
         return self.load
