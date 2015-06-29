@@ -101,7 +101,7 @@ The response body contains a list containing the following elements in JSON form
             },
         "serverOverloadProfile": 
             {
-                "0xfedbeef"
+                "id": "0xfedbeef"
             },
 
         "description": "This is a description for a Session",
@@ -109,8 +109,7 @@ The response body contains a list containing the following elements in JSON form
         "updatedAt": "2014-02-12 03:34:51",
         "testPlan":
             {
-                "id": 12,
-                "name": "ViPR Test plan"
+                "id": "832hjk234234kl"
             },
 	    "user":
     	    {
@@ -189,14 +188,13 @@ The response body contains the following elements in JSON format:
             },
         "serverOverloadProfile": 
             {
-                "0xfedbeef"
+                "id": "0xfedbeef"
             },
         "createdAt": "2014-02-12 03:34:51",
         "updatedAt": "2014-02-12 03:34:51",
         "testPlan":
             {
-                "id": 12,
-                "name": "ViPR Test plan"
+                "id": "h234hbil234b24i"
             },
 	    "user":
     	    {
@@ -262,11 +260,11 @@ Content-Type: application/json; charset=UTF-8
         },
     "serverOverloadProfile": 
         {
-            "0xfedbeef"
+            "id": "0xfedbeef"
         },
     "testPlan":
         {
-            "id": 12,
+            "id": "7sdf7s0dfsdf72"
         }
 }
 ```
@@ -350,7 +348,7 @@ Content-Type: application/json; charset=UTF-8
     "description": "My session for Amazon S3...",
     "testPlan":
     {
-        "id": 12
+        "id": "ouhy231i4h23i4"
     }
 }
 ```
