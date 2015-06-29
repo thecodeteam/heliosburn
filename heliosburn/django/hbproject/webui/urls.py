@@ -11,13 +11,13 @@ urlpatterns = patterns(
     url(r'^signout/$', 'signout', name='signout'),
 
     url(r'^sessions/$', 'session.session_list', name='session_list'),
-    url(r'^sessions/(?P<id>[\w-]+)$', 'session.session_details', name='session_details'),
+    url(r'^sessions/(?P<session_id>[\w-]+)$', 'session.session_details', name='session_details'),
     url(r'^sessions/update/$', 'session.session_update', name='session_update'),
     url(r'^sessions/new/$', 'session.session_new', name='session_new'),
     url(r'^sessions/create/$', 'session.session_create', name='session_create'),
-    url(r'^sessions/(?P<id>[\w-]+)/execute$', 'session.session_execution', name='session_execution'),
+    url(r'^sessions/(?P<session_id>[\w-]+)/execute$', 'session.session_execute', name='session_execute'),
 
-    url(r'^executions/(?P<id>[\w-]+)$', 'execution_details', name='execution_details'),
+    url(r'^sessions/(?P<session_id>[\w-]+)/executions/(?P<execution_id>[\w-]+)$', 'execution_details', name='execution_details'),
 
     url(r'^testplans/$', 'testplan.testplan_list', name='testplan_list'),
     url(r'^testplans/(?P<testplan_id>[\w-]+)$', 'testplan.testplan_details', name='testplan_details'),

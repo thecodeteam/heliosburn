@@ -2,13 +2,14 @@ import logging
 import json
 
 from django.conf import settings
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse
-from django.http import HttpResponseBadRequest, HttpResponse
+from django.http import HttpResponseBadRequest, HttpResponse, HttpResponseRedirect
 from django.shortcuts import render, redirect
 import requests
 
-from webui.exceptions import UnauthorizedException
+from webui.exceptions import UnauthorizedException, NotFoundException
 from webui.models import Session
 from webui.views import signout, get_mock_url
 
@@ -52,27 +53,42 @@ def session_list(request):
 
 
 @login_required
-def session_details(request, id):
-    url = get_mock_url('session-details.json')
-    r = requests.get(url)
-    session = json.loads(r.text)
+def session_details(request, session_id):
+    try:
+        session = Session(auth_token=request.user.password).get(session_id)
+    except UnauthorizedException:
+        logger.warning('User unauthorized. Signing out...')
+        return signout(request)
+    except NotFoundException:
+        logger.warning('The requested Session "%s" does not exist', session_id)
+        return render(request, '404.html')
+    except Exception as inst:
+        logger.error('Unexpected exception', exc_info=True)
+        messages.error(request, inst.message if inst.message else 'Unexpected error')
+        return HttpResponseRedirect(reverse('session_list'))
 
-    args = {}
-    args['session'] = session
-
-    return render(request, 'sessions/session_details.html', args)
+    data = {'session': session}
+    return render(request, 'sessions/session_details.html', data)
 
 
 @login_required
-def session_execution(request, id):
-    url = get_mock_url('session-details.json')
-    r = requests.get(url)
-    session = json.loads(r.text)
+def session_execute(request, session_id):
+    try:
+        Session(auth_token=request.user.password).start(session_id)
+        session = Session(auth_token=request.user.password).get(session_id)
+    except UnauthorizedException:
+        logger.warning('User unauthorized. Signing out...')
+        return signout(request)
+    except NotFoundException:
+        logger.warning('The requested Session "%s" does not exist', session_id)
+        return render(request, '404.html')
+    except Exception as inst:
+        logger.error('Unexpected exception', exc_info=True)
+        messages.error(request, inst.message if inst.message else 'Unexpected error')
+        return HttpResponseRedirect(reverse('session_details', args=(str(session_id),)))
 
-    args = {}
-    args['session'] = session
-
-    return render(request, 'sessions/session_execution.html', args)
+    data = {'session': session}
+    return render(request, 'sessions/session_execution.html', data)
 
 
 @login_required
