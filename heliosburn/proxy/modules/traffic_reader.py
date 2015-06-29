@@ -2,6 +2,7 @@ from module import AbstractModule
 from twisted.python import log
 import json
 import redis
+from module_decorators import SkipHandler
 
 
 class TrafficReader(AbstractModule):
@@ -56,6 +57,7 @@ class TrafficReader(AbstractModule):
                                               port=self.redis_port,
                                               db=self.redis_db)
 
+    @SkipHandler
     def handle_request(self, request):
 
         message = self._get_traffic_message(request)
@@ -65,6 +67,7 @@ class TrafficReader(AbstractModule):
         log.msg("traffic read: " + str(message))
         return request
 
+    @SkipHandler
     def handle_response(self, response):
 
         message = self._get_traffic_message(response)

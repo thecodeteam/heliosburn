@@ -138,6 +138,7 @@ class HBReverseProxyRequest(ReverseProxyRequest):
 
         self.drop_connection = False
         self.reset_connection = False
+        self.delay = 0
 
     def __repr__(self):
         request_headers = [[k, v] for (k, v)

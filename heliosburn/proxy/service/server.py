@@ -64,7 +64,7 @@ class HBProxyServer(object):
                                           self.module_registry)
         f = server.Site(resource)
         f.requestFactory = HBReverseProxyRequest
-        self.protocol = self.proxy_port['http']
+        self.protocol = self.proxy_port
         self.proxy = reactor.listenTCP(self.protocol, f,
                                        interface=self.proxy_address)
         log.msg("Proxy Started")
