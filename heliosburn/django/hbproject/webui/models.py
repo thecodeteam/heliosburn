@@ -63,6 +63,26 @@ class Session(Base):
         resource_id = get_resource_id_or_raise_exception(self.__resourcename__, response)
         return resource_id
 
+    def get(self, resource_id):
+        url = self.get_url(extra=str(resource_id))
+        headers = {'X-Auth-Token': self.auth_token}
+        response = requests.get(url, headers=headers)
+        if not validate_response(response):
+            exception = status_code_to_exception(response.status_code)
+            exception.message = response.text
+            raise exception
+        session = json.loads(response.text)
+        return session
+
+    def start(self, resource_id):
+        url = self.get_url(extra='{}/{}/'.format(resource_id, 'start'))
+        headers = {'X-Auth-Token': self.auth_token}
+        response = requests.post(url, headers=headers)
+        if not validate_response(response):
+            exception = status_code_to_exception(response.status_code)
+            exception.message = response.text
+            raise exception
+
 
 class TestPlan(Base):
     __endpoint__ = '/testplan/'

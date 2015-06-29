@@ -114,16 +114,20 @@
                     <li class="header"><i class="fa fa-info-circle"></i>Test Plan details</li>
                 </ul>
                 <div class="tab-content">
-                    <dl class="dl-horizontal">
-                        <dt>Name</dt>
-                        <dd><a href="{% url "testplan_details" session.testplan.id %}">{{ session.testplan.description }}</a></dd>
-                        <dt>Description</dt>
-                        <dd>{{ session.testplan.description }}</dd>
-                        <dt>Rules</dt>
-                        <dd>{{ session.testplan.rules }}</dd>
-                        <dt>Last updated</dt>
-                        <dd>{{ session.testplan.updated_at }}</dd>
-                    </dl>
+                    {% if session.testPlan %}
+                        <dl class="dl-horizontal">
+                            <dt>Name</dt>
+                            <dd><a href="{% url "testplan_details" session.testPlan.id %}">{{ session.testPlan.description }}</a></dd>
+                            <dt>Description</dt>
+                            <dd>{{ session.testPlan.description }}</dd>
+                            <dt>Rules</dt>
+                            <dd>{{ session.testPlan.rules }}</dd>
+                            <dt>Last updated</dt>
+                            <dd>{{ session.testPlan.updated_at }}</dd>
+                        </dl>
+                    {% else %}
+                        <em>No Test Plan attached</em>
+                    {% endif %}
                 </div><!-- /.tab-content -->
             </div>
         </div>
@@ -137,7 +141,7 @@
                     <h3 class="box-title">Executions</h3>
                 </div><!-- /.box-header -->
                 <div class="box-body table-responsive">
-                    <form role="form" method="post" action="{% url "session_execution" 1 %}">
+                    <form role="form" method="post" action="{% url "session_execute" session.id %}">
                         {% csrf_token %}
                         <button type="submit" class="btn btn-primary">New execution</button>
                     </form>
@@ -168,16 +172,6 @@
                                 </tfoot>
                                 <tbody>
 
-                                    {% for execution in session.executions %}
-                                        <tr>
-                                            <td>{{ execution.id }}</td>
-                                            <td><a href="{% url 'execution_details' execution.id %}">view</a></td>
-                                            <td>{{ execution.date }}</td>
-                                            <td>{{ execution.duration }}</td>
-                                            <td><a href="{% url 'testplan_details' execution.testplan.id %}">{{ execution.testplan.name }}</a></td>
-                                            <td>{{ execution.requests }}</td>
-                                        </tr>
-                                    {% endfor %}
                                 </tbody>
                             </table>
                         </div>

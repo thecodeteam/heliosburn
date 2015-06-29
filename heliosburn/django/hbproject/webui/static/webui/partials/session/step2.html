@@ -5,31 +5,32 @@
     </div><!-- /.box-header -->
     <div class="box-body">
         <div class="form-group">
-            <select ng-model="formData.testplan" ng-options="testplan as testplan.name for testplan in testplans" class="form-control"></select>
+            <select ng-model="formData.testPlan" ng-options="testPlan as testPlan.name for testPlan in testplans" class="form-control"></select>
 
 
         </div>
 
-        <div ng-show="formData.testplan.id">
+        <div ng-show="formData.testPlan.id">
             <div class="form-group">
                 <label>Description:</label>
-                <textarea class="form-control" rows="3" ng-model="formData.testplan.description" readonly></textarea>
+                <textarea class="form-control" rows="3" ng-model="formData.testPlan.description" readonly></textarea>
             </div>
 
             <div class="form-group">
                 <label>Created at:</label>
-                <p>{{ formData.testplan.createdAt }}</p>
+                <p>{{ formData.testPlan.createdAt }}</p>
 
             </div>
 
             <div class="form-group">
                 <label>Updated at:</label>
-                <p>{{ formData.testplan.updatedAt }}</p>
+                <p>{{ formData.testPlan.updatedAt }}</p>
             </div>
 
             <div class="form-group">
                 <label>Rules:</label>
-                <p>{{ formData.testplan.rules.length }}</p>
+                <p ng-show="formData.testPlan.rules.length">{{ formData.testPlan.rules.length }}</p>
+                <p ng-hide="formData.testPlan.rules.length">None</p>
             </div>
         </div>
 

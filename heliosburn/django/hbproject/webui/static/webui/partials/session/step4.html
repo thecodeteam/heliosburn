@@ -1,19 +1,90 @@
 <div class="box box-primary">
     <div class="box-header">
         <h3 class="box-title">Select a Server Overload profile</h3>
-    </div><!-- /.box-header -->
+    </div>
+    <!-- /.box-header -->
     <div class="box-body">
         <div class="form-group">
-            <select ng-model="formData.serveroverload" class="form-control">
-              <option>Server Overload 1</option>
-              <option>Server Overload 2</option>
-              <option>Server Overload 3</option>
-              <option>Server Overload 4</option>
-            </select>
+            <select ng-model="formData.serverOverloadProfile"
+                    ng-options="serverOverloadProfile as serverOverloadProfile.name for serverOverloadProfile in serveroverloads"
+                    class="form-control"></select>
         </div>
 
-        <p>Don't you find the Server Overload profile you are looking for? <a href="/webui/serveroverload/new/">Create a new one</a></p>
-    </div><!-- /.box-body -->
+        <div ng-show="formData.serverOverloadProfile.id">
+            <div class="form-group">
+                <label>Description:</label>
+                <textarea class="form-control" rows="3" ng-model="formData.serverOverloadProfile.description"
+                          readonly></textarea>
+            </div>
+
+            <div class="form-group">
+                <label>Function:</label>
+
+                <p>{{ formData.serverOverloadProfile.function.type }}</p>
+            </div>
+
+            <div class="form-group">
+                <label>Created at:</label>
+
+                <p>{{ formData.serverOverloadProfile.createdAt }}</p>
+            </div>
+
+            <div class="form-group">
+                <label>Updated at:</label>
+
+                <p>{{ formData.serverOverloadProfile.updatedAt }}</p>
+            </div>
+
+            <div class="form-group">
+                <label>Triggers:</label>
+
+                <div ng-hide="formData.serverOverloadProfile.response_triggers.length">
+                    <em><h3 class="text-center">There are no triggers.</h3></em>
+                </div>
+
+                <div ng-repeat="trigger in formData.serverOverloadProfile.response_triggers" class="box box-primary box-solid">
+                    <div class="box-header">
+                        <h3 class="box-title">Trigger #{{ $index+1 }}</h3>
+                        <!-- /.box-tools -->
+                    </div>
+                    <!-- /.box-header -->
+                    <div class="box-body">
+
+                        <h4>Server load:</h4>
+                        <p>From {{ trigger.fromLoad }} to {{ trigger.toLoad }}</p>
+
+                        <h4>Actions:</h4>
+
+                        <div ng-hide="trigger.actions.length">
+                            <p><em>There are no actions.</em></p>
+                        </div>
+
+                        <table ng-show="trigger.actions.length" ng-table="" class="table table-bordered table-striped">
+                            <tr ng-repeat="action in trigger.actions">
+                                <td data-title="'Type'">
+                                    {{action.type}}
+                                </td>
+                                <td data-title="'Value'">
+                                    {{action.value}}
+                                </td>
+                                <td data-title="'Percentage'">
+                                    {{action.percentage}}
+                                </td>
+                            </tr>
+                        </table>
+
+                    </div>
+                    <!-- /.box-body -->
+                </div>
+            </div>
+
+        </div>
+
+
+        <p>Don't you find the Server Overload profile you are looking for? <a href="/webui/serveroverload/new/">Create a
+            new one</a></p>
+    </div>
+    <!-- /.box-body -->
     <div class="box-footer">
         <a ui-sref="form.step3" class="btn btn-default">← Back</a>
         <a ui-sref="form.step5" class="btn btn-primary pull-right bold">Next →</a>
