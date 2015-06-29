@@ -5,6 +5,7 @@ from controllers import config
 from controllers import recording 
 from controllers import qos
 from controllers import session
+from controllers import serveroverload
 from controllers import user
 
 
@@ -35,11 +36,12 @@ def main():
     usage: %s <command> [-h] [command-specific-arguments] [-h]
 
     Commands:
-        config    - adjust hbcli configuration
-        qos       - interact with qos profiles
-        user      - interact with users
-        recording - interact with recordings 
-        session   - interact with sessions
+        config         - adjust hbcli configuration
+        qos            - interact with qos profiles
+        user           - interact with users
+        recording      - interact with recordings 
+        session        - interact with sessions
+        serveroverload - interact with sessions
 
     """ % sys.argv[0]
     if len(sys.argv) < 2:
@@ -52,6 +54,7 @@ def main():
         "qos": qos.main,
         "recording": recording.main,
         "session": session.main,
+        "serveroverload": serveroverload.main,
         "user": user.main,
     }
 

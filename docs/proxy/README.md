@@ -9,7 +9,7 @@
 
 # Overview
 
-The proxy service is at the heart to of HeliosBurn's fault injection capabilities by implementing man-in-the-middle interception of HTTP traffic.
+The proxy service is at the heart to HeliosBurn's fault injection capabilities by implementing man-in-the-middle interception of HTTP traffic.
 
 
 # The proxy service
@@ -28,7 +28,7 @@ For more details review the following documents:
 
 # Recording Traffic
 
-If instructed the proxy service will record traffic for use with HeliosBurn test plans. Recording should be initiated through the HeliosBurn webui, rather than through the proxy directly. For detailed information on how traffic is recorded by the proxy service please see the following document:
+If instructed the proxy service will record traffic for use with HeliosBurn test plans. Recording should be initiated through the HeliosBurn web UI, the CLI, or directly via the management API. For detailed information on how traffic is recorded by the proxy service please see the following document:
 
 * [Recording](recording.md) - Detailed description of how the proxy records traffice (`developers`)
 
