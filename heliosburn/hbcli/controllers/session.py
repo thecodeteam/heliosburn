@@ -20,7 +20,7 @@ def create(config, args):
     }
 
     if args['testplan'] is not None:
-        data['testplan'] = args['testplan']
+        data['testPlan'] = {"id": args['testplan']}
 
     if args['serverOverloadProfile'] is not None:
         data['serverOverloadProfile'] = {"id": args['serverOverloadProfile']}
@@ -74,7 +74,7 @@ def update(config, args):
         data['upstreamPort'] = args['upstreamPort']
 
     if args['testplan'] is not None:
-        data['testplan'] = args['testplan']
+        data['testPlan'] = {"id": args['testplan'] }
 
     if args['serverOverloadProfile'] is not None:
         data['serverOverloadProfile'] = {"id": args['serverOverloadProfile']}
@@ -97,14 +97,14 @@ def delete(config, args):
 def start(config, args):
     url = config['url'] + "/api/session/" + args['session'] + "/start/"
     token = auth.get_token(config)
-    r = requests.get(url, headers={"X-Auth-Token": token})
+    r = requests.post(url, headers={"X-Auth-Token": token})
     print("API returned status code %s" % (r.status_code))
 
 
 def stop(config, args):
     url = config['url'] + "/api/session/" + args['session'] + "/start/"
     token = auth.get_token(config)
-    r = requests.get(url, headers={"X-Auth-Token": token})
+    r = requests.post(url, headers={"X-Auth-Token": token})
     print("API returned status code %s" % (r.status_code))
 
 
