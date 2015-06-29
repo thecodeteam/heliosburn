@@ -108,10 +108,10 @@ def post(request):
     }
 
     # Add optional fields
-    if "testplan" in new:
-        testplan = dbc.testplan.find_one({"_id": ObjectId(new['testplan'])})
+    if ("testPlan" in new) and ("id" in new['testPlan']):
+        testplan = dbc.testplan.find_one({"_id": ObjectId(new['testPlan']['id'])})
         if testplan is not None:
-            session['testplan'] = new['testplan']
+            session['testPlan'] = new['testPlan']
         else:
             return HttpResponseNotFound("testplan '%s' does not exist" % new['testplan'])
 
@@ -172,12 +172,12 @@ def put(request, session_id):
             session['upstreamPort'] = new['upstreamPort']
         if "username" in new:
             session['username'] = new['username']
-        if "testplan" in new:
-            testplan = dbc.testplan.find_one({"_id": ObjectId(new['testplan'])})
+        if "testPlan" in new:
+            testplan = dbc.testplan.find_one({"_id": ObjectId(new['testPlan'])})
             if testplan is not None:
-                session['testplan'] = new['testplan']
+                session['testPlan'] = new['testPlan']
             else:
-                return HttpResponseNotFound("testplan '%s' does not exist" % new['testplan'])
+                return HttpResponseNotFound("testplan '%s' does not exist" % new['testPlan'])
 
         if ("serverOverloadProfile" in new) and ("id" in new['serverOverloadProfile']):
             so_profile = dbc.serveroverload.find_one({"_id": ObjectId(new['serverOverloadProfile']['id'])})
