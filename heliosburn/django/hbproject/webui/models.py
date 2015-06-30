@@ -83,6 +83,15 @@ class Session(Base):
             exception.message = response.text
             raise exception
 
+    def stop(self, resource_id):
+        url = self.get_url(extra='{}/{}/'.format(resource_id, 'stop'))
+        headers = {'X-Auth-Token': self.auth_token}
+        response = requests.post(url, headers=headers)
+        if not validate_response(response):
+            exception = status_code_to_exception(response.status_code)
+            exception.message = response.text
+            raise exception
+
 
 class TestPlan(Base):
     __endpoint__ = '/testplan/'
