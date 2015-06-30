@@ -91,7 +91,7 @@
 {% block content %}
 
     <div class="row">
-        <div class="col-md-6">
+        <div class="col-md-12">
             <div class="nav-tabs-custom">
                 <ul class="nav nav-tabs">
                     <li class="header"><i class="fa fa-info-circle"></i>Session details</li>
@@ -100,37 +100,119 @@
                     <dl class="dl-horizontal">
                         <dt>Description</dt>
                         <dd><a href="#" id="session-description">{{ session.description }}</a></dd>
+                        <dt>Upstream server</dt>
+                        <dd>
+                            <a href="#">
+                                {{ session.upstreamHost}}
+                                {% if session.upstreamPort %}
+                                    : {{ session.upstreamPort}}
+                                {% endif %}
+                            </a>
+                        </dd>
+
                         <dt>Created at</dt>
-                        <dd>{{ session.created_at }}</dd>
+                        <dd>{{ session.createdAt }}</dd>
                         <dt>Last updated</dt>
-                        <dd>{{ session.updated_at }}</dd>
+                        <dd>{{ session.updatedAt }}</dd>
                     </dl>
+
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="box box-info box-solid" xmlns="http://www.w3.org/1999/html">
+                                <div class="box-header">
+                                    <h3 class="box-title">Test Plan</h3>
+                                </div><!-- /.box-header -->
+                                <div class="box-body">
+                                    {% if not session.testPlan %}
+                                        <em>None attached</em>
+                                    {% else %}
+                                        <dt>Test Plan name:</dt>
+                                        <dd>{{ session.testPlan.name }}</dd>
+
+                                        <dt>Description:</dt>
+                                        <dd>{{ session.testPlan.description }}</dd>
+
+                                        <dt>Created at:</dt>
+                                        <dd>{{ session.testPlan.createdAt }}</dd>
+
+                                        <dt>Updated at:</dt>
+                                        <dd>{{ session.testPlan.updatedAt }}</dd>
+
+                                        <dt>Rules:</dt>
+                                        <dd>{{ session.testPlan.rules|length }}</dd>
+                                    {% endif %}
+                                </div><!-- /.box-body -->
+                            </div><!-- /.box -->
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="box box-warning box-solid" xmlns="http://www.w3.org/1999/html">
+                                <div class="box-header">
+                                    <h3 class="box-title">QoS profile</h3>
+                                </div><!-- /.box-header -->
+                                <div class="box-body">
+                                    {% if not session.qosProfile %}
+                                        <em>None attached</em>
+                                    {% else %}
+                                        <dt>QoS profile name:</dt>
+                                        <dd>{{ session.qosProfile.name }}</dd>
+
+                                        <dt>Description:</dt>
+                                        <dd>{{ session.qosProfile.description }}</dd>
+
+                                        <dt>Created at:</dt>
+                                        <dd>{{ session.qosProfile.createdAt }}</dd>
+
+                                        <dt>Updated at:</dt>
+                                        <dd>{{ session.qosProfile.updatedAt }}</dd>
+
+                                        <dt>Latency:</dt>
+                                        <dd>{{ session.qosProfile.latency }} ms</dd>
+
+                                        <dt>Jitter:</dt>
+                                        <dd>{{ session.qosProfile.jitter.min }} - {{ formData.qosProfile.jitter.max }}</dd>
+
+                                        <dt>Traffic loss ratio:</dt>
+                                        <dd>{{ session.qosProfile.trafficLoss }}</dd>
+                                    {% endif %}
+                                </div><!-- /.box-body -->
+                            </div><!-- /.box -->
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="box box-danger box-solid" xmlns="http://www.w3.org/1999/html">
+                                <div class="box-header">
+                                    <h3 class="box-title">Server Overload profile</h3>
+                                </div><!-- /.box-header -->
+                                <div class="box-body">
+                                    {% if not session.serverOverloadProfile %}
+                                        <em>None attached</em>
+                                    {% else %}
+                                        <dt>Server Overload profile name:</dt>
+                                        <dd>{{ session.serverOverloadProfile.name }}</dd>
+
+                                        <dt>Description:</dt>
+                                        <dd>{{ session.serverOverloadProfile.description }}</dd>
+
+                                        <dt>Created at:</dt>
+                                        <dd>{{ session.serverOverloadProfile.createdAt }}</dd>
+
+                                        <dt>Updated at:</dt>
+                                        <dd>{{ session.serverOverloadProfile.updatedAt }}</dd>
+
+                                        <dt>Function:</dt>
+                                        <dd>{{ session.serverOverloadProfile.function.type }}</dd>
+
+                                        <dt>Triggers:</dt>
+                                        <dd>{{ session.serverOverloadProfile.response_triggers|length }}</dd>
+                                    {% endif %}
+                                </div><!-- /.box-body -->
+                            </div><!-- /.box -->
+                    </div>
                 </div><!-- /.tab-content -->
             </div>
         </div>
-        <div class="col-md-6">
-            <div class="nav-tabs-custom">
-                <ul class="nav nav-tabs">
-                    <li class="header"><i class="fa fa-info-circle"></i>Test Plan details</li>
-                </ul>
-                <div class="tab-content">
-                    {% if session.testPlan %}
-                        <dl class="dl-horizontal">
-                            <dt>Name</dt>
-                            <dd><a href="{% url "testplan_details" session.testPlan.id %}">{{ session.testPlan.description }}</a></dd>
-                            <dt>Description</dt>
-                            <dd>{{ session.testPlan.description }}</dd>
-                            <dt>Rules</dt>
-                            <dd>{{ session.testPlan.rules }}</dd>
-                            <dt>Last updated</dt>
-                            <dd>{{ session.testPlan.updated_at }}</dd>
-                        </dl>
-                    {% else %}
-                        <em>No Test Plan attached</em>
-                    {% endif %}
-                </div><!-- /.tab-content -->
-            </div>
-        </div>
+
     </div>
 
     <div class="row">
