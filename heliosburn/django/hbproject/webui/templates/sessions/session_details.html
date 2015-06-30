@@ -141,10 +141,7 @@
                     <h3 class="box-title">Executions</h3>
                 </div><!-- /.box-header -->
                 <div class="box-body table-responsive">
-                    <form role="form" method="post" action="{% url "session_execute" session.id %}">
-                        {% csrf_token %}
-                        <button type="submit" class="btn btn-primary">New execution</button>
-                    </form>
+                    <a href="{% url "session_execute" session.id %}" class="btn btn-primary">New execution</a>
 
                     <div class="row top7">
                         <div class="col-xs-12">
