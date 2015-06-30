@@ -1,8 +1,6 @@
 
-import math
 import random
 from twisted.python import log
-# from twisted.internet.task import deferLater
 
 
 class Injector(object):
@@ -47,8 +45,10 @@ class ExponentialInjector(LoadInjector):
 
         x = self.profile['function']['expValue']
         r = self.profile['function']['growthRate']
-        self.f = self.profile['function']['fluxuation']
-        maxL = self.profile['function']['maxLoad']
+#        self.f = self.profile['function']['fluxuation']
+#        maxL = self.profile['function']['maxLoad']
+        self.f = 1
+        maxL = 100
 
         if int(self.load) < 100 and int(self.load) < int(maxL):
             if int(self.requests) < int(r):
@@ -80,16 +80,18 @@ class PlateauInjector(LoadInjector):
         Return: the calulated load
         '''
         self.requests = self.profile['function']['requestStart']
-        x = self.profile['function']['growthAmount']
+#        x = self.profile['function']['growthAmount']
+        x = self.profile['function']['expValue']
         r = self.profile['function']['growthRate']
-        self.f = self.profile['function']['flucuation']
+#        self.f = self.profile['function']['fluxuation']
+        self.f = 0
 
         if self.load < 100:
             if self.requests < r:
                 self.requests + 1
 
             if self.requests == r:
-                self.load = (self.load * x) + math.sin(self.f)
+                self.load = self.load + x
                 self.requests = 0
                 if self.load > 100:
                     self.load = 100
@@ -124,17 +126,26 @@ class PacketLossInjector(Injector):
 
     def execute(self):
 
+        self.drop_request = False
         self.requests += 1
-        traffic_loss = self.profile["trafficLoss"]
+        traffic_loss = float(self.profile["trafficLoss"])
+        t_percent = float(self.requests_dropped)/float(self.requests)
 
-        if self.requests_dropped/self.requests < traffic_loss:
+        if self.requests < (100 * traffic_loss):
+            if random.getrandbits(1):
+                self.requests_dropped += 1
+                self.drop_request = True
+
+        elif t_percent < traffic_loss:
             self.requests_dropped += 1
             self.drop_request = True
 
         self.metrics['requests'] = self.requests
         self.metrics['dropped_requests'] = self.requests_dropped
 
-        if not self.drop_request:
-            log.msg("Packet Loss Injected, no Dont' skip processing")
+        if self.drop_request:
+            log.msg("Packet Loss Injected, skipping processing")
+            log.msg("t_percent:" + str(t_percent))
+            log.msg("traffic_loss:" + str(traffic_loss))
 
         log.msg("Current Packet Loss Metrics: " + str(self.metrics))

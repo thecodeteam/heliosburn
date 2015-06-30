@@ -314,8 +314,9 @@ class PipelineDelay(object):
         self.callback = callback
 
     def delay(self, request):
-        log.msg("Injecting: " + str(request.delay) + " second lag")
-        reactor.callLater(request.delay, self.callback, request)
+        if request:
+            log.msg("Injecting: " + str(request.delay) + " second lag")
+            reactor.callLater(request.delay, self.callback, request)
 
 
 class Registry(object):
