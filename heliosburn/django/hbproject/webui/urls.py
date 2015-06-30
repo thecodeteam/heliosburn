@@ -17,6 +17,9 @@ urlpatterns = patterns(
     url(r'^sessions/create/$', 'session.session_create', name='session_create'),
     url(r'^sessions/(?P<session_id>[\w-]+)/execute$', 'session.session_execute', name='session_execute'),
 
+    url(r'^sessions/(?P<session_id>[\w-]+)/start', 'session.session_start', name='session_start'),
+    url(r'^sessions/(?P<session_id>[\w-]+)/stop', 'session.session_stop', name='session_stop'),
+
     url(r'^sessions/(?P<session_id>[\w-]+)/executions/(?P<execution_id>[\w-]+)$', 'execution_details', name='execution_details'),
 
     url(r'^testplans/$', 'testplan.testplan_list', name='testplan_list'),
