@@ -16,7 +16,6 @@ The QoS profile is retrieved from information contained within the session docum
 ### Example session document
 ```json
 {
-  "id": 1,
   "name": "Session A",
   "description": "This is a description for a Session",
   "upstreamHost": "github.com",

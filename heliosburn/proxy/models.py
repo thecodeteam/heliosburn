@@ -15,7 +15,10 @@ class MongoModel(dict):
         self.collection = self.db[self.collection_name]
 
         if "_id" in self:
-            record = self.collection.find_one({"_id": ObjectId(self["_id"])})
+            log.msg(self)
+            record = self.collection.find_one(
+                {"_id": ObjectId(self["_id"])})
+#                {"_id": ObjectId(self["_id"]["session"])})
             for key in record:
                 self[key] = record[key]
 
@@ -33,7 +36,6 @@ class MongoModel(dict):
 
     def save(self):
         return self.collection.save(self)
-#        return self.collection.save(self)._id
 
 
 class SessionModel(MongoModel):

@@ -249,7 +249,7 @@ def start(request, session_id):
 
     redis_wrapper.publish_to_proxy(json.dumps({
         "operation": "start_session",
-        "param": {"session": session_id},
+        "param": session_id,
         "key": response_key,
     }))
     for i in range(0, 50):
@@ -280,7 +280,7 @@ def stop(request, session_id):
     response_key = str(ObjectId())
     redis_wrapper.publish_to_proxy(json.dumps({
         "operation": "stop_session",
-        "param": {"session": session_id},
+        "param": session_id,
         "key": response_key,
     }))
     for i in range(0, 50):

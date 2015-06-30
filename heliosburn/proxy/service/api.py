@@ -134,7 +134,7 @@ class OperationFactory(object):
             operation = StopSession(self.controller,
                                     self.response_factory,
                                     op_string['key'],
-                                    recording_id=op_string['param'])
+                                    session_id=op_string['param'])
 
         if "start_session" == op_string['operation']:
             operation = StartSession(self.controller,
@@ -421,7 +421,8 @@ class StartSession(ServerOperation):
             pass
 
         try:
-            profile_id = self.session['qosProfile']['id']
+            profile_id = self.session['qosProfile']
+#            profile_id = self.session['qosProfile']['id']
             self.params['profile_id'] = profile_id
             status = self.controller.module_registry.status(
                 module_name='QOS',
@@ -437,7 +438,8 @@ class StartSession(ServerOperation):
             pass
 
         try:
-            profile_id = self.session['serverOverloadProfile']['id']
+            profile_id = self.session['serverOverloadProfile']
+#            profile_id = self.session['serverOverloadProfile']['id']
             self.params['profile_id'] = profile_id
             status = self.controller.module_registry.status(
                 module_name='ServerOverload',
