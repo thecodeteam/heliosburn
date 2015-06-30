@@ -102,7 +102,7 @@ def start(config, args):
 
 
 def stop(config, args):
-    url = config['url'] + "/api/session/" + args['session'] + "/start/"
+    url = config['url'] + "/api/session/" + args['session'] + "/stop/"
     token = auth.get_token(config)
     r = requests.post(url, headers={"X-Auth-Token": token})
     print("API returned status code %s" % (r.status_code))
