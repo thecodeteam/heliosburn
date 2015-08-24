@@ -1,5 +1,8 @@
 # HeliosBurn
 
+[![Join the chat at https://gitter.im/emccode](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/emccode?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![Stories in Ready](https://badge.waffle.io/emccode/HeliosBurn.svg?label=ready&title=Ready)](http://waffle.io/emccode/HeliosBurn)
+
 Helios Burn is a REST fault injection platform that captures HTTP and HTTPS traffic and logs it for users to review.
 Helios Burn provides the capability to modify HTTP traffic, thus injecting faults, as it is being sent by the client
 or received from the server. The purpose of Helios Burn is to provide developers with a tool that inject failures and
