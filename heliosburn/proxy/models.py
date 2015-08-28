@@ -18,7 +18,7 @@ class MongoModel(dict):
             log.msg(self)
             record = self.collection.find_one(
                 {"_id": ObjectId(self["_id"])})
-#                {"_id": ObjectId(self["_id"]["session"])})
+#               {"_id": ObjectId(self["_id"]["session"])})
             for key in record:
                 self[key] = record[key]
 

@@ -8,7 +8,7 @@ class Common(Configuration):
     REDIS_HOST = '127.0.0.1'
     REDIS_PORT = 6379
     REDIS_DB = 0
-    REDIS_KEY = 'heliosburn.traffic'
+    REDIS_KEY = 'hb.traffic'
     MONGO_HOST = '127.0.0.1'
     MONGO_PORT = 27017
     MONGO_DB = 'heliosburn'
@@ -43,8 +43,8 @@ class Common(Configuration):
             ],
             'test': [
                 'TestStopRecordingAPI',
-                'TestStartSessionAPI',
-                'TestStopSessionAPI',
+                # 'TestStartSessionAPI',
+                # 'TestStopSessionAPI',
                 'TestStopProxyAPI',
                 'TestStartProxyAPI',
                 'TestChangeUpstreamHostAPI',

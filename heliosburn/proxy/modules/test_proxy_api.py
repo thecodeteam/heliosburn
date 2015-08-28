@@ -306,9 +306,9 @@ class TestStartSessionAPI(TestAPISuccess):
                             }
         self.op_response.set_message(response_message)
 
-        recording_id = {'session_id': 1}
+        session_id = 1
         message = self._get_operation_message('start_session',
-                                              recording_id,
+                                              session_id,
                                               self.response_key)
         return json.dumps(message)
 
@@ -327,9 +327,9 @@ class TestStopSessionAPI(TestAPISuccess):
         response_message += "}"
 
         self.op_response.set_message(response_message)
-        recording_id = {'session_id': 1}
+        session_id = 1
         message = self._get_operation_message('stop_session',
-                                              recording_id,
+                                              session_id,
                                               self.response_key)
         return json.dumps(message)
 

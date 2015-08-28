@@ -230,8 +230,8 @@ class AbstractAPITestModule(AbstractModule, unittest.TestCase):
         self.redis_host = configs['redis_host']
         self.redis_port = configs['redis_port']
         self.redis_db = configs['redis_db']
-        self.redis_pub_queue = configs['traffic_pub_queue']
-        self.redis_sub_queue = configs['traffic_sub_queue']
+        self.redis_pub_queue = configs['control_pub_queue']
+        self.redis_sub_queue = configs['control_sub_queue']
         self.redis_client = redis.StrictRedis(host=self.redis_host,
                                               port=self.redis_port,
                                               db=self.redis_db)
