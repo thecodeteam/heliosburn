@@ -8,6 +8,7 @@ class Common(Configuration):
     REDIS_HOST = '127.0.0.1'
     REDIS_PORT = 6379
     REDIS_DB = 0
+    REDIS_KEY = 'heliosburn.traffic'
     MONGO_HOST = '127.0.0.1'
     MONGO_PORT = 27017
     MONGO_DB = 'heliosburn'
@@ -20,6 +21,7 @@ class Common(Configuration):
         'redis_host': REDIS_HOST,
         'redis_port': REDIS_PORT,
         'redis_db': REDIS_DB,
+        'redis_key': REDIS_KEY,
         'mongo_host': MONGO_HOST,
         'mongo_port':  MONGO_PORT,
         'mongo_db':  MONGO_DB,

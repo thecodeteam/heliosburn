@@ -489,8 +489,7 @@ class Registry(object):
             test_deferred.addCallback(self.plugins[module_name].start)
         else:
             for module in self.test_modules:
-                name = module['name']
-                test_deferred.addCallback(self.plugins[name].start)
+                test_deferred.addCallback(self.plugins[module].start)
         test_deferred.addCallback(self._test_mode_off)
         return test_deferred
 
